@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="CMpavEm7QDWPteTvIerfMK">
+<head data-page-node-id="0QQiSCzFqgteBc6BWyaBPE">
+  <meta charset="UTF-8" data-page-node-id="0Q6VHMcsGpd9LczeunP9tU">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="izKk1kwzYKdAT6wxc2RHtx">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https: http://localhost:* http://127.0.0.1:*; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'; frame-src 'self' blob:; form-action 'self'">
+  <title>壹准视频站 · 本地独立版</title>
+  <link rel="stylesheet" href="style.css?v=20260921_privacy_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
+</head>
+<body class="light-theme standalone-mode privacy-ephemeral-mode" data-page-node-id="qMZYXaYnZY4eOYAn3gvUpk">
+  <!-- 账号登录覆盖层 -->
+  <div id="loginOverlay" class="login-scene-overlay" data-page-node-id="KDrx35rUB1dhdRe0KJrqFM">
+    <div class="particles-overlay" data-page-node-id="7GZk7OHSHAXzClPssy282B"></div>
+
+    <main class="login-card-container" data-page-node-id="Yb6Y8bBvuTrkx58yKaxg5X">
+      <div class="glow-border-frame" data-page-node-id="4JMf7dtTOKR41nkiA0gsjH"></div>
+      <div class="login-card" data-page-node-id="an1MnjggJ9CN3sLI3J3e7Y">
+        <header class="card-header" data-page-node-id="mnu0tjNJbyKlvqqXBJ52SA">
+          <h1 class="brand-title" data-page-node-id="pFLu48KPx4ABWWPSPc6epx">LOGIN</h1>
+        </header>
+
+        <form id="loginForm" class="login-form" autocomplete="on" data-page-node-id="FXf1AVHXbDyFY905mKagTU">
+          <div class="input-group" data-page-node-id="jqhKBC9Niy1I2DOD7dd8uf">
+            <label for="usernameInput" class="input-label" data-page-node-id="dOG4IoUhFDwK4Ncb6JbfLh">USERNAME</label>
+            <div class="input-wrapper" data-page-node-id="oYDYT0trOVaA9EZ4JIraOx">
+              <input type="text" id="usernameInput" class="cyber-input" placeholder="账号" autocomplete="username" required data-page-node-id="vyWNg9UsoUQcLlZEzq38Rb">
+            </div>
+          </div>
+
+          <div class="input-group" data-page-node-id="5amn8i1gvLVqy3X7MgzSyF">
+            <label for="passwordInput" class="input-label" data-page-node-id="Vk7ctJsqpBY85hpa4T2CuE">PASSWORD</label>
+            <div class="input-wrapper" data-page-node-id="hX0dBD8Svg1mAgyIXraq9H">
+              <input type="password" id="passwordInput" class="cyber-input" placeholder="至少 8 位密码" autocomplete="current-password" required data-page-node-id="A6BTUizC5zUhYo3TCocZQn">
+              <button type="button" id="togglePasswordBtn" class="btn-toggle-eye" title="切换显示/隐藏密码" data-page-node-id="CClf8FrYgRmLMfdpRwuBGs">
+                <svg id="eyeIconClosed" class="eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="gatS0kxNyUKqltwbeOkAU0"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" data-page-node-id="nrTnvCTO2lmOrvILD8JfSg"></path><line x1="1" y1="1" x2="23" y2="23" data-page-node-id="tWXiNgDx0gWP5eQOxsP5SD"></line></svg>
+                <svg id="eyeIconOpen" class="eye-icon hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="J4QqX4D5CASV4jyEd1vyFx"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" data-page-node-id="rElynr2wLgU4wXAD2d1o5t"></path><circle cx="12" cy="12" r="3" data-page-node-id="E3vFPFDVvJVgyiJ2q2ACjc"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-actions" data-page-node-id="kGnIwFwEDKjf7LlYy0vaGC">
+            <span id="loginErrorText" class="login-error-text" aria-live="polite" data-page-node-id="7QttgnYbMmHsEUj80NodIC"></span>
+          </div>
+
+          <button type="submit" id="btnLogin" class="btn-submit" data-page-node-id="oj5gmfz8t8yoZbevvYWvwQ">
+            <span class="btn-icon" data-page-node-id="RfxWDswVtJB93PRMXWiCCE">→</span>
+            <span class="btn-text" data-page-node-id="vPTSdPyyywV67WT35pduvN">登录</span>
+          </button>
+          <button type="button" id="btnRegister" class="btn-submit btn-register" data-page-node-id="Ah0WYn7YzfTK00R7kZs2UI">
+            <span class="btn-text" data-page-node-id="HbtPsZAJVSPggba10QMYut">注册新账号</span>
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <footer class="scene-footer" data-page-node-id="24KLCxHnYaGHFTAfRlDO9N">
+      <div class="status-indicator" data-page-node-id="UiQUqrTWaDAphn99Yq3x8f">
+        <span class="status-dot" data-page-node-id="XBEJRSzAX8l8UEWyUo8NVA"></span>
+        <span id="angleDebugText" data-page-node-id="6rw2oke7Gtgk0YNbYljaC7">NEON-CREATOR AI SYSTEM ONLINE | 60 FPS ULTRA SMOOTH</span>
+      </div>
+    </footer>
+  </div>
+  <div id="app" class="erp-layout" data-page-node-id="amSYDqw4YmXEPqyOqu1TQk">
+    <!-- 左侧 ERP 侧边栏：单菜单【镜头库】 -->
+    <aside class="sidebar" data-page-node-id="YGC7TDoFkNYekxPLXeA2w6">
+      <div class="sidebar-header" data-page-node-id="8kxswlh7FtDfvAvHnyOhpl">
+        <div class="sidebar-brand-wrapper" data-page-node-id="iBJfHrPBk2FGG6dZpXfvHF">
+          <img src="assets/logo_brand.png" alt="壹准视频站 Yi Zhun Video Station" class="sidebar-brand-img" style="height: 32px; width: auto; max-width: 145px; object-fit: contain; aspect-ratio: 737 / 195;" data-page-node-id="qxBpOfB6nulpFUGWJCNsEy">
+        </div>
+        <button type="button" id="btnExpandSidebar" class="sidebar-collapsed-logo-wrapper" data-tooltip="打开侧边栏" title="打开侧边栏" aria-label="打开侧边栏" data-page-node-id="O5lxbyd0KTdSgmsJ6Nq0zN">
+          <img src="assets/bear_head_icon.png" alt="熊头 Logo" class="sidebar-collapsed-logo" style="width: 34px; height: 34px; object-fit: contain; display: block;" data-page-node-id="jwIvcS2fuezd0eGifz1FjB">
+        </button>
+        <button type="button" id="btnToggleSidebar" class="btn-toggle-sidebar" title="收起侧边栏" aria-label="收起侧边栏" data-page-node-id="PWHYa3SAEeBfOdORReXcp2">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="i2h5bYSrWzu05b9TLL38vQ"><line x1="3" y1="12" x2="21" y2="12" data-page-node-id="R9rAWZRBFiVfBO9koEkZFu"></line><line x1="3" y1="6" x2="21" y2="6" data-page-node-id="4KwpXl1GXhe0vPH9jrM1wh"></line><line x1="3" y1="18" x2="21" y2="18" data-page-node-id="5ARAqnFEWOUII4B09mSuoS"></line></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-menu" data-page-node-id="OQubPTjOgTVfJZft94hfYm">
+        <!-- 灵感中心 -->
+        <div class="menu-item-wrapper expanded" id="menuGroupInspiration" data-page-node-id="KLXw808xfZuzkbx8hyyvo0">
+          <a href="#" id="navInspirationHub" class="menu-item accordion-toggle" data-tooltip="灵感中心" data-page-node-id="Brdmw1sWB68sb5nUzgRYzA">
+            <span class="menu-icon" data-page-node-id="zbcuDTl62RRU9AOjekDtOG"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="D4YHtItQ42SvzHhsXq22ir"><path d="M9 18h6" data-page-node-id="O3qSpY7474fVZrcKe7Gv7X"/><path d="M10 22h4" data-page-node-id="OGSrOVngIZbiC9nbyouBSg"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" data-page-node-id="QaMxhIPAjzlTMQcNoFHI91"/></svg></span>
+            <span class="menu-text" data-page-node-id="2RYFE1oDNnUCrHYdAcV0LM">灵感中心</span>
+            <span class="accordion-arrow" data-page-node-id="WgJfUBIGLbKmaHo1q1dNe2">▼</span>
+          </a>
+          <div class="sidebar-submenu" id="submenuInspiration" data-page-node-id="fXgHwBYYWb3jM39uBsblyZ">
+            <a href="#" id="navShowcase" class="submenu-item" data-tooltip="精彩作品" data-page-node-id="766UAbOF5ClMWb12f3n7qr">
+              <span class="submenu-icon-box" data-page-node-id="MPKHq3HguDLyCvCORQwzsL"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ZQq4QtGdNY50EqP6zSle0P"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" data-page-node-id="gjg5BEL6iJOTKlEaSmIEpq"/></svg></span>
+              <span class="submenu-text" data-page-node-id="Ir39L9YdqTwGJA0kWdTiSJ">精彩作品</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- AI 视频生成 -->
+        <div class="menu-item-wrapper active expanded" id="menuGroupVideoGen" data-page-node-id="IhbQqx1AU9RuMd8DC3cOht">
+          <a href="#" id="navVideoGen" class="menu-item active accordion-toggle" data-tooltip="AI 视频生成" data-page-node-id="ZCrQxZUlV7KrTxcEsCMZxt">
+            <span class="menu-icon" data-page-node-id="mjucaLuFwxMdNzJIH9uxN9"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="kGNgCSSxwICfYpcu5kmHFc"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" data-page-node-id="noyzDMA6si7mfcCSc8SVHo"/></svg></span>
+            <span class="menu-text" data-page-node-id="oPLqPoshAFyPlrqXHNfYUE">AI 视频生成</span>
+            <span class="accordion-arrow" data-page-node-id="BS8TrenT3b7Kx5dWDWFHCT">▼</span>
+          </a>
+          <div class="sidebar-submenu" id="submenuVideoGen" data-page-node-id="1tV0FRuhkw4GXMAToGWkD6">
+            <a href="#" id="navCreate" class="submenu-item active" data-tooltip="创作" data-page-node-id="B0IyeHhGiQbBLEW32vAWFI">
+              <span class="submenu-icon-box" data-page-node-id="tBzsiCUjdlHcwawEHjXk7L"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ymWEEpbEaKuQ9F0GNwysRj"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" data-page-node-id="EMiiDCMmTRjWrkawprpRC1"/></svg></span>
+              <span class="submenu-text" data-page-node-id="PRrcSaJIjIAKtrQQYF0o6A">创作</span>
+            </a>
+            <a href="#" id="navCanvasMode" class="submenu-item" data-tooltip="画布模式" data-page-node-id="tnn7kQ775xGi6zG8dvvKzk">
+              <span class="submenu-icon-box" data-page-node-id="IbLHM2CtL6SVGQTDAWim2n"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="8UOCKDcQIweJnWBwgSS9kc"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" data-page-node-id="lkl4baZPWizpXfjnFZAZNc"/><line x1="3" y1="9" x2="21" y2="9" data-page-node-id="L4B2aVC3xtH8ROJgzj37FS"/><line x1="9" y1="21" x2="9" y2="9" data-page-node-id="IqhsRi6clSHUEdy8Q65YiJ"/></svg></span>
+              <span class="submenu-text" style="display: inline-flex; align-items: center; gap: 6px;" data-page-node-id="WWAcpc2Tu8ps3HFZTzMHTT">
+                画布模式
+                <img src="assets/hot_flame_badge.png" class="img-hot-badge" alt="Hot!" data-page-node-id="dSxAw1nr2RBLksUPH53WeI" />
+              </span>
+            </a>
+            <a href="#" id="navLongScriptGen" class="submenu-item" data-tooltip="长剧本创作中心" data-page-node-id="UIVbBAQiyb5fDcPqbbsFza">
+              <span class="submenu-icon-box" data-page-node-id="uSQnsGtqflVgEbN7eqoriG"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="47cwSXBVFLelqXSlH2d98L"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-page-node-id="h2b6YFnVQwHc4Whsk8wjft"/><polyline points="14 2 14 8 20 8" data-page-node-id="pj5ZUBfMlUwz7kCM6Dz6yh"/><line x1="16" y1="13" x2="8" y2="13" data-page-node-id="oNunFIQiHbcUzqNCLJFCkx"/><line x1="16" y1="17" x2="8" y2="17" data-page-node-id="PXfBaEQUFLK2akxBkkuzq6"/><polyline points="10 9 9 9 8 9" data-page-node-id="cneIQD57DL38BTfES6lNst"/></svg></span>
+              <span class="submenu-text" data-page-node-id="cwv5DUxr9mTM09sYNdlutW">长剧本创作中心</span>
+            </a>
+            <a href="#" id="navMultiAngle" class="submenu-item" data-tooltip="多角度创作" data-page-node-id="mnKThmA9PDEPGBp44zBbDr">
+              <span class="submenu-icon-box" data-page-node-id="0IKQEEV6w5UHDJ7VedyOEu"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="8zwGGk6KLCiTqIdKDnXqcN"><path d="M4 12a8 8 0 1 0 2.34-5.66" data-page-node-id="4PGXuZXMRFnlpntqUL7sLK"/><path d="M4 4v6h6" data-page-node-id="9Yg275hRujygDNQXt2CTI5"/><circle cx="12" cy="12" r="2" data-page-node-id="bqGKKIWEpFZLwu1w2osDEu"/><path d="M12 10V6M14 12h4" data-page-node-id="4ouD6lKganf9IcEnqgrgO2"/></svg></span>
+              <span class="submenu-text" data-page-node-id="cNt3aTvrdB0P0QHD8vDpH0">多角度创作</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 管理后台，仅管理员可见 -->
+        <div class="menu-item-wrapper hidden" id="menuGroupAdmin" data-admin-only data-page-node-id="UH8EovsNpH3ikX3xO4lfd0">
+          <a href="#" id="navAdmin" class="menu-item accordion-toggle" data-tooltip="管理后台" data-page-node-id="CDudYM3yNdrqbBQylAp7mk">
+            <span class="menu-icon" data-page-node-id="olxHuKEwtFg4vODuFAxwA9"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="hqNoIh7iXOBS76WpSF9Zdi"><path d="M12 3l8 4v5c0 4.5-3.4 7.8-8 9-4.6-1.2-8-4.5-8-9V7l8-4z" data-page-node-id="i8FVWhb9X2VTd4hH1lLEWR"/><path d="M9 12l2 2 4-4" data-page-node-id="2909RQpQGkDcSLcScW2HLl"/></svg></span>
+            <span class="menu-text" data-page-node-id="maZkuxtXWykmAWyvfeO255">管理后台</span>
+            <span class="accordion-arrow" data-page-node-id="0EbgrUZoy4JHIHCE8De9Wt">▼</span>
+          </a>
+          <div class="sidebar-submenu" id="submenuAdmin" data-page-node-id="VkmxfIyUFapccBDDQqCjKI">
+            <a href="#" id="navAdminOverview" class="submenu-item" data-tooltip="运营总览" data-page-node-id="FDiHI13GaDO12xiAbSUrTh"><span class="submenu-icon-box" data-page-node-id="7KLwsLD0vUWtcB7SEXdWDl"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="iCFrUbDwJb3TIlNuGW2QPp"><rect x="3" y="3" width="7" height="7" rx="1.5" data-page-node-id="uLEH2GpiM4NrHhlv629z8i"/><rect x="14" y="3" width="7" height="7" rx="1.5" data-page-node-id="H32Dbl3QMWbqfuKuH11vNW"/><rect x="3" y="14" width="7" height="7" rx="1.5" data-page-node-id="hvGJVv06cFpfE7i5yAjn7G"/><rect x="14" y="14" width="7" height="7" rx="1.5" data-page-node-id="am38mfAL7wotZ1pemDELk5"/></svg></span><span class="submenu-text" data-page-node-id="4l8lJnWuH2tw6Za5yYbAbp">运营总览</span></a>
+            <a href="#" id="navAdminUsers" class="submenu-item" data-tooltip="账号管理" data-page-node-id="GQCE8n1athC6eCznHjlLIR"><span class="submenu-icon-box" data-page-node-id="9OCJ2OOdtGlgpYXgpVKw4q"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="WUiHDcwjfFc6PqvmToBhcb"><circle cx="9" cy="8" r="3" data-page-node-id="Zfg8b442YGnEzs3ABUsYBE"/><path d="M3.5 19c.6-3 2.4-4.5 5.5-4.5s4.9 1.5 5.5 4.5" data-page-node-id="RXxD9oRYmAeE3PZ7vvrt2F"/><path d="M16 11.5c2.5.2 4 1.5 4.5 3.5M16 5.5a2.5 2.5 0 0 1 0 5" data-page-node-id="dEXpC4QFxcahi7tVlrBJSt"/></svg></span><span class="submenu-text" data-page-node-id="T5CeEkEdbyHQekxbWw3FjJ">账号管理</span></a>
+            <a href="#" id="navAdminModels" class="submenu-item" data-tooltip="模型与计费" data-page-node-id="8SBfuGMSbB4L221jmB6snE"><span class="submenu-icon-box" data-page-node-id="b6yfMWh4oJiEZm1f1kI9oH"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="hsczEl64ZCOHsCHQ2XzL2j"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" data-page-node-id="J71DZTK1AAIh1cW4a7OM8N"/><path d="M4.5 7.5L12 12l7.5-4.5M12 12v9" data-page-node-id="LIWgBRVSh4KAuywgCAARx6"/></svg></span><span class="submenu-text" data-page-node-id="7mMUncrXY4sgDvGbZ2yNMo">模型与计费</span></a>
+            <a href="#" id="navAdminProviders" class="submenu-item" data-tooltip="API 配置" data-page-node-id="0Bp2wU4vGW1dln5BsMfAf1"><span class="submenu-icon-box" data-page-node-id="BvsXA1YUabBjXx0ucxtj8x"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="9F30iPc70WNGZ8T5QQqCPu"><path d="M12 3a3 3 0 0 1 3 3v1.2a6.5 6.5 0 0 1 2.2 1.5l1.1-.6a3 3 0 0 1 3 5.2l-1.1.6a6.5 6.5 0 0 1 0 2.2l1.1.6a3 3 0 0 1-3 5.2l-1.1-.6a6.5 6.5 0 0 1-2.2 1.5V21a3 3 0 0 1-6 0v-1.2a6.5 6.5 0 0 1-2.2-1.5l-1.1.6a3 3 0 0 1-3-5.2l1.1-.6a6.5 6.5 0 0 1 0-2.2l-1.1-.6a3 3 0 0 1 3-5.2l1.1.6A6.5 6.5 0 0 1 9 7.2V6a3 3 0 0 1 3-3z" data-page-node-id="eFbRGoGBkr4DpNCPH5DgZA"/><circle cx="12" cy="14" r="2.5" data-page-node-id="FyrrNSTHFPh3gf01K10YBz"/></svg></span><span class="submenu-text" data-page-node-id="rZrHJJbiIBVT7yNNumZc9W">API 配置</span></a>
+            <a href="#" id="navAdminTasks" class="submenu-item" data-tooltip="生成任务" data-page-node-id="DDoYlsH2eYoJZUAN5HdYhW"><span class="submenu-icon-box" data-page-node-id="S1HMk8AanR26NlXFnixufh"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="2jiKX2kJs4BavkoAZCasgI"><rect x="4" y="4" width="16" height="16" rx="2" data-page-node-id="lBXF5CytR9R7hUbrhXZkln"/><path d="M8 9h8M8 13h5M8 17h3" data-page-node-id="s7aJRs3U91UUNH0E4WDSLU"/><path d="M16 13l2 2 3-3" data-page-node-id="QIKeOqPNBlK9Az8V0CGRFs"/></svg></span><span class="submenu-text" data-page-node-id="Uz8XuD0ooy0w9C8RvZ1l9q">生成任务</span></a>
+            <a href="#" id="navAdminLedger" class="submenu-item" data-tooltip="积分流水" data-page-node-id="u8KWMQFLG9SX3KoYuNDW6L"><span class="submenu-icon-box" data-page-node-id="TLjD06d4I55n8NDgAHKBiI"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="NmQsZnbea52B3XB3CwKNgu"><rect x="3" y="5" width="18" height="14" rx="2" data-page-node-id="FA1IjRd8roByLcn0Rw7C00"/><path d="M3 9h18M7 14h4" data-page-node-id="CwiKEWvtAt78JypHG5xxDK"/><circle cx="17" cy="14" r="2" data-page-node-id="lTMuio3D63IK8PFKZqhkfu"/></svg></span><span class="submenu-text" data-page-node-id="kj7yeN2IGUhrfCaBZesPU1">积分流水</span></a>
+            <a href="#" id="navAdminAudit" class="submenu-item" data-tooltip="审计日志" data-page-node-id="RQMaEfjyy1nx8CtXwPLeg8"><span class="submenu-icon-box" data-page-node-id="cVRmE3F7CvwI8CxVPAjKXk"><svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="58jGPgXap2PLHPEMF5YhBx"><path d="M6 3h9l3 3v15H6z" data-page-node-id="1QMuxQutbtcdT7OvaUUE7D"/><path d="M14 3v4h4M9 12h6M9 16h6M9 8h2" data-page-node-id="bBWAadjZ4eZeB7VxaHxRzO"/></svg></span><span class="submenu-text" data-page-node-id="wOTKdPgpAxfSauUtCWBTM4">审计日志</span></a>
+          </div>
+        </div>
+
+        <!-- 知识库管理 -->
+        <div class="menu-item-wrapper expanded" id="menuGroupKb" data-page-node-id="m0xkVd3bHA9dZaou7kSZ4V">
+          <a href="#" id="navKbGroup" class="menu-item accordion-toggle" data-tooltip="知识库管理" data-page-node-id="E5Vno56osPC17lfc1brBPI">
+            <span class="menu-icon" data-page-node-id="cD5ykUnmtTTUrvMizVnhpG"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="IAJE2nsS0pDr2IhKCWYBVY"><polygon points="12 2 2 7 12 12 22 7 12 2" data-page-node-id="MfWcUmBRIqfhHjqI7rElCC"/><polyline points="2 17 12 22 22 17" data-page-node-id="P0DqETbzEuwW6CFGDiEzAe"/><polyline points="2 12 12 17 22 12" data-page-node-id="92pbRdXhlXmDdGQO6M2LVQ"/></svg></span>
+            <span class="menu-text" data-page-node-id="NwZKKP6FHGiQjbclkOy4oH">知识库管理</span>
+            <span class="accordion-arrow" data-page-node-id="5KC2uYRMl8sSgwkHRs3Uck">▼</span>
+          </a>
+          <div class="sidebar-submenu" id="submenuKb" data-page-node-id="BA2qNdoUEqtnJapZd0ox6U">
+            <a href="#" id="navCanvasKb" class="submenu-item" data-tooltip="画布库" data-page-node-id="AbIjIjZz0HCxFlTvFS9jtK">
+              <span class="submenu-icon-box" data-page-node-id="A4MQVDhZ33kMwjnc0P8242"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="aogTLd5IKS2EMHumMGQGsv"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" data-page-node-id="rN5paNEt90RIvPo2dhaneX"/><line x1="3" y1="9" x2="21" y2="9" data-page-node-id="V2oWaTGcLTlRUBJZ1ZX7rJ"/><line x1="9" y1="21" x2="9" y2="9" data-page-node-id="JxObDwedVAqtWeizI8zE9n"/></svg></span>
+              <span class="submenu-text" data-page-node-id="43fGaqmDT5rONMUlvtIYw4">画布库</span>
+              <span class="badge-count" id="canvasKbCount" data-page-node-id="b2CYd3Cxd2Z64qKOTUZb83">0</span>
+            </a>
+            <a href="#" id="navPromptKb" class="submenu-item" data-tooltip="提示词库" data-page-node-id="bpqO5sO4MPhROGGfCdt6Wa">
+              <span class="submenu-icon-box" data-page-node-id="3ni0uPO9dFxEiOYIHrglPs"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="k2FOhVH1NWjry6J63UFxlH"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" data-page-node-id="iWD5X2OHvcjvOTl4cF4LDr"/></svg></span>
+              <span class="submenu-text" data-page-node-id="0PfyplRPo5CruGHfqfMSI8">提示词库</span>
+              <span class="badge-count" id="promptKbCount" data-page-node-id="G5Cby1UafOm3oMzNpiw9lH">0</span>
+            </a>
+            <a href="#" id="navAssetKb" class="submenu-item" data-tooltip="资产库" data-page-node-id="h0QGT8uXMPW3sDAuAULGtw">
+              <span class="submenu-icon-box" data-page-node-id="NbKkJAUgnUFtEGrvv2rOXc"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="cUihIU4ELEEKm9FIOF09aP"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21" data-page-node-id="THWYmAwkbBFIfi3FQEGpZb"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" data-page-node-id="GC5it8GHDDxz52wOcfbs1q"/><polyline points="3.27 6.96 12 12.01 20.73 6.96" data-page-node-id="bFrKgnJhg3OJUhqVzELAsO"/><line x1="12" y1="22.08" x2="12" y2="12" data-page-node-id="gKsCIUuw1tnKcHghc9J6Fr"/></svg></span>
+              <span class="submenu-text" data-page-node-id="Jn28oYkpMyxAYas9O1mzXP">资产库</span>
+              <span class="badge-count" id="assetKbCount" data-page-node-id="IEBDcj3SZdVUhlwEt0YZRc">0</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <section id="sessionHistorySection" class="session-history-section" aria-label="创作历史" data-page-node-id="TNyaiYoD2xK3ZI3axjJmc7">
+        <div class="session-history-header" data-page-node-id="GFF2pgsuiHDJqWnIwk8EwZ">
+          <span data-page-node-id="KJ95DGx70lCLWy4mvMktHG">创作历史</span>
+          <span class="session-history-header-actions" data-page-node-id="JHhbnPmUnOFc7BJSKWBtB2">
+            <button type="button" id="btnToggleSessionBatchEdit" class="session-new-button session-edit-button" title="批量管理会话" aria-label="批量管理会话" data-page-node-id="fYyn5WX6a9uO3lc6EAOEFd">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="gL0DwVtSzEfHkrNrAF9tdN"><path d="M12 20h9" data-page-node-id="xoLHnlvVwgq7KITABRyR58"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" data-page-node-id="TMPljUxG46RRHQho67IZCw"></path></svg>
+            </button>
+            <button type="button" id="btnOpenCreationHistory" class="session-new-button" title="查看历史生成" aria-label="查看历史生成" data-page-node-id="Ws4rbWPcGteKC0JUBkGFI4">•••</button>
+          </span>
+        </div>
+        <div id="sessionHistoryList" class="session-history-list" data-page-node-id="mBsmPVFbDr9sZGwE2DCz7U"></div>
+        <div id="sessionBatchActionBar" class="session-batch-action-bar" hidden data-page-node-id="rARNBQXYfahlohCPq9kG0U">
+          <button type="button" id="btnSessionBatchSelectAll" class="session-batch-text-button" data-page-node-id="OTDXcfFy8NZEPO6OJYI29y">全选</button>
+          <span id="sessionBatchSelectedCount" data-page-node-id="aW1diTogQjkEtSRDAu9ffq">已选 0 项</span>
+          <button type="button" id="btnSessionBatchDelete" class="session-batch-delete-button" disabled data-page-node-id="IoAXZi8yHFLChcz2MRhiTr">删除</button>
+          <button type="button" id="btnSessionBatchCancel" class="session-batch-text-button" data-page-node-id="NsnbnzJvNRD115yM17o3f6">取消</button>
+        </div>
+      </section>
+
+        <div class="sidebar-footer" data-page-node-id="4SGk4bHKcX4Z8XoistsAW6">
+          <button type="button" id="btnOpenSessionTrash" class="session-trash-button" title="打开回收站" data-page-node-id="9PZo5D7Mc4fvqUxXHUqlqA">
+            <span aria-hidden="true" data-page-node-id="D5B8AyuVsztIT1A362rjmH">♲</span>
+            <span class="session-trash-label" data-page-node-id="KTO8A1acLiH4Dg43Z9QILE">回收站</span>
+            <span id="sessionTrashCount" class="session-trash-count" data-page-node-id="PFQUXcANLZZC4jJN8k6dfH">0</span>
+          </button>
+          <div id="userProfilePill" class="user-profile-pill sidebar-user-profile" title="账号" tabindex="0" data-page-node-id="bIMA9yxuLuOnXdl2FEzWkS">
+            <span class="user-avatar-icon" data-page-node-id="Zua8CD0EbnAMgWvvYa1qpR">●</span>
+            <span class="user-profile-copy" data-page-node-id="lACwQTyuCHyViHdVEi5SiP">
+              <span id="userNameText" class="user-name-text" data-page-node-id="r0lgOOumIaPVmpErFoaKfN">未登录</span>
+            </span>
+            <button id="btnLogout" class="btn-logout-mini" title="退出登录" data-page-node-id="WS5Ypes86C6QRbsaESiHi3">退出</button>
+          </div>
+        </div>
+    </aside>
+
+    <!-- 右侧 ERP 主区域 -->
+    <div class="main-wrapper" data-page-node-id="f5KSH8nzJlPe0FmKlOA9u5">
+      <!-- 顶部 Top Bar -->
+      <header class="topbar" data-page-node-id="9be9xInRFIwalDdWtijnIm">
+        <div class="page-breadcrumb" data-page-node-id="1QnvwNWUAKs5m7zZq8HBBF">
+          <div class="topbar-title-row" data-page-node-id="doV4XMdDgDMaFX7EUlRnTE">
+            <h2 id="topbarTitle" data-page-node-id="KO5cVjVvHXISZ3LoQ7omRX">⚡ 创作</h2>
+            <span id="sessionSaveStatus" class="session-save-status" aria-live="polite" data-page-node-id="7msc2nboGMUa3Nsa0emqtI">仅本次打开有效</span>
+          </div>
+          <span class="breadcrumb-sub" id="topbarSub" data-page-node-id="r0avEMoOREk7GdHm6fKyi4"></span>
+        </div>
+
+        <div class="topbar-actions" data-page-node-id="H49fUl95p060tVRddk1KoQ">
+          <button type="button" id="btnStandaloneSettings" class="btn btn-secondary standalone-settings-button" title="配置自己的 API" data-page-node-id="5mNBYhL4yAfdI6dCPGEEqs">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="mHqGeDQC1DVhCzx1h4q58n"><circle cx="12" cy="12" r="3" data-page-node-id="JVv79F0zVIwJywAlyhsmcd"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z" data-page-node-id="VcBb4Vyzzkd5wJS0lbVVC7"></path></svg>
+            <span data-page-node-id="M0lM1rJ4NLDxaIaX72DI2L">API 设置</span>
+          </button>
+          <div id="creditPill" class="credit-pill" tabindex="0" aria-describedby="creditHoverCard" data-page-node-id="FSzW9nPtZ2d9JuoSBBw6Hy">
+            <span class="credit-pill-icon" data-page-node-id="MqEDu6BMLUMEh9PTQM0AV6">✦</span>
+            <span class="credit-pill-label" data-page-node-id="FvtxuyAsfpeGLBUAOub3qd">积分</span>
+            <strong id="creditPillBalance" data-page-node-id="ozA0MawNkaHZY5BiuOhflp">--</strong>
+            <div id="creditHoverCard" class="credit-hover-card" role="status" aria-live="polite" aria-hidden="true" hidden data-page-node-id="DBxsygKVC9WwFUJPSX4jU3">
+              <div class="credit-hover-heading" data-page-node-id="ZzllUQAVDrSBXGaZIFbzuz">积分余额</div>
+              <div class="credit-hover-balance" data-page-node-id="Y46XI6hRH4OP2qCuyIKWAa"><strong id="creditBalanceText" data-page-node-id="QZ0vjQtOvy8GnSJKvoTE0C">--</strong></div>
+              <div class="credit-hover-reserved" id="creditReservedText" data-page-node-id="lPGyMvLto4CjFVIJQbiLO6">预扣积分：--</div>
+              <div class="credit-hover-ledger-title" data-page-node-id="iU7rR85bGlP7ggCUzbx4XP">积分记录</div>
+              <div id="creditLedgerList" class="credit-ledger-list" data-page-node-id="xIu9ET9olptwhrp9YTgqn4"><span class="credit-ledger-empty" data-page-node-id="1tUGtKSOdtl0S2AZRhunLK">悬停加载记录</span></div>
+            </div>
+          </div>
+          <div class="search-container" id="searchContainer" style="display: none;" data-page-node-id="kPiBIeL8EQZyP10CUZ4zpN">
+            <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="GiG31VkNLIaf8ejNYvXlWX"><circle cx="11" cy="11" r="8" data-page-node-id="VRsVU0Zjrr0r7anVuAi2jx"></circle><line x1="21" y1="21" x2="16.65" y2="16.65" data-page-node-id="JHIh8q349F97aawExCpCnx"></line></svg>
+            <input type="text" id="searchInput" placeholder="搜索提示词、标题、景别、运镜..." autocomplete="off" data-page-node-id="8677kjzAFgC8S5PeQZxwOs">
+            <button id="clearSearch" class="btn-icon hidden" title="清除搜索" data-page-node-id="cmulAXM9WRuhjqf2lcgDA7">&times;</button>
+          </div>
+
+
+          <div id="kbActionGroup" style="display: none; gap: 8px;" data-page-node-id="8ONv1x71KgUXPuiTRiovJn">
+            <button id="btnSeedData" class="btn btn-secondary" title="加载预置示例镜头数据" data-page-node-id="CRFD254EvG6MXME4BTfmZf">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="D9HX1WXDHmzuFy0AuogOFE"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" data-page-node-id="ZvuSRMFDFC8ea6ZLeBpCZO"/></svg>
+              <span data-page-node-id="5aqTw77Q7KxeMqnaZxe7WE">示例数据</span>
+            </button>
+            <button id="btnExportData" class="btn btn-secondary" title="备份数据为 JSON" data-page-node-id="2jV0lt644mR07bOuedIf1M">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="dUGcwdaqafuv8GP8i67xpm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-page-node-id="v8vERjBBL30hWxv88w7vb1"></path><polyline points="7 10 12 15 17 10" data-page-node-id="HaWyvXABI44Bb52KxaaYBs"></polyline><line x1="12" y1="15" x2="12" y2="3" data-page-node-id="l0XKu5oNXVZW1K5E1v46p3"></line></svg>
+              <span data-page-node-id="AI9OgkLAVqt2mkSSXPnziD">导出 JSON</span>
+            </button>
+            <button id="btnImportData" class="btn btn-secondary" title="恢复 JSON 备份" data-page-node-id="fXUBl8n1QYNggnTY1AojUB">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="hV5urgkido96CXNNi07zsx"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-page-node-id="LELjDBpB2vyHCH4QROv0Cr"></path><polyline points="17 8 12 3 7 8" data-page-node-id="OV9bOQYxTGjtkK67jZeUgU"></polyline><line x1="12" y1="3" x2="12" y2="15" data-page-node-id="zA9gK6gS8XuZRKTQHLpTXv"></line></svg>
+              <span data-page-node-id="qfBvMHBKs5KKCcJGpAny7c">导入数据</span>
+            </button>
+            <input type="file" id="importFileInput" accept=".json" style="display: none;" data-page-node-id="ny0aGep0QZH5cLwpY5VRAD">
+
+            <button id="btnNewPrompt" class="btn btn-primary" data-page-node-id="Bf8Z5U650GdmSwBhsBwg8t">
+              <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="0kty6O2RWhQ2LKqCLT2k58"><line x1="12" y1="5" x2="12" y2="19" data-page-node-id="Utb7WuyL5MS0buhyi5BC4k"></line><line x1="5" y1="12" x2="19" y2="12" data-page-node-id="EAJpFFUZ1uHoBpDJcJOuF3"></line></svg>
+              <span data-page-node-id="YEqeKXiZSfU2JYH2JNaaou">➕ 新建镜头提示词</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 页面 1：⚡ AI 视频生成 (小云雀对话界面) -->
+      <section id="viewVideoGen" class="page-view" data-page-node-id="d3AK2wqFUFXg4C0iWTYAMc">
+        <div class="xyq-chat-wrapper" id="xyqChatWrapper" data-page-node-id="sN8UkHaKjkDDIYELB37oNS">
+          <!-- 拖拽上传全屏提示蒙层 -->
+          <div id="chatDragOverlay" class="chat-drag-overlay hidden" data-page-node-id="6CUBRvZlyjVHnOJyeh0l7E">
+            <div style="font-size: 3rem;" data-page-node-id="mTTeB8EMKZWIwMVz4ncO8J">📥</div>
+            <div id="chatDragOverlayTitle" data-page-node-id="CVIvbz1yyRrb9hOT8La5XB">释放鼠标，即刻上传参考图片 / 视频</div>
+            <div id="chatDragOverlayHint" style="font-size: 0.8rem; font-weight: 400; opacity: 0.85;" data-page-node-id="NVtD2bwt9hK9GXJ0T3tLNP">支持 PNG, JPG, WEBP, GIF, MP4 格式</div>
+          </div>
+
+          <!-- 对话消息流 -->
+          <div id="aiChatStream" class="ai-chat-stream" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 0; width: 100%; box-sizing: border-box;" data-page-node-id="XXXpj7QjvqL6CvPsvGmxdX">
+            <!-- Gemini 风格空状态欢迎卡片 -->
+            <div id="geminiWelcomeCard" class="gemini-welcome-card" data-page-node-id="cwvtGe5Kaxfbx8ciYPpeE6">
+              <div class="gemini-bear-icon-wrapper" style="margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;" data-page-node-id="5JNXi5lg3WsJhvY4gPfC6W">
+                <img src="assets/bear_head_icon.png" alt="壹准视频 Bear AI" class="gemini-bear-avatar" style="width: 72px; height: 72px; max-width: 72px; display: block; margin: 0 auto;" data-page-node-id="vt7HG9AdpKXCLFsiG4zMjp">
+              </div>
+              <h2 class="gemini-greeting-title" style="font-size: 1.85rem; font-weight: 700; margin: 0 auto; text-align: center; width: 100%;" data-page-node-id="gSoLdaNYM1KpBvJDIEPuoQ">你好，<span class="gemini-user-highlight" id="geminiUserName" data-page-node-id="HopooPBHpzuTUVMH6GHS4E">熊主任</span></h2>
+              <p class="gemini-greeting-sub" style="font-size: 0.95rem; font-weight: 500; margin: 0 auto; text-align: center; max-width: 520px; width: 100%; color: var(--text-muted);" data-page-node-id="liYQpXdbFSJcVxKrf9Nb5L">专属于二手/新机行业的推广智能体</p>
+            </div>
+          </div>
+
+          <!-- 底部对话控制输入框 -->
+          <div class="ai-chat-input-box" style="position: relative;" data-page-node-id="9zgp9tZOevpsD849dXIq7U">
+            <!-- 多图媒体参考上传预览面板 -->
+            <div id="aiRefMediaBox" class="ai-ref-media-box hidden" data-page-node-id="7PEY0tQ3DwIu1nIZRfwvuT">
+              <div class="ref-media-header" data-page-node-id="fXE2yWQmUw0sYm6cJTzCbZ">
+                <span data-page-node-id="mtmbMIBiqWcTKiWXvZMtMd">📎 已选参考图 (点击标签插入到提示词，或在输入框中直接输入 @ 引用)：</span>
+                <button id="btnClearAllChatMedia" type="button" class="btn-link-danger" data-page-node-id="IPe9KhmUWQCZHMt9K715jV">清空全部</button>
+              </div>
+              <div id="aiRefMediaList" class="ref-media-chips-list" data-page-node-id="AQuDX217mKeitIfad7iFMR">
+                <!-- 动态渲染多图 Chip 标签卡片 -->
+              </div>
+            </div>
+
+            <!-- Apple 极简参数调节工具栏 -->
+            <div class="ai-params-row" data-page-node-id="GLoUNSFZ93a8QJqFkxVOck">
+              <div class="param-group" data-page-node-id="oiO7df95F2Xsj8yJxPADUY">
+                <label class="apple-param-label" data-page-node-id="6tcOKmpn7kd7jWc0pyEIfk">类型</label>
+                <div class="apple-segment-control" id="chatGenerationModeSegment" data-value="video" data-page-node-id="ejLisw8KR4jybiE60q1kWT">
+                  <button type="button" class="segment-btn active" data-value="video" data-page-node-id="WrYazsBO2Uoqu214dghyZt">视频</button>
+                  <button type="button" class="segment-btn" data-value="image" data-page-node-id="ieokTz3R08gFtRiRkNbv5v">图片</button>
+                  <input type="hidden" id="chatGenerationMode" value="video" data-page-node-id="zJ8enRUzCsKICjiFqBkHlj">
+                </div>
+              </div>
+
+              <!-- 苹果风格模型胶囊下拉框 -->
+              <div class="param-group" id="chatVideoModelGroup" data-page-node-id="16EWphiGuH8ff7XoVN73n3">
+                <label class="apple-param-label" data-page-node-id="NJ8xmpg8fRnDBXMkBEIYM4">模型</label>
+                <div class="apple-pill-dropdown" id="chatModelDropdown" data-value="sora-v3-2.5-720p-per-second" data-page-node-id="EgKNrcDHNWtM9ptIdZB3xx">
+                  <button type="button" class="pill-trigger" data-page-node-id="kty0nT8I7c3UuKY1m96Cdb">
+                    <span class="pill-dot" data-page-node-id="jqEf72dSHM3aI5PO5vVxbd"></span>
+                    <span class="pill-label" data-page-node-id="gCouI6L4Voj5DVcvU3c52M">Sora v3 2.5 720p 按秒</span>
+                    <svg class="chevron" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" data-page-node-id="HQl5uX3yjEtRS3yhIWxNKr"><polyline points="6 9 12 15 18 9" data-page-node-id="EFR6Cg8GG2xlToZEJhuJmV"></polyline></svg>
+                  </button>
+                  <div class="pill-menu" data-page-node-id="pa1TExTFw98ROTD8wtBwu9">
+                    <div class="pill-option active" data-value="sora-v3-2.5-720p-per-second" data-page-node-id="zyJLWPxgjMaZKr5RyJYQGZ">
+                      <span class="opt-name" data-page-node-id="UixNlhVLWqgh4fT5KoCqNf">Sora v3 2.5 720p 按秒</span>
+                      <span class="opt-sub" data-page-node-id="36YoZCS99of4NzyrIQxoqN">sora-v3-2.5-720p-per-second，支持 4–30 秒</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="chatModelSelect" value="sora-v3-2.5-720p-per-second" data-page-node-id="En6UtJMxi7YTeqVi0kgbg2">
+                </div>
+              </div>
+
+              <div class="param-group hidden" id="chatImageModelGroup" data-page-node-id="lpAZjNTEDgF29sfVtVGEXQ">
+                <label class="apple-param-label" data-page-node-id="CE6TRqPiqB8jeH6JrUoeXd">模型</label>
+                <div class="apple-pill-dropdown" id="chatImageModelDropdown" data-value="gpt-image-2" data-page-node-id="zAsOFn439M58HQDk8memSn">
+                  <button type="button" class="pill-trigger" aria-label="图片模型" data-page-node-id="y4pgqc5b2ZkfSQLtsCK6T1">
+                    <span class="pill-dot" data-page-node-id="aBJvExmS413ub6DAFFTCYP"></span>
+                    <span class="pill-label" id="chatImageModelDisplay" data-page-node-id="ZjQqjt7a1n1Yx4yNBfBduf">gpt-image-2</span>
+                    <svg class="chevron" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" data-page-node-id="YqQ6dZtUmIACzmFu5ZJ7Kl"><polyline points="6 9 12 15 18 9" data-page-node-id="SIyChdkqIUVJSi1m7UeXVB"></polyline></svg>
+                  </button>
+                  <div class="pill-menu" data-page-node-id="R2kKEE6IUAlirkm0XOydTK"></div>
+                  <input type="hidden" id="chatImageModelSelect" value="gpt-image-2" data-page-node-id="MaTSZIgZvJq8zc0Wn66nxL">
+                </div>
+              </div>
+
+              <!-- 苹果风格比例分段选择器 -->
+              <div class="param-group" id="chatVideoAspectGroup" data-page-node-id="luOJZaUBUeucz0dqCUljer">
+                <label class="apple-param-label" data-page-node-id="8MI0sIggZswdqt1xFzp0zm">比例</label>
+                <div class="apple-segment-control" id="chatAspectSegment" data-value="16:9" data-page-node-id="QTRj8zHgTE7bctk1EpmND3">
+                  <button type="button" class="segment-btn active" data-value="16:9" data-page-node-id="6X34OruJswmWL3Q5cC7m4n">16:9</button>
+                  <button type="button" class="segment-btn" data-value="9:16" data-page-node-id="WLhpLYI1pNGZwTvbLtigaZ">9:16</button>
+                  <button type="button" class="segment-btn" data-value="1:1" data-page-node-id="e55KD1b1En9vmJxoPf4q2K">1:1</button>
+                  <input type="hidden" id="chatAspectSelect" value="16:9" data-page-node-id="DAE0mdhLvq5OJpoFABjjU0">
+                </div>
+              </div>
+
+              <div class="param-group hidden" id="chatImageAspectGroup" data-page-node-id="G0BA2eGCzHQllaYUhUQFR8">
+                <label class="apple-param-label" data-page-node-id="lvsf73bvr4qWGtaeznkQQ5">图片尺寸</label>
+                <div class="apple-segment-control" id="chatImageAspectSegment" data-value="1:1" data-page-node-id="hDUDTUDU8zoSg0tqWvVndb">
+                  <button type="button" class="segment-btn" data-value="16:9" data-page-node-id="UGBxTosqkTxsHMMP9tWVi1">16:9</button>
+                  <button type="button" class="segment-btn" data-value="9:16" data-page-node-id="cKRl6tE2Bcl0Ou9KIGg2vt">9:16</button>
+                  <button type="button" class="segment-btn active" data-value="1:1" data-page-node-id="tHLcnqVLOvMEDZMixEc3I4">1:1</button>
+                  <button type="button" class="segment-btn" data-value="4:3" data-page-node-id="ktup8kje2J7skztpG8rEOf">4:3</button>
+                  <input type="hidden" id="chatImageAspectSelect" value="1:1" data-page-node-id="RFSLdQlxZqrCLMdjBbKxNv">
+                </div>
+              </div>
+
+              <div class="param-group hidden" id="chatImageCountGroup" data-page-node-id="Fa2Tt4v5f9rehokWJgrwaH">
+                <label class="apple-param-label" for="chatImageCountInput" data-page-node-id="7KiJpKANw5E5CQNAhg2cIA">生成数量</label>
+                <div class="image-count-control" data-page-node-id="jFqo9MA2zYLk0o2E3Zcugz">
+                  <button type="button" class="image-count-step" id="btnChatImageCountDown" aria-label="减少图片数量" data-page-node-id="uO9q0xn3XmV35n5LTK6c81">−</button>
+                  <input type="number" id="chatImageCountInput" min="1" max="10" step="1" value="1" inputmode="numeric" aria-label="图片生成数量" data-page-node-id="YKa2OGvFfnPSFL1RubIErT">
+                  <button type="button" class="image-count-step" id="btnChatImageCountUp" aria-label="增加图片数量" data-page-node-id="c23ghAEE6Zw5fwzB29HRZ7">+</button>
+                  <span data-page-node-id="a9z2HFydVcpnZvnATBAjMQ">张</span>
+                </div>
+              </div>
+
+              <!-- 苹果风格时长分段选择器 -->
+              <div class="param-group" id="chatDurationGroup" data-page-node-id="QJbOCVcGgE0cObAV777Tnt">
+                <label class="apple-param-label" data-page-node-id="NKfgF5CxwII4MQJKqir8kl">时长</label>
+                <div class="apple-segment-control" id="chatDurationSegment" data-value="5" data-page-node-id="sN6D9LO4KvnH0gSKcMJoMw">
+                  <button type="button" class="segment-btn active" data-value="5" data-page-node-id="GoE6TTuDgP7Zfc5jkibZF2">5s</button>
+                  <button type="button" class="segment-btn" data-value="10" data-page-node-id="7sChlIp0n99JAozlZ2AjHr">10s</button>
+                  <button type="button" class="segment-btn" data-value="15" data-page-node-id="tYQ0KlMJWFP89Z3U0kJ8qI">15s</button>
+                </div>
+                <div class="video-duration-slider hidden" id="chatCustomDurationControl" data-page-node-id="BTlPcH5YBfH5r9bABb9FpG">
+                  <div class="video-duration-input-box" data-page-node-id="CHERF5pDpz4IWwdxCbdtsE">
+                    <input type="number" id="chatCustomDurationInput" min="4" max="30" step="1" value="5" inputmode="numeric" aria-label="自定义视频时长" data-page-node-id="QPfnCUyxeQDOGIAOoyd8Vz">
+                    <span data-page-node-id="p8njxts7Q4kRszFWMdrtsP">秒</span>
+                  </div>
+                  <div class="video-duration-range-popover" data-page-node-id="4FBQMfnTeYEswizbxe6StV">
+                    <input type="range" id="chatCustomDurationRange" min="4" max="30" step="1" value="5" aria-label="拖动选择视频时长" data-page-node-id="Jpnx0DQ8d05aLBa9ltTKXC">
+                  </div>
+                </div>
+                <input type="hidden" id="chatDurationSelect" value="5" data-page-node-id="dgHaJLxIthKq729HP0BvQ7">
+              </div>
+
+              <button id="btnUploadChatMedia" class="apple-btn-secondary" type="button" title="支持选择多张参考图或视频" data-page-node-id="RqB4f0kH4cSIL7Gd0M0uBl">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="LKnfEuFftaofMMWBkb8rvi"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" data-page-node-id="HODMdC6q4LRqKUX4FSroCv"></rect><circle cx="8.5" cy="8.5" r="1.5" data-page-node-id="sO8ybmhsCX2LpBM0cmad53"></circle><polyline points="21 15 16 10 5 21" data-page-node-id="RPWyXAUQDbkp5kBivsanrx"></polyline></svg>
+                <span id="chatUploadMediaLabel" data-page-node-id="LYD9SgWTzWSup1o699YiqD">上传参考图/视频</span>
+              </button>
+              <input type="file" id="chatMediaInput" accept="image/*,video/*" multiple style="display: none;" data-page-node-id="BY9zD5dVn7DMvTSmHgSR7F">
+            </div>
+
+            <!-- 消息发送表单 (相对定位锚定 @ 浮窗) -->
+            <form id="aiChatForm" class="ai-chat-form" style="position: relative;" data-page-node-id="sOrw8oxU03SYrBrdBGikdH">
+              <!-- @ 快捷引用浮动 Popover (锚定在对话框正上方) -->
+              <div id="atMenuPopover" class="at-flyout-popover hidden" data-page-node-id="NqcVcy3pVEjAvAArEIIRnL">
+                <div id="atMenuList" class="at-flyout-list" data-page-node-id="n3REAB6bHL9BaolKIleg1x"></div>
+              </div>
+              <div id="aiChatTextarea" class="ai-chat-prompt-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="创作提示词" data-placeholder="描述你想要生成的视频画面（例如：一条在森林清澈溪流中游动的锦鲤，阳光穿透水面...）" data-page-node-id="mtTSDZLwksAFr3GGCuQRex"></div>
+              <button type="submit" id="btnSubmitAiChat" class="btn btn-primary btn-lg" aria-label="发送生成" data-page-node-id="ePAHn5R7qT9YilHjlYns1H">
+                <span id="chatSubmitButtonLabel" class="chat-submit-icon" aria-hidden="true" data-page-node-id="h2wBFUTB81nx7HfqB8qDGb">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="y26HiecrOdGLvQtcevI79e">
+                    <path d="M22 2 11 13" data-page-node-id="uBGLMpwhSR4I3jEdsJbPne"></path>
+                    <path d="m22 2-7 20-4-9-9-4Z" data-page-node-id="RDJhizxgZqEAadWAzvqL9g"></path>
+                  </svg>
+                </span>
+                <span id="creationPricePreview" class="creation-price-preview" aria-live="polite" data-page-node-id="UsG9b5lQBkXgIiw6BPQiAI">--</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- 页面：🎨 画布模式 (深度打通版 AI 无限画布工作台) -->
+      <section id="viewCanvasMode" class="page-view hidden" style="position: relative; width: 100%; height: calc(100vh - 70px); overflow: hidden; display: flex; flex-direction: column; background: #e6e6e6;" data-page-node-id="ApB754vj2W31VTZs9br2qp">
+        <!-- 画布顶部控制工具栏 -->
+        <div class="canvas-top-toolbar" data-page-node-id="8Hcy2NhDK4JWf6y3EpvTxj">
+          <div class="canvas-toolbar-group" data-page-node-id="TTnBKHmxXpdojghZie0xSb">
+            <button type="button" class="canvas-back-arrow-btn hidden" id="btnCanvasBackArrow" onclick="toggleCanvasFullscreen()" title="退出全屏沉浸模式" data-page-node-id="4UGSJJPeLtJ9nr3LuSbFJb">←</button>
+            <button type="button" class="canvas-tool-btn" id="btnCanvasAddTextNode" onclick="addCanvasTextNode(event)" title="添加提示词文本节点" data-page-node-id="ed6C2z7cmuI4Pe3BPXHmsY">
+              <span data-page-node-id="3gtMtOqCUFeF6Plm8EdEsn">📝 提示词节点</span>
+            </button>
+
+            <button type="button" class="canvas-tool-btn" id="btnCanvasAddAssetNode" onclick="addCanvasAssetNode(event)" title="添加参考图/资产节点" data-page-node-id="AGu9krPNgdTKSt0HUlBAun">
+              <span data-page-node-id="Wp0UezkQHxKHnDMmBDsTOT">🖼️ 参考图节点</span>
+            </button>
+
+            
+            <button type="button" class="canvas-tool-btn primary-purple" id="btnCanvasAddAgentNode" onclick="addCanvasAgentNode(event)" title="添加 AI 智能体处理节点" data-page-node-id="8FVnk9xXo0X2gVCIJ5SSux">
+              <span data-page-node-id="WiHmhv9TONZsHGU7G5B9LS">🤖 智能体节点</span>
+            </button>
+
+            <button type="button" class="canvas-tool-btn primary" id="btnCanvasAddVideoNode" onclick="addCanvasVideoNode(event)" title="添加 AI 视频生成节点" data-page-node-id="3YYtp2p2hiKtDtIHrPp8az">
+              <span data-page-node-id="zJ7I8wHdEjMF9fhC452jHO">🎬 视频生成节点</span>
+            </button>
+            <button type="button" class="canvas-tool-btn" id="btnCanvasAddAudioNode" onclick="addCanvasAudioNode(event)" title="添加参考音频节点" data-page-node-id="yEXsXIt5Of89oI2N76BNP1">
+              <span data-page-node-id="de390P0Q9MZ3d98McytOPl">🎧 音频节点</span>
+            </button>
+          </div>
+
+          <div class="canvas-toolbar-group" data-page-node-id="iq4COFDvApAv36nz793RFs">
+            <button type="button" class="canvas-tool-btn" id="btnCanvasToggleDrawer" title="展开/收起资产库抽屉" data-page-node-id="fX17hpzCye1FeF31J8Dc3k">
+              <span data-page-node-id="MHuLZ26gHVgPeb2PkzRMrX">📦 资产库</span>
+            </button>
+            <button type="button" class="canvas-tool-btn" id="btnCanvasLoadPreset" title="添加预设工作流模板到当前画布" data-page-node-id="vKKnGugsFszzovvEi38gVQ">
+              <span data-page-node-id="fXFrxSd2fYfADjtsEMcb2a">📂 预设模版</span>
+            </button>
+            <button type="button" class="canvas-tool-btn" id="btnCanvasExport" title="导出画布为 JSON 文件保存到电脑" data-page-node-id="eHgKS5ht0tBShazu2ak5VO">
+              <span data-page-node-id="ovXzz0QNVaxg4NosHsyPJL">📥 导出 JSON</span>
+            </button>
+            <button type="button" class="canvas-tool-btn" id="btnCanvasImport" title="从电脑导入 JSON 画布文件" data-page-node-id="CsFlEL90c8tqpluxETG4BG">
+              <span data-page-node-id="FHzBACsGCQiXqQfltG8B1M">📤 导入 JSON</span>
+            </button>
+            <input type="file" id="canvasFileInput" accept=".json" style="display: none;" data-page-node-id="2VA5jATEhhxFZTuejiKU0f" />
+            <button type="button" class="canvas-tool-btn danger" id="btnCanvasClear" onclick="openClearCanvasConfirmModal()" title="清空当前画布节点" data-page-node-id="z5EKR0bdfMQMCHyOZSFTtW">
+              <span data-page-node-id="kIvEZV4aVrVGTEBegObqON">🧹 清空</span>
+            </button>
+            <button type="button" class="canvas-tool-btn success" id="btnCanvasSave" onclick="openSaveCanvasLibraryModal()" title="保存画布至画布库" data-page-node-id="t6EFhBuu4pbBic728rV0Zn">
+              <span data-page-node-id="HuuFDrfDsstGVzmcsVQvfM">💾 保存画布</span>
+            </button>
+            
+          </div>
+        </div>
+
+        <!-- 画布主体区域 -->
+        <div class="canvas-main-workspace" id="canvasWorkspace" data-page-node-id="NRSGzM7dlMRMkEkLDf3mXx">
+          <!-- 右上角快捷全屏放大的简洁图标按钮 -->
+          <button type="button" id="btnFloatingCanvasFullscreen" class="canvas-floating-fullscreen-btn" onclick="toggleCanvasFullscreen()" title="点击开启全屏沉浸式画布" data-page-node-id="maN5TEADEjDyEv3gZwyHem">
+            <span data-page-node-id="8vIDe66hbLQBN3EeeWyzrj">⛶</span>
+          </button>
+          <svg id="canvasSvgLayer" class="canvas-svg-layer" data-page-node-id="jWJScXVPXQkgMkjHFs1sQW">
+            <defs data-page-node-id="oESNnsJFMvucB7AmK6kJ0I">
+              <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%" data-page-node-id="xcFmZgT7WiNx7KDrZjNo32">
+                <stop offset="0%" stop-color="#2563eb" data-page-node-id="XNAa0fJtqGpLiQZMVH1a3G" />
+                <stop offset="100%" stop-color="#a855f7" data-page-node-id="XoyRIE2uoSAez9bM6eWDH3" />
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" data-page-node-id="wX8cnNEsvEOeqHmDoCqwkU">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" data-page-node-id="h9RwYSuOuaNZ7VUFToqoI7"/>
+              </marker>
+            </defs>
+          </svg>
+
+          <!-- 节点挂载容器 -->
+          <div id="canvasNodesContainer" class="canvas-nodes-container" data-page-node-id="YHDz0NNZ1TvrWunKnYKVfC"></div>
+
+          <!-- 画布下方居中浮动缩放控制条 -->
+          <div id="canvasZoomFloatingBar" class="canvas-zoom-floating-bar" data-page-node-id="LACWIfv5KnYGWFBP3HfHlB">
+            <button type="button" class="zoom-btn" id="btnCanvasZoomOut" title="缩小画布 (Ctrl + 滚轮向下)" data-page-node-id="CDgimZUSpw8I7GclArandf">🔍-</button>
+            <span id="canvasZoomText" class="zoom-percentage-text" data-page-node-id="CJHLCCcY8HgzQfCRVX7tDQ">100%</span>
+            <button type="button" class="zoom-btn" id="btnCanvasZoomIn" title="放大画布 (Ctrl + 滚轮向上)" data-page-node-id="SCrLy9U9e17TEzmp4JMGXj">🔍+</button>
+            <button type="button" class="zoom-btn reset-btn" id="btnCanvasResetZoom" title="重置视口 100%" data-page-node-id="JPOuYndWzCr5wjEcld5rse">适应画板</button>
+            <button type="button" class="zoom-btn canvas-bulk-start-btn" id="btnCanvasBulkStart" title="请先选择要执行的图片或视频节点" aria-label="批量开始选中的图片和视频节点" disabled data-page-node-id="LnEBp6nEioPINsg4vT7afE">▶</button>
+          </div>
+
+          <!-- 画布右侧素材抽屉 -->
+          <div id="canvasDrawer" class="canvas-drawer closed" data-page-node-id="lnqVCCzhL10FUkztZMJGRF">
+            <div class="canvas-drawer-header" data-page-node-id="7WKa7lz5RdJorOujaNL7ux">
+              <span data-page-node-id="azZCXGQzaO7KGfSGNZw7Tt">📦 素材与知识库快捷面板</span>
+              <button type="button" id="btnCloseCanvasDrawer" class="btn-close-mini" data-page-node-id="M6kFmdxqlxARF50Wu2PIZ4">✕</button>
+            </div>
+
+            <div class="canvas-drawer-tabs" id="canvasDrawerTabs" data-page-node-id="kVvNmsml7znskPz7p8jGqb">
+              <button type="button" class="drawer-tab active" data-tab="assets" data-page-node-id="97DtWCzQIFfvR9cMQG1gxf">📦 资产库素材</button>
+              <button type="button" class="drawer-tab" data-tab="prompts" data-page-node-id="MjFbrSVvQujUdYFMCM3omU">📝 提示词库</button>
+            </div>
+
+            <div id="canvasDrawerContent" class="canvas-drawer-content" data-page-node-id="rQN9xasCeg9kIf4zqxgZGG"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 页面 6：📜 长剧本创作中心 (4 步完整实现：左侧 AI 聊天 + 右侧 预览与视频渲染) -->
+      <section id="viewLongScriptGen" class="page-view hidden" style="width: 100%; height: calc(100vh - 70px); overflow: hidden; display: flex; flex-direction: row; background: #f8fafc; color: #0f172a;" data-page-node-id="RGjdVMBXGZC9AflQK8afNM">
+        
+        <!-- 【步骤1】左侧固定分栏：AI 对话协同区 (宽度 400px) -->
+        <div id="longScriptChatPanel" class="long-script-chat-panel" ondragenter="handleLongScriptDragOver(event)" ondragover="handleLongScriptDragOver(event)" ondragleave="handleLongScriptDragLeave(event)" ondrop="handleLongScriptDrop(event)" style="width: 420px; min-width: 360px; max-width: 450px; display: flex; flex-direction: column; background: #ffffff; border-right: 1px solid #e2e8f0; height: 100%; flex-shrink: 0;" data-page-node-id="uDNCOi0qYuOTDIlSLB9e8l">
+          
+          <!-- 顶部 Header 状态栏 -->
+          <div style="padding: 12px 16px; background: #ffffff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;" data-page-node-id="FHiLsyORhT5BPje8GHnoba">
+            <div style="display: flex; align-items: center; gap: 8px;" data-page-node-id="cCq2GSRgUCGWTt6NbeNDd0">
+              <span style="font-size: 1.1rem; color: #2563eb;" data-page-node-id="qhYGgTc4WQm1UPmZe2cPQt">🤖</span>
+              <span style="font-weight: 700; font-size: 0.9rem; color: #0f172a;" data-page-node-id="9luMIOfdOpvXnLGaVxQABH">AI 剧本协同导演</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;" data-page-node-id="TWtZooIjBHKuIPRtWzShED">
+              <button type="button" onclick="resetLongScriptChat()" class="btn btn-ghost btn-xs" style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;" data-page-node-id="b4O9JegEFJB3eL5OC7TSLM">
+                <span data-page-node-id="ajKRppAD34IwWOucMfugfc">清空对话</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 消息对话滚动区 -->
+          <div id="longScriptChatContainer" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: #f8fafc;" data-page-node-id="QF8DG3VSBRrQefLDayicyj">
+            <div class="ls-chat-msg ai-msg" style="display: flex; gap: 10px;" data-page-node-id="CKCLDzsPyQF9sPqVQU52no">
+              <div class="ls-avatar" style="width: 30px; height: 30px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0;" data-page-node-id="Y1kpY2kER5UqT98ZkfZHM5">AI</div>
+              <div class="ls-bubble" style="background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 12px; padding: 12px 14px; max-width: 88%; font-size: 0.85rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);" data-page-node-id="qrb0i3oKwtqeWGVzA5GOxm">
+                <p style="margin: 0; font-weight: 600; color: #0f172a; line-height: 1.5;" data-page-node-id="KLhta0QXalZQ76mtxylcDb">有什么想法，尽管和我说说。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部 AI 输入框 -->
+          <div style="padding: 14px 16px; background: #ffffff; border-top: 1px solid #e2e8f0;" data-page-node-id="bTYEmLSrrB7scAqGv8b72A">
+            <div id="longScriptChatInputCard" class="ls-chat-input-card" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);" data-page-node-id="z3fJd8ynbSVlUkGEbeFp7z">
+              <div class="ls-drop-hint" aria-hidden="true" data-page-node-id="HW6mrOLlDked3vQnLTnC70">松开以上传图片</div>
+              <div id="longScriptAttachmentSummary" class="ls-attachment-summary" aria-live="polite" data-page-node-id="nECfrXIjASPZr7BXv2263r"></div>
+              <div id="longScriptAttachmentPreview" class="ls-attachment-preview" aria-live="polite" data-page-node-id="c2YILLEB0ixoSjHIbxrXZg"></div>
+              <textarea id="longScriptChatInput" placeholder="输入剧本想法，也可以上传图片一起讨论..." rows="2" style="width: 100%; background: transparent; border: none; outline: none; color: #0f172a; font-size: 0.85rem; resize: none; line-height: 1.5; font-family: inherit;"></textarea>
+              <input id="longScriptImageInput" type="file" accept="image/*" multiple hidden onchange="handleLongScriptImageInput(this)" data-page-node-id="0LkLV5ctxCvPNsYFwKZ0uH">
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 8px; margin-top: 2px;" data-page-node-id="rEGXzt8Ja0mMfzjE3M5Jm3">
+                <div style="display: flex; align-items: center; gap: 6px; min-width: 0;" data-page-node-id="5UcFrNXlZ3gaUFIgpm3eQQ">
+                  <button type="button" id="btnLongScriptUploadImage" class="ls-attach-tool" data-tooltip="图片上传" aria-label="图片上传" data-page-node-id="vPyyKzh4GupVtvRpWaZAWw">
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="uecnIy0PP8MmzZuJ5a3vw0"><rect x="3" y="3" width="18" height="18" rx="2" data-page-node-id="2OAzs7RZtF5RjXwGPCMPKe"></rect><circle cx="8.5" cy="8.5" r="1.5" data-page-node-id="ziq25SBTZk1bS5DeUbfHCy"></circle><path d="m21 15-5-5L5 21" data-page-node-id="CO1egUgmObAJ1CnVQDXjle"></path></svg>
+                  </button>
+                  <button type="button" id="btnLongScriptAssetLibrary" class="ls-attach-tool" data-tooltip="从资产库导入" aria-label="从资产库导入" data-page-node-id="8C9j7XA6bda3YKNdDOWwBf">
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="iSBnUzX8fombrU7gqVKRqa"><path d="M3 7h5l2 2h11v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" data-page-node-id="XfbkKX3RF3uSH9DYfz2tvs"></path><path d="M3 7V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2" data-page-node-id="YDtzjklVQaLroqQ0xKypEa"></path></svg>
+                  </button>
+                  <label id="longScriptModelBadge" class="long-script-model-field" aria-label="长剧本模型" data-page-node-id="Drvgl7zJsBCCZxA2imLpAg">
+                    <select id="longScriptModelSelect" class="form-control long-script-model-select" aria-label="选择长剧本模型" data-page-node-id="VhERg3lQ0FqDRQxUmPs5Vg"></select>
+                  </label>
+                </div>
+
+                <!-- 【步骤2】发送按钮 -->
+                <button type="button" id="btnSendLongScriptChat" onclick="sendLongScriptChatMessage()" class="btn btn-primary btn-sm" style="padding: 5px 14px; font-weight: 600; border-radius: 10px; font-size: 0.8rem; background: #2563eb; color: #ffffff; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);" data-page-node-id="UDUrEkf1IfEJMCx4UEZ7FZ">
+                  <span id="longScriptSendButtonLabel" data-page-node-id="8bgQqfUBANZOnDx5LYvKyE">发送 AI</span>
+                  <span id="longScriptPricePreview" class="send-price-badge" aria-live="polite" data-page-node-id="ZSnWtwUmyH97dd3WtqehXT">积分预算：读取中...</span>
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="yOl7d2Cx48EuFqW8o57Joi"><line x1="22" y1="2" x2="11" y2="13" data-page-node-id="qVZZF8ATQYfQxmn5nBtJev"></line><polygon points="22 2 15 22 11 13 2 9 22 2" data-page-node-id="p0OsDkwViLzJgt5FdpMrHQ"></polygon></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+                        <!-- 【步骤1/3/4】右侧固定分栏：Gemini Canvas 级内置浏览器实时预览视口 -->
+        <div id="longScriptRightPanel" style="position: relative; flex: 1; min-width: 0; padding: 14px; overflow-y: auto; background: #f1f5f9; height: 100%; display: flex; flex-direction: column; gap: 12px;" data-page-node-id="hDJZXkFvYgXFfCZZpAS1ut">
+          
+          <!-- Loading 遮罩 (思考输出完前显示小熊透明 GIF) -->
+          <div id="longScriptRightLoadingOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(6px); z-index: 100; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; border-radius: 14px;" data-page-node-id="4uEkFIphGh2XbWMRJa6kBR">
+            <div style="width: 110px; height: 150px; display: flex; align-items: center; justify-content: center; position: relative;" data-page-node-id="pNoKcPsoFPpAz6pHqef6Nn">
+              <img id="longScriptLoadingImage" src="assets/loading-bear.gif" alt="剧本推演中" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" data-page-node-id="fIEDKAbMrVgBUyhW7LwxOp" />
+            </div>
+            <p id="longScriptRightLoadingTitle" style="margin: 16px 0 0 0; font-weight: 700; font-size: 0.95rem; color: #38bdf8; letter-spacing: 0.5px;" data-page-node-id="ocMFqUkYmcFVHoCGZN5nAJ">剧本推演中...</p>
+          </div>
+
+          <!-- 🌐 干净全屏剧本预览视口 -->
+          <div id="geminiCanvasBrowserCard" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; flex: 1; display: flex; flex-direction: column; position: relative;" data-page-node-id="kwuDNrotF274oC5YqeYUIr">
+
+            <!-- 预览操作按钮：一键应用 + 沉浸式全屏 -->
+            <div class="long-script-preview-actions" style="position: absolute; top: 12px; right: 12px; z-index: 40; display: flex; gap: 8px; align-items: center;" data-page-node-id="80O4VNkJzr3rNpMPnp6sUD">
+              <button type="button" id="btnLongScriptRollback" class="ls-preview-icon-button is-disabled" onclick="rollbackLongScriptVersion()" title="回退至上一版本" aria-label="暂无可回退版本" disabled data-page-node-id="yEAeYkRYyFiGOViInR5TE7">
+                <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="pNznrImGIZ7Aq3Uz6DuGNF">
+                  <path d="M9 14 4 9l5-5" data-page-node-id="97zpGtimo42oku8HQnlvY7"></path><path d="M4 9h10a6 6 0 0 1 6 6v1" data-page-node-id="x8qCVfyekAsA2qbQOZdMye"></path>
+                </svg>
+              </button>
+              <button type="button" id="btnLongScriptExportMarkdown" class="ls-apply-menu-trigger ls-export-md-button" onclick="exportLongScriptMarkdown()" title="一键导出当前长剧本为 Markdown 文件" data-page-node-id="DSkEPJLbDhRDMDce1BEoAL">
+                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="YN7q9qAKSMMODYEaOAbJv3">
+                  <path d="M12 3v12" data-page-node-id="AzlxK0usuMctKjVKM6ryro"></path><path d="m7 10 5 5 5-5" data-page-node-id="tk8EtAxhDsmUKyWOXlInKd"></path><path d="M5 21h14" data-page-node-id="D7mx9aJBTXVoTEtrTGBVWx"></path>
+                </svg>
+                <span data-page-node-id="x1UL9S2hmcOUAe8T5boR31">导出 MD</span>
+              </button>
+              <div class="ls-apply-menu" onmouseenter="openLongScriptApplyMenu()" onmouseleave="scheduleCloseLongScriptApplyMenu()" data-page-node-id="pr7Ptp87VLfzOMdgbc4nyn">
+                <button type="button" class="ls-apply-menu-trigger" onclick="toggleLongScriptApplyMenu(event)" title="选择应用目标" data-page-node-id="AlVB6ZqeEnlDQaVFhd5zh3">
+                  <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="iO1nu2OeKG7tEa8MWdh7DY">
+                    <path d="M12 3v12" data-page-node-id="CAL2xCl8diS6a54Ud6rK3B"></path>
+                    <path d="m7 10 5 5 5-5" data-page-node-id="2BJjs7RvNjK79zTn6nd4C8"></path>
+                    <path d="M5 21h14" data-page-node-id="esjDNHZ0v4LYHZGCl1Y77C"></path>
+                  </svg>
+                  <span data-page-node-id="uhpYF7Jcn1nM7EzGqo6Aoj">一键应用</span>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="zDeD1awvlLcPLGypfIQpQC"><path d="m6 9 6 6 6-6" data-page-node-id="Es6xceXZy29DgQCTgp7scW"></path></svg>
+                </button>
+                <div id="longScriptApplyMenu" class="ls-apply-menu-popover" role="menu" data-page-node-id="0M44s3Ut7BPe4FuqbAunKH">
+                  <button type="button" onclick="openLongScriptConversationApplyModal()" role="menuitem" data-page-node-id="YdiJCRQavPIPkYSRDWHpFZ">应用到对话创作</button>
+                  <button type="button" onclick="openLongScriptCanvasApplyModal()" role="menuitem" data-page-node-id="uLxqJcTf6WdbcMGC4BqQR5">应用到画布</button>
+                </div>
+              </div>
+              <button type="button" onclick="toggleLongScriptFullscreen()" title="沉浸式全屏预览" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s ease;" data-page-node-id="ey7VDf17JpudOhnGqguLJY">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="#475569" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="atsETN9RSjrBscmQxwsXPu">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3" data-page-node-id="KTkAAyeYa7ZeQGmv2Afomh"></path>
+                  <path d="M21 8V5a2 2 0 0 0-2-2h-3" data-page-node-id="EnGihExB6UHgvhx1znGEpR"></path>
+                  <path d="M3 16v3a2 2 0 0 0 2 2h3" data-page-node-id="quwjSIHa9db33eBQSBPJJI"></path>
+                  <path d="M16 21h3a2 2 0 0 0 2-2v-3" data-page-node-id="dsx19KRPoY3Wrn2evMG9a9"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- 浏览器主显示区：全屏 iframe 沙盒 -->
+            <div style="position: relative; flex: 1; height: 100%; width: 100%; background: #ffffff;" data-page-node-id="8eb4HVfuplOksoIDnBuDV4">
+              <iframe id="geminiCanvasBrowserIframe" style="width: 100%; height: 100%; border: none; background: #ffffff;" sandbox data-page-node-id="dc4OwXpuKc6pIxRI3YSDue"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 多角度创作：虚拟摄像机选角 + 现有图片 API 生成 -->
+      <section id="viewMultiAngle" class="page-view hidden multi-angle-page" data-page-node-id="wOs0JnLrklA7QHIbFywTTG">
+        <div class="multi-angle-workbench" data-page-node-id="w11THhfQZW1icDtz5ACyXg">
+          <main class="multi-angle-stage-card" data-page-node-id="kM1VIq9ECheDGa5AzVDTLp">
+            <div class="multi-angle-stage-head" data-page-node-id="s80MJErv4NSSuiuA6O3Q4i">
+              <div data-page-node-id="NdlLE1ApgvDD6EvyfW7M3P">
+                <h3 data-page-node-id="0qwfQFGJfp5glAyvs3n5Ts">虚拟摄像机</h3>
+                <p data-page-node-id="zI0ZRA2IFYZBHSW1SruEXr">拖动环绕·滚轮调整距离·中央图片仅作为视角参考</p>
+              </div>
+              <div class="multi-angle-camera-readout" id="multiAngleCameraReadout" data-page-node-id="cDOvZ6KsyBdjwbvzP2DJ1m">X 3.46&nbsp;&nbsp;Y 0.87&nbsp;&nbsp;Z 3.46</div>
+            </div>
+            <div id="multiAngleViewport" class="multi-angle-viewport" tabindex="0" aria-label="多角度摄像机控制区" data-page-node-id="skvusXq1bgvCLbMKMrMEpW">
+              <canvas id="multiAngleCanvas" data-page-node-id="zCPXO1ptjEsaAWaFV5D2Mf"></canvas>
+              <div id="multiAngleDropOverlay" class="multi-angle-drop-overlay" aria-hidden="true" data-page-node-id="4i07vsVewIT4S5V0qEWHTz">
+                <div class="multi-angle-drop-icon" data-page-node-id="k99diiZPLxHWZJ4mzMm0cE">⇩</div>
+                <strong data-page-node-id="tIEMXylJtMWbEdpG4Q7W9F">松开以上传图片</strong>
+                <span data-page-node-id="sIvVdJvvGJPo3ah162MDaA">支持 JPG、PNG、WEBP</span>
+              </div>
+              <div id="multiAngleEmpty" class="multi-angle-empty" data-page-node-id="WxkdrDaOYqfBBsTbBqgG8F">
+                <div class="multi-angle-empty-icon" data-page-node-id="miQ01BJM5iJcJ7EuGTMmM5">◈</div>
+                <strong data-page-node-id="OKtTM9Z9pYg1NshaVY4PrN">先上传一张原始图片</strong>
+                <span data-page-node-id="nwPGZcfuf1DIBnz2FC6sIk">点击上传，或直接把 JPG、PNG、WEBP 拖到这里</span>
+                <button type="button" id="btnMultiAngleUploadEmpty" class="btn btn-primary" data-page-node-id="V6SVOY4FG2GSTj1PiRJ3tE">上传图片</button>
+              </div>
+              <div class="multi-angle-axis-legend" aria-hidden="true" data-page-node-id="UsTDqZgRi53HoGOZCrnZ5z"><span class="axis-x" data-page-node-id="XVZnTRoyTdJ4nBihtA7TGZ">X</span><span class="axis-y" data-page-node-id="OfXiD3ID17wAodFidlacXi">Y</span><span class="axis-z" data-page-node-id="d8C0X9pSyUiDBOAjXA09eq">Z</span></div>
+              <div class="multi-angle-stage-hint" data-page-node-id="z5dVxOplknKmPmsmG9voAa">拖动调整水平/俯仰·滚轮调整远近</div>
+            </div>
+          </main>
+
+          <aside class="multi-angle-control-card" data-page-node-id="DzG2Z03OyHQn8zYIxKBexn">
+            <div class="multi-angle-source-row" data-page-node-id="uGaC28dwCojRCvgagS7WA8">
+              <div class="multi-angle-source-thumb" id="multiAngleSourceThumb" data-page-node-id="b3OkAN4Ibvkwu3umv3guDX"><span data-page-node-id="NnoCg9LoyHG4Bqh1aZJ0D1">原图</span></div>
+              <div class="multi-angle-source-copy" data-page-node-id="SMziBz2XdGxYyLWBUjq3rF"><strong id="multiAngleSourceName" data-page-node-id="V89kSFNIBhtJVHjqt0hAoQ">尚未上传</strong><small id="multiAngleSourceMeta" data-page-node-id="RQ2MFSB8k0wDPmxnrf8DJg">上传后可选择任意视角</small></div>
+              <button type="button" id="btnMultiAngleUpload" class="btn btn-secondary btn-sm" data-page-node-id="iFoH30vuZBH5zhSbPGYNBO">更换</button>
+              <input type="file" id="multiAngleFileInput" accept="image/jpeg,image/png,image/webp" hidden data-page-node-id="aA4MWgQXwPYDEIDhtyykOI">
+            </div>
+
+            <div class="multi-angle-control-section" data-page-node-id="1GT1OmpiqVDnn2XDX76Q3n">
+              <div class="multi-angle-section-title" data-page-node-id="EecLAFyzNvDryICVFCj3bf"><strong data-page-node-id="W4A796WPedA868WHLa5J6f">摄像机参数</strong><button type="button" id="btnMultiAngleReset" class="btn-link" data-page-node-id="fSeHbj6M9NJhzliE3uqcr8">恢复默认</button></div>
+              <label class="multi-angle-range-row" data-page-node-id="EtEHYqpfNnyQB51QzWBv5r"><span data-page-node-id="TBhYZJbIORP30i6QaxUWRu">水平角</span><input id="multiAngleAzimuth" type="range" min="0" max="360" step="1" value="45" data-page-node-id="ysBauQZTpcdEmS7gjhVRXy"><output id="multiAngleAzimuthValue" data-page-node-id="HYFpzL9YmnX8bQrbNKxzfP">45°</output></label>
+              <label class="multi-angle-range-row" data-page-node-id="IHyMAweEutHWSztoQP8SiG"><span data-page-node-id="BjeRoFKYzaKKG1cDgggbVC">俯仰角</span><input id="multiAngleElevation" type="range" min="-30" max="60" step="1" value="10" data-page-node-id="0yBxiYRsHEJokHqk1sDtqd"><output id="multiAngleElevationValue" data-page-node-id="7sUTpNeL3wbCwHSB6NLQ63">10°</output></label>
+              <label class="multi-angle-range-row" data-page-node-id="whj8fAvX2hjtlQkBPtbTgX"><span data-page-node-id="ywGefzFEb8Nlm0UWDRMjs7">镜头距离</span><input id="multiAngleDistance" type="range" min="2.5" max="8" step="0.1" value="5" data-page-node-id="MfcarVVlSLfTFBcNwFZXOe"><output id="multiAngleDistanceValue" data-page-node-id="vcC1LozcIAD9tDs6UwdTBM">中景</output></label>
+            </div>
+
+            <div class="multi-angle-control-section" data-page-node-id="54gQMgOZ2j8gFdUpLIldFx">
+              <div class="multi-angle-section-title" data-page-node-id="hF53M3fdGBI0JQriW45qPQ"><strong data-page-node-id="iq806h4XepSONP6MlE6HDL">快捷视角</strong><small data-page-node-id="MwdbuROiD6AhuZGK3HUMAa">点击即移动摄像机</small></div>
+              <div class="multi-angle-preset-grid" id="multiAnglePresetGrid" data-page-node-id="rdyduxz9jLRGW2cBmLkBvZ">
+                <button type="button" data-azimuth="0" data-elevation="0" data-label="正面" data-page-node-id="HM564DQc7MBr7QDULiyE32">正面</button>
+                <button type="button" data-azimuth="45" data-elevation="0" data-label="右前" data-page-node-id="Afx1GSvYernKFhIS8KTOjx">右前</button>
+                <button type="button" data-azimuth="90" data-elevation="0" data-label="右侧" data-page-node-id="mnscabUmJZM9Nhu7WvQ3Yq">右侧</button>
+                <button type="button" data-azimuth="135" data-elevation="0" data-label="右后" data-page-node-id="uU5k4LUM3OnlKHXKaAgC4a">右后</button>
+                <button type="button" data-azimuth="180" data-elevation="0" data-label="背面" data-page-node-id="Xljpe5uQSu8rnFhytMIwsp">背面</button>
+                <button type="button" data-azimuth="225" data-elevation="0" data-label="左后" data-page-node-id="uvZzqWG23llPK9oPBf96DM">左后</button>
+                <button type="button" data-azimuth="270" data-elevation="0" data-label="左侧" data-page-node-id="RTEVu60xKYTuAJ1RpPheqv">左侧</button>
+                <button type="button" data-azimuth="315" data-elevation="0" data-label="左前" data-page-node-id="OP0IXTjrkIqLCRmAFoh007">左前</button>
+                <button type="button" data-azimuth="0" data-elevation="45" data-label="俯视" data-page-node-id="iqysJH4YBFdQxxKbV5W1J0">俯视</button>
+                <button type="button" data-azimuth="0" data-elevation="-25" data-label="仰视" data-page-node-id="FHuoEbu75fTJ2YxXqcYlmA">仰视</button>
+              </div>
+              <label class="multi-angle-batch-toggle" data-page-node-id="7dC8OL62oPWsQnJHiniHKL"><input id="multiAngleBatchMode" type="checkbox" data-page-node-id="yyRd6FgSST9oBXwQvGgjy0"><span data-page-node-id="qBMSY4NlDHnFtxX4UE5SYA">批量选择角度</span><small data-page-node-id="N3DHADgW6YRoACSXobn8GF">开启后点击多个快捷视角</small></label>
+            </div>
+
+            <div class="multi-angle-control-section compact" data-page-node-id="GesqfztgtPqDupbLGzSjHI">
+              <label class="multi-angle-field" data-page-node-id="FNzQ8DA9dlE7dn8F9z5Wnm"><span data-page-node-id="tFvLooAWx6cxthbCHxVfGp">补充提示词</span><textarea id="multiAnglePrompt" rows="2" maxlength="1000" placeholder="可选：补充背景、光线或构图要求，不需要重复填写角度"></textarea></label>
+              <div class="multi-angle-setting-row" data-page-node-id="DvfhrFkcwIGmKgneJI8tBJ">
+                <label data-page-node-id="5wqw7vZHa0j3ChWe3uYT2R"><span data-page-node-id="CL5Aoo9dlgGko8mfrQ8KsT">图片比例</span><select id="multiAngleAspect" data-page-node-id="MKENjqmULUn2isBBF9A5uC"><option value="1:1" data-page-node-id="IqrYkA5XOBJY0Aa1z11niQ">1:1</option><option value="16:9" data-page-node-id="nEG4JYBhBvGFfD2lpiEWbI">16:9</option><option value="9:16" data-page-node-id="mkJDXtlkCmzbdYDWtZQKrB">9:16</option><option value="4:3" data-page-node-id="uNA7lxOnolosPqgALZIafr">4:3</option></select></label>
+                <label data-page-node-id="ntVgq46k92v8uvX1PD1bXM"><span data-page-node-id="8G4jjMdPmRUQwIWl30pcrp">图片模型</span><div id="multiAngleModel" class="multi-angle-model-display" data-page-node-id="OMCF5G8Zt1zvtq5wlTggsJ">读取中...</div></label>
+              </div>
+            </div>
+
+            <button type="button" id="btnMultiAngleGenerate" class="multi-angle-generate-btn" disabled data-page-node-id="AYJ1RqIyMVV5gya8sDgPEm">
+              <span data-page-node-id="NsDUZca9bl3bda2aasEK9v">生成对应角度</span>
+              <small id="multiAnglePricePreview" data-page-node-id="OUgfQIUp1xt2czNWcaIoTJ">积分预算：--</small>
+            </button>
+          </aside>
+        </div>
+
+        <section class="multi-angle-results-section" data-page-node-id="Q70M9CYnKBKx61SF84xdIV">
+          <div class="multi-angle-results-head" data-page-node-id="W95yen13sRKbtxDWcelo7D"><div data-page-node-id="3YWn9PR8opXV1L1zJqR1W2"><h3 data-page-node-id="XqueMPnCaoyJnL3tdQEF8q">生成结果</h3><p id="multiAngleResultsSummary" data-page-node-id="E6uJ9oYlUJcw4mId7bFG03">还没有生成记录</p></div><button type="button" id="btnMultiAngleClearResults" class="btn btn-secondary btn-sm" data-page-node-id="leVFc05kM7CY3GpK0melM6">清空记录</button></div>
+          <div id="multiAngleResults" class="multi-angle-results-grid" data-page-node-id="8Bu7O6C1mQi4alCPbkbKtU"><div class="multi-angle-results-empty" data-page-node-id="XWn8SdegDzFBnpMf9yhJuX">选择视角后点击生成，结果会保留在这里</div></div>
+        </section>
+      </section>
+
+      <section id="viewCreationHistory" class="page-view hidden creation-history-page" data-page-node-id="KgD6kzw1khcFEsfP9xH977">
+        <div class="creation-history-toolbar" data-page-node-id="hznuiC2clRBFaLXV4xdkRE">
+          <div data-page-node-id="GJiX7O8tHkmoVZsrBX2xHQ">
+            <h3 data-page-node-id="ihY8Ap14HOZZ5cp1xPxg56">历史记录</h3>
+            <p id="creationHistoryCount" data-page-node-id="TS8DF7k5H0KMylETWn9Lm0">0 个生成结果</p>
+          </div>
+          <div class="creation-history-view-switch" role="group" aria-label="历史记录视图" data-page-node-id="i4RiLa7GYwjLPOmtRnyxwI">
+            <button type="button" id="btnCreationHistoryListView" class="active" title="按会话查看" aria-label="按会话查看" data-page-node-id="aAuPxMBjJ1FaGboTDeYA0G">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="Nt4nUqPomAwtodpiqhyadF"><line x1="8" y1="6" x2="21" y2="6" data-page-node-id="sGHuA3PLYFMROEFHbQe61A"></line><line x1="8" y1="12" x2="21" y2="12" data-page-node-id="pxoKTwgeDYtMZ7CSsTzyB1"></line><line x1="8" y1="18" x2="21" y2="18" data-page-node-id="MGrNy3LMJ2GLOQCfD7aEPc"></line><circle cx="3" cy="6" r="1" data-page-node-id="qqT0iZGstjk7zqO5fH6ynQ"></circle><circle cx="3" cy="12" r="1" data-page-node-id="9zfoe0TOkaAHcTgoLAAuZf"></circle><circle cx="3" cy="18" r="1" data-page-node-id="aqDfCxOq1FnfjFDGjE0GGF"></circle></svg>
+            </button>
+            <button type="button" id="btnCreationHistoryGridView" title="全部媒体" aria-label="全部媒体" data-page-node-id="8cGhBpgGFHsRHO6qFjoR6H">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="6sXkdJjVFSpRxSKnJZZKCq"><rect x="3" y="3" width="7" height="7" data-page-node-id="jobayIBTIoHw6tEE0mpDIV"></rect><rect x="14" y="3" width="7" height="7" data-page-node-id="tob5izkXbBrdoeJ3oVTPxg"></rect><rect x="3" y="14" width="7" height="7" data-page-node-id="TfEUTbKxrPWLokTAHyPEfZ"></rect><rect x="14" y="14" width="7" height="7" data-page-node-id="S4iu4B4Sj6cEc16HBAr9cO"></rect></svg>
+            </button>
+          </div>
+        </div>
+        <div id="creationHistoryContent" class="creation-history-content" data-page-node-id="4ErwDVqqdElAkmh2xjO89y"></div>
+      </section>
+
+      <!-- 页面：🎨 画布库 (可视化 AI 画布项目大厅) -->
+      <section id="viewCanvasKb" class="page-view hidden" data-page-node-id="8krkIT1m40wMLdaJfGSf39">
+        <div class="page-view-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border-color); background: #ffffff;" data-page-node-id="uJTKmq0pBDyc9cL7HrA2Sb">
+          <div data-page-node-id="wL9UgB6MfmtBz9GF89M9kF">
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a;" data-page-node-id="QdsfhGXsoh0K0Ztrk8LKF4">🎨 画布项目大厅</h3>
+            <span style="font-size: 0.775rem; color: #64748b;" data-page-node-id="iSp953UsEYjwyeuBfcprT6">创建、编辑与管理您的所有 AI 无限画布创作流程项目</span>
+          </div>
+
+          <div style="display: flex; gap: 8px;" data-page-node-id="4BdWUUqJJgunouH9CWKpOk">
+            <button type="button" class="btn btn-primary btn-sm" id="btnNewCanvasProject" data-page-node-id="V1DUp0scUwXGcuTp9irqfe">
+              <span data-page-node-id="0nJFBLHnAMtv4ly17Yx0aw">➕ 新建画布项目</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnImportCanvasKbJson" data-page-node-id="0dKtNGFYkvtLIug1DnRZHF">
+              <span data-page-node-id="zXm1nZCPtv4ekq39HHieW7">📂 导入 JSON 项目</span>
+            </button>
+            <input type="file" id="canvasKbFileInput" accept=".json" style="display: none;" data-page-node-id="xOZWLUoy5wSKlW4e1XpYYA" />
+          </div>
+        </div>
+
+        <div style="padding: 20px;" id="canvasKbMainContent" data-page-node-id="xat2dyKh60w1XfLwI91OPg">
+          <div id="canvasGridContainer" class="canvas-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;" data-page-node-id="VKoU2NNCN2eEB86zKLIQ1o">
+            <!-- 动态渲染画布项目卡片 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 页面 4：🎬 镜头库 (已有镜头知识库表格) -->
+      <section id="viewLensKb" class="page-view hidden" data-page-node-id="85qc9VXasSM6gH3rmipPBz">
+        <!-- ERP 镜头库纯中文 Custom Dropdown 筛选栏 -->
+        <section class="erp-filter-bar" data-page-node-id="MARlhk06FFqOVwEjB2RMaA">
+        <div class="filter-inputs" data-page-node-id="IUCgCN3MMUchrfZTEgTb7v">
+          <div class="select-field" data-page-node-id="kYgEFuGdny5fMVaTnkExRx">
+            <span class="field-label" data-page-node-id="47hYEM3IlNeEyPWmAqHZBJ">🔍 景别：</span>
+            <div class="custom-dropdown" id="dropdownShotSize" data-value="" data-page-node-id="HaQvqooah8Ce8foW8TeyrP">
+              <button type="button" class="dropdown-trigger" data-page-node-id="dxYLtc9fHA65Z4Qu6IZH8D">
+                <span class="dropdown-label" data-page-node-id="o6uhTR9RgQou6szDeMa9Gm">全部景别</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="nUfui1T8JH1zGEsSZvqfk3"><polyline points="6 9 12 15 18 9" data-page-node-id="xeoLnJuQivMyaWz9NSsauI"></polyline></svg>
+              </button>
+              <div class="dropdown-menu" data-page-node-id="5S91hpGCFoU3tlMl4OMNew">
+                <div class="dropdown-item active" data-value="" data-page-node-id="hRlRfCY7BDZGTdZZoaapAb">全部景别</div>
+                <div class="dropdown-item" data-value="特写" data-page-node-id="YTZF3C1o4TWCmbl02U10L5">特写</div>
+                <div class="dropdown-item" data-value="微距" data-page-node-id="s9yqtoFFr3OnYgiH1ioUs1">微距</div>
+                <div class="dropdown-item" data-value="近景" data-page-node-id="ShofrVxCw19GLnHLvayU4k">近景</div>
+                <div class="dropdown-item" data-value="中景" data-page-node-id="3lDyX2hJk3lR79lfIKzGA1">中景</div>
+                <div class="dropdown-item" data-value="全景" data-page-node-id="wjeDMh5RLEEsT34c9Pdo1u">全景</div>
+                <div class="dropdown-item" data-value="大远景" data-page-node-id="NlNeW99t3uzCUZuSEycMNJ">大远景</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="select-field" data-page-node-id="bggSIc1OmeGM635yfwLBaH">
+            <span class="field-label" data-page-node-id="LHCGEnJC1CKPfrjvfo4pyF">🎥 运镜：</span>
+            <div class="custom-dropdown" id="dropdownMovement" data-value="" data-page-node-id="ADSb1h9Yc9XHly1cVx38kJ">
+              <button type="button" class="dropdown-trigger" data-page-node-id="9OdmIbfeU2pHClA6zP0mbp">
+                <span class="dropdown-label" data-page-node-id="JXbfHEUUryQ3IqajsKBM5S">全部运镜</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="6NobquITDRK08jdhFc5TYC"><polyline points="6 9 12 15 18 9" data-page-node-id="0GCXsMB9mnmub6SZAhPYUh"></polyline></svg>
+              </button>
+              <div class="dropdown-menu" data-page-node-id="umqAWfvKCfGIReftsvNWvD">
+                <div class="dropdown-item active" data-value="" data-page-node-id="eOmzAaEKika2ZLMVTQ0BB6">全部运镜</div>
+                <div class="dropdown-item" data-value="静止镜头" data-page-node-id="axb17TowHqoifuFMDM7SJI">静止镜头</div>
+                <div class="dropdown-item" data-value="推镜头" data-page-node-id="nTwv5rVv0yQ3jLHZxFYGCb">推镜头</div>
+                <div class="dropdown-item" data-value="拉镜头" data-page-node-id="solVu7kt68M5ehgjJkaz96">拉镜头</div>
+                <div class="dropdown-item" data-value="摇镜头" data-page-node-id="jRm9becO5IFxGe6R76ARf9">摇镜头</div>
+                <div class="dropdown-item" data-value="平移跟随" data-page-node-id="AyGlezG6dlQhZgCLFF9zlu">平移跟随</div>
+                <div class="dropdown-item" data-value="环绕拍摄" data-page-node-id="n7eheZK6gXJqW6dCkB3YkA">环绕拍摄</div>
+                <div class="dropdown-item" data-value="升降镜头" data-page-node-id="4F2c7k5yHYlYLAnKFbjLn1">升降镜头</div>
+                <div class="dropdown-item" data-value="航拍俯瞰" data-page-node-id="sxbl7Q7j8OzWarcXKoZAkK">航拍俯瞰</div>
+                <div class="dropdown-item" data-value="甩镜头" data-page-node-id="82H7Tql9EgQIjST6TKM92f">甩镜头</div>
+                <div class="dropdown-item" data-value="希区柯克变焦" data-page-node-id="FIWNu0pPCisc78orBfh9FO">希区柯克变焦</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="select-field" data-page-node-id="rPnzVYSNmzuLXqZL6appUF">
+            <span class="field-label" data-page-node-id="zpKv13s6j192GCbBEpH1Mp">📐 视角：</span>
+            <div class="custom-dropdown" id="dropdownAngle" data-value="" data-page-node-id="D3mym2NsgPAEe2yLyeYIoG">
+              <button type="button" class="dropdown-trigger" data-page-node-id="yJVEp1oS30blqJLEcFrMC3">
+                <span class="dropdown-label" data-page-node-id="8EdTbZwvh94GCI92OexEBZ">全部视角</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="r6fK8iglZTkVS40SnsLtZF"><polyline points="6 9 12 15 18 9" data-page-node-id="aK6CLe8VaNJWFGybjg9l9g"></polyline></svg>
+              </button>
+              <div class="dropdown-menu" data-page-node-id="T6Gjt09ykEPF8pgMXNyAKa">
+                <div class="dropdown-item active" data-value="" data-page-node-id="2FCPaXJc9Nkxh6xGLEO2zf">全部视角</div>
+                <div class="dropdown-item" data-value="平视角度" data-page-node-id="cbwGK8PQKcKm5seAdFCpy2">平视角度</div>
+                <div class="dropdown-item" data-value="仰视角度" data-page-node-id="6ahspWzyMln9fV2GoYLeNZ">仰视角度</div>
+                <div class="dropdown-item" data-value="俯视角度" data-page-node-id="RpCSfUGtSgATNgMy9ef8E6">俯视角度</div>
+                <div class="dropdown-item" data-value="鸟瞰视角" data-page-node-id="MgCppAutEHA7VvkY0KQC5a">鸟瞰视角</div>
+                <div class="dropdown-item" data-value="倾斜视角" data-page-node-id="xQJ4LeOgWaaBmPR3OWGQHI">倾斜视角</div>
+                <div class="dropdown-item" data-value="第一人称POV" data-page-node-id="LFNtFcq18R3sm7CaFwm1Vu">第一人称POV</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="select-field" data-page-node-id="lbRdkEl4TficlfnDfQDMO2">
+            <span class="field-label" data-page-node-id="lZc2cb2hQFl6ZF4FkY58Bw">🏷️ 分类：</span>
+            <div class="custom-dropdown" id="dropdownCategory" data-value="" data-page-node-id="dyGueoBFWWhdOzinWiGtFl">
+              <button type="button" class="dropdown-trigger" data-page-node-id="FbdnaUhWS12cUtCmS63LJ9">
+                <span class="dropdown-label" data-page-node-id="ccncroANlYZGbZbd6JXlIV">全部分类</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="HJDrO2sB0mIwfG4VyCiMRp"><polyline points="6 9 12 15 18 9" data-page-node-id="0EjH4ul33jcsXXGSb1vEg2"></polyline></svg>
+              </button>
+              <div class="dropdown-menu" data-page-node-id="VnRrYBai0811BASRhFUjwt">
+                <div class="dropdown-item active" data-value="" data-page-node-id="OfcNFGcgMCFBofTYVFiUPh">全部分类</div>
+                <div class="dropdown-item" data-value="人物肖像" data-page-node-id="90iVLnWl2YFpwoALfT5VF8">人物肖像</div>
+                <div class="dropdown-item" data-value="风光自然" data-page-node-id="wFx2s9gEGVdRsKJAkMA66u">风光自然</div>
+                <div class="dropdown-item" data-value="动作科幻" data-page-node-id="A0E0h6lplGK58Zo5eiPWFt">动作科幻</div>
+                <div class="dropdown-item" data-value="建筑空间" data-page-node-id="7X38aLzRdIDWUWifGXlQyj">建筑空间</div>
+                <div class="dropdown-item" data-value="产品展示" data-page-node-id="ZgII1I42OWGAgCx2VkU38K">产品展示</div>
+                <div class="dropdown-item" data-value="赛博朋克" data-page-node-id="LCEZ1FI5tqGWhjCcKS057i">赛博朋克</div>
+                <div class="dropdown-item" data-value="动画3D" data-page-node-id="rvhb498qJx0tjXjgKJ4aI9">动画3D</div>
+                <div class="dropdown-item" data-value="慢动作" data-page-node-id="oEaFxPzw5cqM24917EMH07">慢动作</div>
+              </div>
+            </div>
+          </div>
+
+          <button id="btnResetFilters" class="btn btn-ghost" title="重置筛选条件" data-page-node-id="FYw9rIOKX5634FCT74QM56">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="YxydELJhOnTG2keFuBAIke"><path d="M23 4v6h-6" data-page-node-id="RDWtG6Z1aug22gcGS5dEpl"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" data-page-node-id="zjrN8NTXKLhPSohCi5fR6V"></path></svg>
+            重置
+          </button>
+        </div>
+
+        <div class="table-meta" data-page-node-id="cDQE8p2RP8vGvDrCIbjYPj">
+          <span data-page-node-id="3UGsqkerQM8PXeAsPvW76d">共找到 <strong id="itemsCountBadge" class="text-primary" data-page-node-id="F49XO1uMOBVfWhxxRN83QV">0</strong> 条镜头数据</span>
+        </div>
+      </section>
+
+      <!-- 镜头库横向 ERP 表格 -->
+      <main class="main-content" data-page-node-id="wbM4g04Qt3prg3aaCKe401">
+        <div class="table-responsive" data-page-node-id="E13KbbrG5xJjq0ZrOPDSfc">
+          <table class="erp-table" data-page-node-id="8KrkVdgieXLZNDQvdDnivz">
+            <thead data-page-node-id="Z0uBUexBfGgBzHpQioOBit">
+              <tr data-page-node-id="CXOM07HkIzFhVdep4ehgdP">
+                <th width="45" data-page-node-id="5JIxIauJnhOcYcBHFLqp8E">#</th>
+                <th width="140" data-page-node-id="sm1JBcC8IwIN50waQ1I56C">视频预览 (Hover播放)</th>
+                <th width="180" data-page-node-id="nGS4HcYAaUOIzusoXIRtND">镜头标题 / 说明</th>
+                <th data-page-node-id="Baroq58ZybpfJakH3kqMpM">⚡ 核心提示词 (Prompt)</th>
+                <th width="100" data-page-node-id="gQfN4DLQQ1jX8cysTTeEim">景别</th>
+                <th width="120" data-page-node-id="TTqziimQ14mkKxUfzFA2a8">运镜</th>
+                <th width="110" data-page-node-id="WzrhPLjlOHivYQC2k8Q5bW">视角</th>
+                <th width="100" data-page-node-id="m7nnSNg4HAhoqsYHSNDeqn">分类</th>
+                <th width="110" class="text-center" data-page-node-id="cv77vskis446QXaLiXukK0">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" data-page-node-id="EaKLhSk5l7Gsi8zbF9rv3f">
+              <!-- JS 动态渲染表格数据 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state hidden" data-page-node-id="MYwzSVlMFHAHdmiTmjFI9X">
+          <div class="empty-icon" data-page-node-id="DarMrdNwK7Fff8x3MqK9qK">📁</div>
+          <h3 data-page-node-id="IlQ4YIuadbnWyfGsuCt9Ki">镜头库中暂无匹配的数据</h3>
+          <p data-page-node-id="3peIznrXuQNTKvr2ujlA7W">请尝试重置筛选或在右上角点击“新建镜头提示词”进行录入。</p>
+          <button id="btnEmptyAdd" class="btn btn-primary" style="margin-top: 12px;" data-page-node-id="ShzC4ZahPC6XAyv5DMmnrS">
+            <span data-page-node-id="eBQPpYWNSfpLnh2zmuTAPF">新建镜头提示词</span>
+          </button>
+        </div>
+      </section> <!-- #viewLensKb -->
+
+      <!-- 页面 5：📝 提示词库 (提示词公式与爆款模板) -->
+      <section id="viewPromptKb" class="page-view hidden" data-page-node-id="s1tXqxAAdyyKR39emKJTc3">
+        <div class="library-page-header" data-page-node-id="Vw9MvhIT6SILqjTuXB6mBU">
+          <div class="library-heading-copy" data-page-node-id="CPFg0fGP5WP3oE4HmTB2OC"><h2 data-page-node-id="KLy9ZHtzsvbLKyl8ZDZHn1">提示词库</h2><p data-page-node-id="T89Ck7gX1rHNWEmEh155HD">个人提示词仅自己可见；系统模板可复制后编辑</p></div>
+          <div class="library-header-actions" data-page-node-id="KPU93nV0njPZKycEjaIlz4">
+            <button id="btnPromptBatchMode" class="btn btn-secondary btn-sm" type="button" data-page-node-id="QTpHs4sDcCcOANF3Dr70bu">批量管理</button>
+            <button id="btnExportPromptLibrary" class="btn btn-secondary btn-sm" type="button" data-page-node-id="56TE8NlCKOTYGOqKiXT2Tr">导出 JSON</button>
+            <label class="btn btn-secondary btn-sm" for="promptLibraryImportInput" data-page-node-id="53mI8DD403CtdC6BAiIxDL">导入 JSON</label>
+            <input id="promptLibraryImportInput" type="file" accept="application/json,.json" hidden data-page-node-id="AsYx25ugNkno5rsh3wdX7c">
+            <button id="btnNewPromptTemplate" class="btn btn-primary btn-sm" type="button" data-page-node-id="zAnqfKzVdiICIRXBY04q0U">新增提示词</button>
+          </div>
+          <div class="library-filter-row" id="promptKbFilterTabs" data-page-node-id="68jC3D7agp3OgXyDtvEhS8">
+            <label class="library-search" data-page-node-id="LWotajVpvLF1YDXKDBmWkP"><span data-page-node-id="XBCiqpwn4IEOZRz6hQFHRs">⌕</span><input id="promptKbSearchInput" type="search" placeholder="搜索标题、内容、标签" data-page-node-id="QWPlp6Vg6ARDhky3e2yEJh"></label>
+            <select id="promptKbCategorySelect" class="form-control library-select" data-page-node-id="IfpkYI3ioJCLenvf5VPvrc"><option value="all" data-page-node-id="MKvlKODDLnvJk0WjQHpsQO">全部分类</option><option value="通用" data-page-node-id="DS3dT23nHkYikapywwLMYB">通用</option><option value="二手新机" data-page-node-id="TlhyrJAc6vnXgCFSreDGNp">二手新机</option><option value="电影画质" data-page-node-id="ZaHrsrUYAcNNg9KcDWCzKv">电影画质</option><option value="卖点爆款" data-page-node-id="XvWtezERdDU96U5KbHw3sm">卖点爆款</option><option value="特写细节" data-page-node-id="rYG494Bu3WeDCRPo9Tgddj">特写细节</option></select>
+            <select id="promptKbTargetSelect" class="form-control library-select" data-page-node-id="F0hIfDOdGHdYGPNbYNgQCV"><option value="all" data-page-node-id="WsHlilqwMUTmEGu7BOb3Lb">图片和视频</option><option value="image" data-page-node-id="FB7EDlu1Odi7Wx0qCTYHwG">仅图片</option><option value="video" data-page-node-id="7Cq6YEX5qdF72J7SKyvpFw">仅视频</option><option value="both" data-page-node-id="M9f3UsSO4LPMCgNCNOtxYw">通用</option></select>
+            <select id="promptKbScopeSelect" class="form-control library-select" data-page-node-id="NY7cxKbFZpuxFjeGMWieB6"><option value="all" data-page-node-id="xBFmhqANSbVgWRf1rwtNTB">全部来源</option><option value="private" data-page-node-id="ULTqoe1gDPAeKDBzAx64ve">我的提示词</option><option value="system" data-page-node-id="KKQqbq1ETCmADlWBbaiHFu">系统模板</option></select>
+            <button id="btnPromptFavoriteFilter" class="library-toggle" type="button" data-page-node-id="Wbf0r2AdUHnCGiAoh0Tbgb">☆ 只看收藏</button>
+            <div id="promptBatchActions" class="library-batch-actions hidden" data-page-node-id="G1gmxwGrZufIyhnX1VuKJm"><span id="promptBatchCount" data-page-node-id="U8sg3H6wDWToYET87ZDEAV">已选 0 项</span><button id="btnDeleteSelectedPrompts" class="btn btn-danger btn-sm" type="button" data-page-node-id="n60iqVhTRz9SNV4aUe41Yq">删除所选</button></div>
+          </div>
+        </div>
+        <div id="promptKbGridContainer" class="library-grid-container" data-page-node-id="02ZftWoL6Qny970VAEcJaF">
+          <!-- 动态渲染提示词模板卡片 -->
+        </div>
+      </section>
+
+      <!-- 页面 6：📦 资产库 (人物、道具、场景 & 已上传资源) -->
+      <section id="viewAssetKb" class="page-view hidden" data-page-node-id="VuIF0JSTfODzTOCWN3JFsB">
+        <div class="library-page-header" data-page-node-id="Kqmsyeof4aDeZunpvbC5YL">
+          <div class="library-heading-copy" data-page-node-id="nXa8Hia0NmNpgCdMBRSR9e"><h2 data-page-node-id="WoWAQ9zcpWyTFGIscbWGAZ">资产库</h2><p data-page-node-id="6QiVbQeS5LuCF5vjayIdq1">一个资产可整理多张图片、视频和音频，并直接用于创作</p></div>
+          <div class="library-header-actions" data-page-node-id="DC27OXgfHpfXmZTTu8j6RE">
+            <button id="btnAssetBatchMode" class="btn btn-secondary btn-sm" type="button" data-page-node-id="WjS5ytcyICBNm45nciEeAE">批量管理</button>
+            <button id="btnNewAsset" class="btn btn-primary btn-sm" type="button" data-page-node-id="Swpzp1SGlyPjwB08lStuuC">新增资产</button>
+          </div>
+          <div class="library-filter-row" id="assetCategoryTabs" data-page-node-id="s0owTmDVPucLxmMSszbZQX">
+            <label class="library-search" data-page-node-id="17wxGumdGu91tnUrkoGQEB"><span data-page-node-id="33c716Hy1qTQBqMAlYrUwT">⌕</span><input id="assetKbSearchInput" type="search" placeholder="搜索资产名称、说明、标签" data-page-node-id="zsWLI2ZCQmdwQp2CuFByaY"></label>
+            <select id="assetKbCategorySelect" class="form-control library-select" data-page-node-id="jYqrnpZKUe6BwLlG6jVjXQ"><option value="all" data-page-node-id="yaTIKL8ChzWGih8DDEC1sM">全部分类</option><option value="人物" data-page-node-id="mbYS5IsWz5TtJUs16x2L7o">人物</option><option value="道具" data-page-node-id="jqNKSzqxRaINPs5sqeS3Gn">道具</option><option value="场景" data-page-node-id="cmr4aCXmH7k7VN3AskI9FM">场景</option><option value="产品" data-page-node-id="70eU8fFvhTqDFHXGK9rhoy">产品</option><option value="其他" data-page-node-id="H2GS3Y38hT1G91vClg3sbS">其他</option><option value="uploaded" data-page-node-id="tsXR2zivymWuupSYbyYBK2">未整理上传</option></select>
+            <select id="assetKbMediaTypeSelect" class="form-control library-select" data-page-node-id="EECNGSB9mLqEKcN8tHOGbc"><option value="all" data-page-node-id="Plyx9fzzIBJ2h26tMUPAF7">全部媒体</option><option value="image" data-page-node-id="nUv0Ed2ySdBKz6oLzrWNOG">图片</option><option value="video" data-page-node-id="tEmzuHwyE3iZF5jgnkVSJP">视频</option><option value="audio" data-page-node-id="A6cH55y2CeoAfwnLEb8o2T">音频</option></select>
+            <select id="assetKbScopeSelect" class="form-control library-select" data-page-node-id="NEzemQwsecFG9dvABdZezY"><option value="all" data-page-node-id="uaH1NzzheH754qjW6AgeHy">全部来源</option><option value="private" data-page-node-id="9E1zkDK1cjY2B4EkS1bbaS">我的资产</option><option value="system" data-page-node-id="cGm8e0M5nqnlJ33iZccAat">系统资产</option></select>
+            <button id="btnAssetFavoriteFilter" class="library-toggle" type="button" data-page-node-id="ZPFg4BSLMU8BKRm2WApdvr">☆ 只看收藏</button>
+            <div id="assetBatchActions" class="library-batch-actions hidden" data-page-node-id="0dlFtvTHS9SnDFJ5yOpJFx"><span id="assetBatchCount" data-page-node-id="B61N1Ooj1CO3qNu6945IeL">已选 0 项</span><button id="btnDeleteSelectedAssets" class="btn btn-danger btn-sm" type="button" data-page-node-id="SIA8bFdFNEugmDPm0fkwqo">删除所选</button></div>
+          </div>
+        </div>
+        <div id="assetGridContainer" class="library-grid-container" data-page-node-id="2uDAAvIBOpfwADbcLElOon">
+          <!-- 动态渲染资产卡片与已上传资源 -->
+        </div>
+      </section>
+
+      <!-- 页面 7：✍️ 剧本创作中心 (灵感扩写与多镜头智能推演) -->
+      <section id="viewScriptGen" class="page-view hidden" style="overflow-y: auto; height: 100%;" data-page-node-id="8iXlih7jAbqCqNJVGVRxEb">
+        <div class="script-hub-container" style="padding: 20px; max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;" data-page-node-id="QTilxjxIkM8WGBojj8o2m2">
+          
+          <!-- 上半部分：剧本需求输入卡片 -->
+          <div class="apple-card" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 18px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 14px;" data-page-node-id="NaNp6doO883IemDkkbrQur">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;" data-page-node-id="Hr13qf37ThrPAq1CsuMfkU">
+              <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);" data-page-node-id="W9YA7iVH5WvRlnB2VotX7L">💡 输入剧本构想 / 推广核心诉求</div>
+              <button type="button" id="btnOpenScriptHistoryModal" onclick="openScriptHistoryModal()" class="btn btn-secondary" style="font-size: 0.85rem; font-weight: 600; border-radius: 12px; padding: 6px 16px; background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" data-page-node-id="ikChGJ9lT5pK3sxEGFXdcc">
+                <span data-page-node-id="jAfbQFzAY09DSvYuhotK5T">📜 历史剧本库</span>
+                <span id="scriptHistoryCountBadge" style="background: #eff6ff; color: #2563eb; font-size: 0.75rem; border-radius: 10px; padding: 2px 8px; font-weight: 700; border: 1px solid #bfdbfe;" data-page-node-id="ILIgHWk7nf0wGKbRdfFp7D">0</span>
+              </button>
+            </div>
+
+            <textarea id="scriptInputText" class="form-control" rows="3" placeholder="在此输入你的初步想法、卖点诉求或片段故事（例如：我是济南二手手机店的，我要做一个视频推广我的店铺...）" style="font-size: 0.95rem; line-height: 1.6; border-radius: 12px; border: 1px solid var(--border-color); padding: 14px; background: #fafafa;"></textarea>
+
+            <!-- 属性配置行 (精致 Apple 胶囊下拉框) -->
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; background: rgba(0,0,0,0.02); padding: 12px 16px; border-radius: 14px;" data-page-node-id="W0iqzimNoBETeARQjefLy2">
+              
+              <!-- 剧本时长胶囊下拉框 -->
+              <div style="display: flex; align-items: center; gap: 8px;" data-page-node-id="iP9YS8cBRkPDoItGwp2TNY">
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" data-page-node-id="3uRLCUgJTsFtrHjbpCl8bi">⏱️ 剧本时长:</span>
+                <div class="apple-pill-dropdown" id="scriptTypeDropdown" data-value="15s" data-page-node-id="qyBWOrWT1ZOrd3DlwntFJ6">
+                  <button type="button" class="pill-trigger" data-page-node-id="Ybp43Jyv1WDbUuqyvuyZw4">
+                    <span class="pill-dot" style="background: #10b981;" data-page-node-id="C0hjjSsWrkK3frvBohkqZE"></span>
+                    <span class="pill-label" data-page-node-id="mMliMcLd28n9PV1mFxdZwC">15s</span>
+                    <svg class="chevron" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" data-page-node-id="vSAK6F9GpSlCNs08TvHuMx"><polyline points="6 9 12 15 18 9" data-page-node-id="S2fMHMkwSF6yHd5JuphFzC"></polyline></svg>
+                  </button>
+                  <div class="pill-menu" data-page-node-id="C79LDoEmfUgiyOdSnt4dca">
+                    <div class="pill-option active" data-value="15s" data-page-node-id="j2PaIjQlTtJ6PpV0PRee5p">
+                      <span class="opt-name" data-page-node-id="QcWjr6vgMrnuarraMPwEHY">15s</span>
+                      <span class="opt-sub" data-page-node-id="6K5sHiM1X1iSZ71pGvMCRV">短视频爆款节奏</span>
+                    </div>
+                    <div class="pill-option" data-value="30s" data-page-node-id="cpksZVJ2a1d4RwzJW5CkHS">
+                      <span class="opt-name" data-page-node-id="LXHDkQ1hLRR3YgyVT5bGOu">30s</span>
+                      <span class="opt-sub" data-page-node-id="YQLz941e1lWfghvjN0olkh">剧情演绎完整叙事</span>
+                    </div>
+                    <div class="pill-option" data-value="60s" data-page-node-id="wRP5174UcZ634wOLcBnEim">
+                      <span class="opt-name" data-page-node-id="uokjyLwt59pGXMLqfJgFG7">60s</span>
+                      <span class="opt-sub" data-page-node-id="B2BwSldWHRBq4yugSLCK3q">长视频深度评测</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="scriptTypeSelect" value="15s" data-page-node-id="xr1SiYQXIRUkiPGJGrGkGy">
+                </div>
+              </div>
+
+              <!-- 风格基调胶囊下拉框 -->
+              <div style="display: flex; align-items: center; gap: 8px;" data-page-node-id="mEBx4w0A1ig7JtepGnGDlZ">
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" data-page-node-id="KlXJ8hE9aPHjIISaMbmCG3">🎨 风格基调:</span>
+                <div class="apple-pill-dropdown" id="scriptToneDropdown" data-value="科技专业" data-page-node-id="Edf4uoaaFfyyRepMYiO13M">
+                  <button type="button" class="pill-trigger" data-page-node-id="VeP4SDZX1i03JMd8gkMHX8">
+                    <span class="pill-dot" style="background: #2563eb;" data-page-node-id="jaygdvWR5Iq5aFigiQJkgm"></span>
+                    <span class="pill-label" data-page-node-id="FK8kWvpagLu1siEw4wmyQL">科技专业</span>
+                    <svg class="chevron" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" data-page-node-id="Zg4rFy0GVDhG46VAPSHEfQ"><polyline points="6 9 12 15 18 9" data-page-node-id="MXgFh6V0x7CdocLplFnkK7"></polyline></svg>
+                  </button>
+                  <div class="pill-menu" data-page-node-id="fwLeNjfShSth3znZKeB63t">
+                    <div class="pill-option active" data-value="科技专业" data-page-node-id="rm91vcHgNjF61HkyaEK2RV">
+                      <span class="opt-name" data-page-node-id="tQQc8WKf6lXn8KGWmtVIrd">科技专业</span>
+                      <span class="opt-sub" data-page-node-id="uLoVTIFBJmilXWxzttuNw3">无尘检测试演 / 镜头感精准</span>
+                    </div>
+                    <div class="pill-option" data-value="口播卖点" data-page-node-id="OOgezxEtd9oktMsxNnFyV4">
+                      <span class="opt-name" data-page-node-id="Yw7PEhnLyAoXBdzuYLIGm2">口播卖点</span>
+                      <span class="opt-sub" data-page-node-id="YbtUjRz4CH5tEb6cCGh9DU">直击买家痛点 / 强信任感</span>
+                    </div>
+                    <div class="pill-option" data-value="搞笑反转" data-page-node-id="0DbwXScZpIFHgTUr5YwdqP">
+                      <span class="opt-name" data-page-node-id="eGuD2NJSJGB1VYDhbAGEdA">搞笑反转</span>
+                      <span class="opt-sub" data-page-node-id="eij6us8fkvrCY4Sclc1siG">趣味剧情 / 爆款完播率</span>
+                    </div>
+                    <div class="pill-option" data-value="电影悬疑" data-page-node-id="x0ZoXTlwgY9jHhxGFToGpt">
+                      <span class="opt-name" data-page-node-id="L04CVTAHMVlSnxUeTwU1h0">电影悬疑</span>
+                      <span class="opt-sub" data-page-node-id="z9CzBex6EY9YByxBNZQgoh">Sora 电影级光影质感</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="scriptToneSelect" value="科技专业" data-page-node-id="8qUPQPmDUHu6XUyrI9qGH6">
+                </div>
+              </div>
+
+              <button id="btnResetScriptForm" class="btn btn-secondary" style="margin-left: auto;" data-page-node-id="ZRBqvLxC1tPUhmuf2jDxtR">清空输入</button>
+                <button id="btnGenerateScript" class="btn btn-primary" style="padding: 8px 24px; font-weight: 600; border-radius: 10px;" data-page-node-id="IgPVABGfhNdqn2IZB7JeA0">
+                <span id="scriptGenBtnIcon" data-page-node-id="DDfeJJUShuAABy01vzB0Ho">✨</span>
+                <span id="scriptGenBtnText" data-page-node-id="TuPRi3iNdkkk4YxGWdyVFt">生成 AI 剧本脚本</span>
+                <span id="scriptPricePreview" class="send-price-badge send-price-badge-light" aria-live="polite" data-page-node-id="p7CbRsuwFeBhKNwA6hkixM">积分预算：读取中...</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 下半部分：生成的剧本展示与 ERP 表格呈现 -->
+          <div id="scriptResultCard" class="apple-card" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 18px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px;" data-page-node-id="GEfk5WwGJ7nppVyQrAflAe">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; flex-wrap: wrap; gap: 10px;" data-page-node-id="LcG4A9qIeJxekIk5hlHmnQ">
+              <div style="display: flex; align-items: center; gap: 10px;" data-page-node-id="AhtmEPliWpRAEXNwFlIsC6">
+                <span style="font-size: 1.2rem;" data-page-node-id="W7dLt4MUL4Bq5xpkNylAL1">🎬</span>
+                <input type="text" id="scriptTitleInput" value="【智能生成的推演剧本脚本】" style="font-weight: 700; font-size: 1.1rem; color: var(--text-main); border: none; outline: none; background: transparent; width: 340px;" data-page-node-id="A5vpcRx05TgtSEkQJYkinf">
+              </div>
+              <div style="display: flex; gap: 8px;" data-page-node-id="saumJYn2qA1k5QBVCbWHY8">
+                <button id="btnAddScriptShot" class="btn btn-secondary btn-sm" data-page-node-id="GAFIt5e6C0EJNNW0YOPUSn">➕ 添加镜头</button>
+                <button id="btnCopyScriptText" class="btn btn-secondary btn-sm" data-page-node-id="ScQC6aPKyzD3KmDF5tAdvu">📋 复制全套脚本</button>
+                <button id="btnApplyScriptToVideo" class="btn btn-primary btn-sm" style="font-weight: 600; background: linear-gradient(135deg, #0284c7, #2563eb);" data-page-node-id="t7YFhHdBDsJsdrSXZv3nqI">⚡ 一键应用到 AI 视频创作</button>
+              </div>
+            </div>
+
+            <!-- 可编辑 ERP 剧本表格容器 -->
+            <div id="scriptShotsContainer" style="overflow-x: auto;" data-page-node-id="ilr16f0jxlHzkYBfcab84B">
+              <table class="erp-table script-erp-table" style="width: 100%; border-collapse: collapse;" data-page-node-id="60LaUY6BB8xq00utIjaFCl">
+                <thead data-page-node-id="PhHoNYZXAIG1EGK0na9IkY">
+                  <tr style="background: #e6e6e6; color: var(--text-main); font-size: 0.85rem; border-bottom: 1px solid var(--border-color);" data-page-node-id="LuLTemGELOe91cjCKYPcTo">
+                    <th width="120" data-page-node-id="Tfm7duF2BpEOAQcEJlGuwr">镜头 / 时间</th>
+                    <th width="130" data-page-node-id="4VnvZYQ9Q1RF2EXXC48del">镜头类型</th>
+                    <th data-page-node-id="PeB50XTF4gRP1H8hYtBXVL">🎥 画面镜头描述 (Visual Prompt - 可直接编辑)</th>
+                    <th width="320" data-page-node-id="RJTt6dXmdwlSs72SrOAXlm">🗣️ 配音台词 / 口播 (可直接编辑)</th>
+                    <th width="180" data-page-node-id="bp4HBSFkXrm7kBdpTCNf8D">🔄 运镜轨迹</th>
+                    <th width="65" class="text-center" data-page-node-id="NA4DfBEhSFLPt30Y0iUFNh">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="scriptTableBody" data-page-node-id="f7CsOOQBylscqdJNOT3mRq">
+                  <!-- 动态渲染分镜头表格行 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 页面：精彩作品 -->
+      <section id="viewShowcase" class="page-view hidden" style="overflow-y: auto; height: 100%;" data-page-node-id="2eCTKvARHHA9ULEskmbcMS">
+        <div style="padding: 20px; max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;" data-page-node-id="u2kNT2DuAA9Ep0VFlETvE9">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;" data-page-node-id="k7F8mahY8s7Gbjpz4PoSHm">
+            <div data-page-node-id="Xii8QVGmjC4ggac9Z0XCoP">
+              <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-main);" data-page-node-id="uWayVg9PwuzaI3PhXB3KuC">🏆 精彩作品</h2>
+              <p style="margin: 6px 0 0; font-size: 0.85rem; color: var(--text-muted);" data-page-node-id="Ai9EQQIebdejdKhzXwso0D">发现社区里的优秀创作，获取灵感</p>
+            </div>
+            <div style="display: flex; gap: 8px;" data-page-node-id="ooLEGV7M8uYb45FwauHGOo">
+              <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 10px;" data-page-node-id="HWeF8bS13MyEOumiMX2veL">🔥 最热</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 10px;" data-page-node-id="1xVSWg3AHuLGWIaBjzoE8m">✨ 最新</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;" data-page-node-id="XJQiK40aVGzQmonFB9mJNq">
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="X9duVy7BsdM1HWNp1QPO0R">
+              <div style="height: 160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="TWbtNpF0Qv8SBmUfkn8Yjc">🎬</div>
+              <div style="padding: 14px;" data-page-node-id="c8Gne3DpjzgtT59zeyWxEW">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="Yk6VojH6bGCqQjCSbahTqO">二手手机店爆款引流</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="8xQtB6HSayKK663J0E8ilf">用「验机显微镜」痛点切入，15 秒完成信任建立 + 到店引导。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="CIqP8PyU3tjCnDtKg8vhl9">
+                  <span data-page-node-id="mHOWZyVw4oWGeU7IWoyOwu">👤 熊主任</span>
+                  <span data-page-node-id="9BJJld8MqaEfwEqwNIAGCH">❤️ 1.2k</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="WF8OxuFAJ9384V3K3orfcb">
+              <div style="height: 160px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="jraMymDUrG01o0l24dMjfV">📱</div>
+              <div style="padding: 14px;" data-page-node-id="2HNOf8pFmDiS76XWmSMIVi">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="dBDFNeKIwUCLKUjlyHAHB5">iPhone 15 Pro 开箱测评</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="56d9QRhmhNuc1uR649LS2U"> cinematic 运镜 + 痛点对比，评论区转化率提升 35%。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="o5iRCPZ1cXR0FmcpCCr5zh">
+                  <span data-page-node-id="nA1Ky9Agx6LmAUkEw3mHkG">👤 数码阿杰</span>
+                  <span data-page-node-id="BkGhzVqxibEKOlWgCcj8P9">❤️ 856</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="pvipfNiQKsYkGlmRHPtDu1">
+              <div style="height: 160px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="o99161c4oY6ZzHN0zaFR55">☕</div>
+              <div style="padding: 14px;" data-page-node-id="VddoEJcTMMOw7VvVZqm2hJ">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="AG7gXB6asGz51JzO77VOMW">社区咖啡馆日常 Vlog</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="q7SGd8fHGk66BWaiWZfIDv">慢节奏叙事 + 环境音设计，治愈系内容标杆。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="mOdk4uDpagfhqRJF0itqbx">
+                  <span data-page-node-id="Nu0pkfG3GIEL70N80LsNKx">👤 小野</span>
+                  <span data-page-node-id="ncimM2io5IQQdBGYWuilSo">❤️ 2.3k</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="Ut76z8ian0Xy5VyfLsPIfS">
+              <div style="height: 160px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="jSSLwaFAFtXiT5Mnf4IBwt">🏃</div>
+              <div style="padding: 14px;" data-page-node-id="XcsvFyxFmADQSRJu5J0Hzv">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="KtYaxvo3Bax0tIvRPbrsya">晨跑装备种草短片</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="PHUTVvo9itR5XJClzo92MA">节奏卡点 + 产品特写，运动垂类高完播案例。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="bnS5iQNbt1yrokxpe6XGE8">
+                  <span data-page-node-id="JQSIUTmcuOc4fNUC2vCYz8">👤 跑圈小明</span>
+                  <span data-page-node-id="obC7AOGuT9Uj88J2xqrWfD">❤️ 643</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="ONGV2B2Yy89gRztLcbOaZY">
+              <div style="height: 160px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="oiLaQ1e9UJOxXGDqrG7D0i">🍰</div>
+              <div style="padding: 14px;" data-page-node-id="DygsMt0RWs5sMMC0DV5imY">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="N8la5fWPxKGVxUKwcawYGX">甜品店新品上市预告</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="JIbIHudAjtsnWl7Gf3BipG">食欲感调色 + 微距运镜，预热期爆款模板。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="jUdE2eQ2ExMITjHvruzusY">
+                  <span data-page-node-id="B524TQwyqSkWfFKFgVkDtN">👤 甜甜屋</span>
+                  <span data-page-node-id="FWWJOaQEDJ2EMIvFJGjIKo">❤️ 1.8k</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" data-page-node-id="llb0ZzkaNgBvjZn3Ol1xTT">
+              <div style="height: 160px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem;" data-page-node-id="1MSmP2ARLohbAFkIUx1bJr">🎮</div>
+              <div style="padding: 14px;" data-page-node-id="X1pvooRsnOm3u5EgWHD1sI">
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px;" data-page-node-id="sk6egDFllhB4PJVC2J85ek">游戏手柄沉浸式开箱</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;" data-page-node-id="L6p7UJwDr0g4BahpdUNAGH">ASMR 音效 + 动态光效，数码开箱高赞参考。</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);" data-page-node-id="1b1XW3CWrW9VukYX7ei5pZ">
+                  <span data-page-node-id="NhNIIx5Anu7nCtJJVAmAYw">👤 GamerX</span>
+                  <span data-page-node-id="0naS5ruBxaInN3MmwuMBbW">❤️ 967</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 管理后台页面 -->
+      <section id="viewAdmin" class="page-view hidden admin-page" data-page-node-id="uP14IrCTD2TXtVvuD7ckkT">
+        <div class="admin-page-shell" data-page-node-id="mmixxEyVjqeF5s6MW08Gtg">
+          <div class="admin-page-header" data-page-node-id="uJZFEI4bFR8OtOnVGiAoR8"><div data-page-node-id="J44ih8kSfS7Q7Kz00bBWOw"><h2 id="adminViewTitle" data-page-node-id="T0NKw9hoL5aCpGx3ZPT5ek">管理后台</h2><p id="adminViewSubtitle" data-page-node-id="E7FTFD9PtIWs4hjhB1aRR9">账号、模型、计费与生成运营数据</p></div><button type="button" id="btnAdminRefresh" class="btn btn-secondary" data-page-node-id="FEWIlWxk1pofOLkLoyIgNR">刷新数据</button></div>
+          <div id="adminViewBody" class="admin-view-body" data-page-node-id="DmeAPA8qA765pdd09ZrX5c"></div>
+        </div>
+      </section>
+    </div> <!-- .main-wrapper -->
+
+    <!-- 新建 / 编辑 Modal -->
+    <div id="promptModal" class="modal-overlay hidden" data-page-node-id="yl8pqziPCTOaI6Ic7ePbKG">
+      <div class="modal-container" data-page-node-id="e8VfrKBBDBiu3STdJAQb3w">
+        <div class="modal-header" data-page-node-id="cAC8VKzKbUmdzhaojGJ1KV">
+          <h3 id="modalTitle" data-page-node-id="WTwD8AUnstcdsyR9BWxYrg">新建镜头提示词</h3>
+          <button id="btnCloseModal" class="btn-icon" data-page-node-id="6VxahAmLGkopVRTNBI44of">&times;</button>
+        </div>
+
+        <form id="promptForm" class="modal-body" data-page-node-id="G8nscRv7GoFSfgeeGlGvDn">
+          <input type="hidden" id="editItemId" value="" data-page-node-id="G5iOmk4UXbYF1ZjqCz2qxj">
+
+          <div class="form-group media-upload-group" data-page-node-id="yvsnZ2zBWe6hLXGfELtWWo">
+            <label class="form-label required" data-page-node-id="lUmGSqmW7HpFd7QchLt0rH">🎥 镜头效果视频 (上传本地 MP4/WebM)</label>
+            
+            <div id="dropZone" class="drop-zone" data-page-node-id="ZBLNw53YgaeLbzRVf6heFk">
+              <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime" style="display: none;" data-page-node-id="N5eUwlBF70aH7C8CjcBfHE">
+              
+              <div id="dropZoneContent" class="drop-zone-content" data-page-node-id="axDdv77fscjhZaVAJj6ND5">
+                <div class="upload-icon" data-page-node-id="nhmbNQphJk5qHB7xVSmjd9">
+                  <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="1.5" fill="none" data-page-node-id="FQNy6PkUHKNB9vXr7DRf1b"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-page-node-id="1SRch2VFjwhYt5EuWqpV8d"></path><polyline points="17 8 12 3 7 8" data-page-node-id="yCHOPJCdVFdIGVaFjd1plT"></polyline><line x1="12" y1="3" x2="12" y2="15" data-page-node-id="Y6ZY7RWFoO5mvoptfA157V"></line></svg>
+                </div>
+                <p class="upload-text" data-page-node-id="k7RwSxZ9tYBzVZdBtEnES9">点击选择视频文件 或 拖拽视频至此处</p>
+                <span class="upload-hint" data-page-node-id="Gs8su4sTTa098OgL6SeZuU">支持 MP4, WebM，本地安全加密保存</span>
+              </div>
+
+              <div id="videoPreviewContainer" class="video-preview-container hidden" data-page-node-id="R99bs8R7nYjU6oGmSXD5KM">
+                <video id="formVideoPreview" controls playsinline loop muted data-page-node-id="W98iYpmq6uW0a1EFYaASgl"></video>
+                <button type="button" id="btnRemoveVideo" class="btn-remove-video" title="更换视频" data-page-node-id="DTlyvyvy6spQM9OI41kOMF">&times;</button>
+              </div>
+            </div>
+
+            <div class="url-input-fallback" data-page-node-id="FjFxBwvhPfxDMjillSLxIb">
+              <span class="or-text" data-page-node-id="yhoLM6c4OOxQf3JtN38fwK">或输入网络视频 URL / 实时 AI 接口生成：</span>
+              <div style="display: flex; gap: 8px;" data-page-node-id="fs39fupQ1T3W4mVHiWWuz4">
+                <input type="url" id="videoUrlInput" class="form-control" placeholder="https://example.com/sample.mp4" style="flex: 1;" data-page-node-id="c8apkrAkRKSAiYiNEZxsY4">
+                <button type="button" id="btnGenerateInForm" class="btn btn-primary" style="white-space: nowrap;" data-page-node-id="3BHaeV8ABGQt22keyXp0GD">⚡ 调用 API 生成视频 <span id="formVideoPricePreview" class="send-price-badge" aria-live="polite" data-page-node-id="rqoc7tTJygiuMplyh8Pdkc">积分预算：--</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" data-page-node-id="oCCsPCuee2qu4VJBOevE5n">
+            <label for="inputTitle" class="form-label required" data-page-node-id="CMlFyfxHdvynEsVqXsA7bP">📝 画面说明 / 镜头效果标题</label>
+            <input type="text" id="inputTitle" class="form-control" placeholder="例如：雨夜霓虹街头赛博朋克女性特写镜头" required data-page-node-id="D8moXYJjrgOmRS810R41bC">
+          </div>
+
+          <div class="form-group" data-page-node-id="lhkRCMqZL3FhWROilPxIVg">
+            <label for="inputPrompt" class="form-label required" data-page-node-id="QP50HTRev05tOWYidPKmYK">⚡ AI 视频生成提示词 (Prompt)</label>
+            <textarea id="inputPrompt" class="form-control code-font" rows="4" placeholder="例如：Cinematic extreme close-up shot of a cyberpunk woman in rain, neon glowing reflections on wet skin..." required></textarea>
+          </div>
+
+          <!-- 表单内 纯中文 Custom Dropdowns -->
+          <div class="form-row-3" data-page-node-id="E1RvJA3J5R6VmO5gw4zEES">
+            <div class="form-group" data-page-node-id="YGwP82CfX1fJ8BkHFAyNDx">
+              <label class="form-label required" data-page-node-id="XiZQnUrwDUYNyB8Ql0tBwT">🔍 景别</label>
+              <div class="custom-dropdown" id="formDropdownShotSize" data-value="特写" data-page-node-id="3QS8SrFDHSbEC3yVUQEaEr">
+                <button type="button" class="dropdown-trigger" data-page-node-id="kvdHRbiIaZUvmHDwGd3JmB">
+                  <span class="dropdown-label" data-page-node-id="mmBDA24BEeRM8bvwyISBg8">特写</span>
+                  <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="0VY8mX7YzhV7DBcGsJ6iK3"><polyline points="6 9 12 15 18 9" data-page-node-id="xfqlctBOiqmZsFMfKFo6Zl"></polyline></svg>
+                </button>
+                <div class="dropdown-menu" data-page-node-id="5jwAoDKT1EBnFdrJmP3EWi">
+                  <div class="dropdown-item" data-value="全景" data-page-node-id="IIJMQZAByNkFnkP0yV9kQS">全景</div>
+                  <div class="dropdown-item" data-value="大远景" data-page-node-id="iK83uuu6MroAf7Tqi7skkn">大远景</div>
+                  <div class="dropdown-item" data-value="中景" data-page-node-id="OJ6Tna186CQoA6PoDnCDtf">中景</div>
+                  <div class="dropdown-item" data-value="近景" data-page-node-id="bp5rTPA9BUDOOnMvhAXrM6">近景</div>
+                  <div class="dropdown-item active" data-value="特写" data-page-node-id="tEcO52gqvXzkrVwLoJ1Zi2">特写</div>
+                  <div class="dropdown-item" data-value="微距" data-page-node-id="YXx7HF4jaWYHJAAlnu0sLe">微距</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" data-page-node-id="HDFCHzcIl0Ik81kG91wi55">
+              <label class="form-label required" data-page-node-id="VUqHeFHbH3Gl5iFnJR5eFu">🎥 运镜方式</label>
+              <div class="custom-dropdown" id="formDropdownMovement" data-value="推镜头" data-page-node-id="kii71ppxfltNehcX9pkjBb">
+                <button type="button" class="dropdown-trigger" data-page-node-id="BCVYhPEGh5CAYNR23cghQj">
+                  <span class="dropdown-label" data-page-node-id="dAD6vXRl3cyTX4pFdGMvqw">推镜头</span>
+                  <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="42oHVeKPWZKi6DtSUUl2FT"><polyline points="6 9 12 15 18 9" data-page-node-id="ty5pTO12V37dPhzVuXj1Or"></polyline></svg>
+                </button>
+                <div class="dropdown-menu" data-page-node-id="RQ28HrsWsjScSzZ71g9S4U">
+                  <div class="dropdown-item" data-value="静止镜头" data-page-node-id="dzySHvTsHyBSRLnyEi1N4V">静止镜头</div>
+                  <div class="dropdown-item active" data-value="推镜头" data-page-node-id="IqVnkGFENfRQFsfijf4Ba5">推镜头</div>
+                  <div class="dropdown-item" data-value="拉镜头" data-page-node-id="vOfDUdkVxW5SQzr3HFLr1k">拉镜头</div>
+                  <div class="dropdown-item" data-value="摇镜头" data-page-node-id="blpyPGY2RvTjULbpQsZh1E">摇镜头</div>
+                  <div class="dropdown-item" data-value="平移跟随" data-page-node-id="yUpxzFMszhpcC1OAFC9EtB">平移跟随</div>
+                  <div class="dropdown-item" data-value="环绕拍摄" data-page-node-id="CqP4NtLfLmCZXRgINltHNL">环绕拍摄</div>
+                  <div class="dropdown-item" data-value="升降镜头" data-page-node-id="Vuc875CVivvZ5whAXbPFAW">升降镜头</div>
+                  <div class="dropdown-item" data-value="航拍俯瞰" data-page-node-id="dtPxUAMDOqavmuKM2gt0e7">航拍俯瞰</div>
+                  <div class="dropdown-item" data-value="甩镜头" data-page-node-id="vAgXJ4lPW7NBfc1QGauXos">甩镜头</div>
+                  <div class="dropdown-item" data-value="希区柯克变焦" data-page-node-id="IIZquE3sCOU2EV7l3wJDha">希区柯克变焦</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" data-page-node-id="RjsNAAOhXWrsxqBsgOuTeW">
+              <label class="form-label required" data-page-node-id="7UvayzaGHhEgxkoCjMq8Ab">📐 拍摄视角</label>
+              <div class="custom-dropdown" id="formDropdownAngle" data-value="平视角度" data-page-node-id="NsZu6Y8sIwMoC81oML3vEn">
+                <button type="button" class="dropdown-trigger" data-page-node-id="go4KHysmfnDb7pZdRUgCZO">
+                  <span class="dropdown-label" data-page-node-id="ncQibz8D3M1iBmzgOv1RFL">平视角度</span>
+                  <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="cLke8f5w4aENYmnpoh50Jl"><polyline points="6 9 12 15 18 9" data-page-node-id="gdDiiSfftHdj6FE4PerlT2"></polyline></svg>
+                </button>
+                <div class="dropdown-menu" data-page-node-id="mrskzsSeUx9MlyT3EiUinN">
+                  <div class="dropdown-item active" data-value="平视角度" data-page-node-id="GLFRAfqpzEMqh9UKKZsoV5">平视角度</div>
+                  <div class="dropdown-item" data-value="仰视角度" data-page-node-id="qlSvIjmpFf2cEFNZ41JLnW">仰视角度</div>
+                  <div class="dropdown-item" data-value="俯视角度" data-page-node-id="oCMbEMBrQvUarhFeeSc5zZ">俯视角度</div>
+                  <div class="dropdown-item" data-value="鸟瞰视角" data-page-node-id="5nEApiRMpfRpUgt9Imqu3j">鸟瞰视角</div>
+                  <div class="dropdown-item" data-value="倾斜视角" data-page-node-id="U541CxMnBd30vP7LrC0aLX">倾斜视角</div>
+                  <div class="dropdown-item" data-value="第一人称POV" data-page-node-id="AQ3FDKj90scDGfMBDEnJSb">第一人称POV</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-3" data-page-node-id="yvVvl6DDGOjT8c8UAHpBy0">
+            <div class="form-group" data-page-node-id="EKpwaAVHUA3kiOqSBuX9dm">
+              <label class="form-label required" data-page-node-id="N56K6DtOM7UlPAPoO7rHI2">🏷️ 场景分类</label>
+              <div class="custom-dropdown" id="formDropdownCategory" data-value="人物肖像" data-page-node-id="qsKY7G9ryF3fQkBubJrmN4">
+                <button type="button" class="dropdown-trigger" data-page-node-id="EFrBpQuga08nEcgGIio7v1">
+                  <span class="dropdown-label" data-page-node-id="yoLDEMlLPvqIUyVlUdXsCc">人物肖像</span>
+                  <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="WrdYXOEf43L60ZeFLqI5S3"><polyline points="6 9 12 15 18 9" data-page-node-id="RTjpDBAbaHm5mU9ukO9ZMu"></polyline></svg>
+                </button>
+                <div class="dropdown-menu" data-page-node-id="KUm8J2GcoEk7KurlNK0qIH">
+                  <div class="dropdown-item active" data-value="人物肖像" data-page-node-id="5HYIjIxKT6BloP6ejMBOnR">人物肖像</div>
+                  <div class="dropdown-item" data-value="风光自然" data-page-node-id="CF4Qkfo7FgFzOkImuze566">风光自然</div>
+                  <div class="dropdown-item" data-value="动作科幻" data-page-node-id="K2opW4NGxnwg3ApobKa0s5">动作科幻</div>
+                  <div class="dropdown-item" data-value="建筑空间" data-page-node-id="2vYpFWGw9DI8QuMnFQCvWc">建筑空间</div>
+                  <div class="dropdown-item" data-value="产品展示" data-page-node-id="FrjHKlpF5WufDgrQXYxyXM">产品展示</div>
+                  <div class="dropdown-item" data-value="赛博朋克" data-page-node-id="ZRzyC5LqV8tnFmx3PKunWP">赛博朋克</div>
+                  <div class="dropdown-item" data-value="动画3D" data-page-node-id="iy9edFR601sGhJlOHs914I">动画3D</div>
+                  <div class="dropdown-item" data-value="慢动作" data-page-node-id="C9IQ1eHxzzAICjgTJ0WneZ">慢动作</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" data-page-node-id="C6PvtjfNjRDNfBlR11pCJn">
+              <label for="inputMotion" class="form-label" data-page-node-id="LBcfltbEeaCk9khmkOXybw">🏃 画面运动幅度</label>
+              <input type="text" id="inputMotion" class="form-control" placeholder="如：中度 (4-6)" data-page-node-id="sRZX8FJ444bieKEhg3sGAF">
+            </div>
+
+            <div class="form-group" data-page-node-id="Ug4mVGDZwA8352MYLJAYvd">
+              <label for="inputLighting" class="form-label" data-page-node-id="CyJAhb1BShowMgDyaYNfxo">✨ 光影与色彩风格</label>
+              <input type="text" id="inputLighting" class="form-control" placeholder="如：电影级暖色调" data-page-node-id="L5vqo8EKgE5X5G1ftAqATH">
+            </div>
+          </div>
+
+          <div class="modal-footer" data-page-node-id="5dLetyCkGvDbUsQDCpjPHZ">
+            <button type="button" id="btnCancelForm" class="btn btn-secondary" data-page-node-id="Rcnca2JtgdzMqQTHj0OjgL">取消</button>
+            <button type="submit" id="btnSavePrompt" class="btn btn-primary" data-page-node-id="1SiuhCh7ezCl37Gqh4tqUc">保存镜头数据</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 视频详情 Lightbox Modal -->
+    <div id="detailModal" class="modal-overlay hidden" data-page-node-id="I3EHbcdDjnB7c9NSYHDlxg">
+      <div class="modal-container detail-container" data-page-node-id="IaEi6ERdsXcJWZJUzm53EH">
+        <div class="modal-header" data-page-node-id="x6FMAYhDjZrLMS935l9swB">
+          <h3 id="detailTitle" data-page-node-id="SXrTtdjhJbUHUOMUurtK4I">镜头数据详情</h3>
+          <button id="btnCloseDetail" class="btn-icon" data-page-node-id="dpHwULQCSaLWWdAHDpMygj">&times;</button>
+        </div>
+
+        <div class="detail-content" data-page-node-id="ENn5UcDp4DBbbvoELotR6j">
+          <div class="detail-media" data-page-node-id="0syDBfcEUcn7hcJ8PHonPH">
+            <div class="video-wrapper" data-page-node-id="vptYxRGdpFwGq6opVaTJB7">
+              <video id="detailVideoPlayer" controls playsinline loop autoplay data-page-node-id="5hbbqtxnGXrCqxxbySQ9Or"></video>
+            </div>
+          </div>
+
+          <div class="detail-info" data-page-node-id="opGACRtYqAJsmnybpt0YFK">
+            <div class="detail-title-section" data-page-node-id="pB78hX1zMDmXIj8fIx3RGd">
+              <h2 id="detailHeading" data-page-node-id="6iAje6KfNr5nhjNm0O9aup">镜头效果标题</h2>
+              <div class="pills-container" id="detailPills" data-page-node-id="P0KFGBkkBGFStC5mNatOFF"></div>
+            </div>
+
+            <div class="prompt-box-card" data-page-node-id="XufZGu01xewXzx3lfgGGon">
+              <div class="prompt-box-header" data-page-node-id="2FsriBVXbT14Yoo0HvILuz">
+                <span data-page-node-id="XFBuCSmCSZn19PAk21IoDv">⚡ AI 视频生成提示词 (Prompt)</span>
+                <button id="btnCopyPromptDetail" class="btn btn-copy" data-page-node-id="XJFd8sNJEGpytcftlZTdVz">
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" data-page-node-id="HzGyBYTi99rttFrPKjRRSK"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-page-node-id="gH3uahzxB3TfksPR4YN0kF"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-page-node-id="Z0yqDbl0Ex5FqBQonApM2j"></path></svg>
+                  <span data-page-node-id="N3JlGRkmMztCotCnEkCnFq">复制提示词</span>
+                </button>
+              </div>
+              <div id="detailPromptText" class="prompt-code-area" data-page-node-id="AOuDMkExUeMGJXMUSUoSkD"></div>
+            </div>
+
+            <div class="specs-grid" data-page-node-id="PTFlkmWvQhUN547nmf0daO">
+              <div class="spec-item" data-page-node-id="m4QE66By7zWwd3q9qFiwy1">
+                <span class="spec-label" data-page-node-id="JehYdLuVMuxLu7iDdTL1ff">景别：</span>
+                <span class="spec-value" id="detailShotSizeVal" data-page-node-id="XlzkHzqwcPApj3BSGqNefn">特写</span>
+              </div>
+              <div class="spec-item" data-page-node-id="HYGHaAjB6IBta98csDFofr">
+                <span class="spec-label" data-page-node-id="eDKww2uU5mZfDGmJHGQajC">运镜：</span>
+                <span class="spec-value" id="detailMovementVal" data-page-node-id="IqNp3lPsCprxGvye0FEteM">推镜头</span>
+              </div>
+              <div class="spec-item" data-page-node-id="JXi0li7JFQ7HqHm4AVRXnB">
+                <span class="spec-label" data-page-node-id="5E3r1KqVQe2kfM3c4BeyBr">视角：</span>
+                <span class="spec-value" id="detailAngleVal" data-page-node-id="3NHqJpU4WraHVsGEx56S3D">平视角度</span>
+              </div>
+              <div class="spec-item" data-page-node-id="aOr9oHrkdRJU5bh1khrONm">
+                <span class="spec-label" data-page-node-id="XwfoxzA3iv71XQz2zhL2lR">分类：</span>
+                <span class="spec-value" id="detailCategoryVal" data-page-node-id="6pacTirqAMSAmips8x5nBz">人物肖像</span>
+              </div>
+            </div>
+
+            <div class="detail-actions" data-page-node-id="Do64c1bczXkjKyEP3oMVfM">
+              <button id="btnGenerateDetail" class="btn btn-primary" data-page-node-id="HP6s73a3xhyQktlTPPzYag">⚡ 用当前 Prompt 一键生成 AI 视频 <span id="detailVideoPricePreview" class="send-price-badge" aria-live="polite" data-page-node-id="24Wu6LLB1sWJV5rp5fBbiK">积分预算：--</span></button>
+              <button id="btnEditDetail" class="btn btn-secondary" data-page-node-id="cZGP2zafpdwaiUVm102BT6">编辑修改</button>
+              <button id="btnDeleteDetail" class="btn btn-danger" data-page-node-id="H3vDNZK1n5NTQo4fcGBmFH">删除数据</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API 设置与测试 Modal -->
+    <div id="apiConfigModal" class="modal-overlay hidden" data-page-node-id="9kmoOVuwyMwUvn2NiqIuYV">
+      <div class="modal-container api-config-dialog" style="max-width: 760px;" data-page-node-id="u5FjCg6Y6JXERAymSzeRGn">
+        <div class="modal-header" data-page-node-id="DfMnoSYOSyliGtnGBMvhPg">
+          <h3 data-page-node-id="Eay6v9bIbRzqQaIfSkWXG1">本地 API 设置</h3>
+          <button id="btnCloseApiModal" class="btn-icon" data-page-node-id="B6cMQMZDEmyGoY09ubZMho">&times;</button>
+        </div>
+        <div class="modal-body" style="gap: 16px; max-height: 78vh; overflow-y: auto;" data-page-node-id="bVijT4HJrrbHFuBzzhi2Cn">
+          <p class="api-config-intro">API 地址、Key 与模型配置只保存在当前浏览器。会话、历史、上传素材和生成结果不会跨刷新保留；请勿在公共电脑保存 Key。</p>
+
+          <section class="api-provider-module is-image" data-api-provider="image">
+            <div class="api-provider-module-header"><span><b>图片</b><small>创作 · 画布 · 多角度</small></span><button type="button" class="api-add-key" data-api-add-profile="image" aria-label="添加图片 API Key">＋</button></div>
+            <div id="apiProfilesImage" class="api-profile-list"></div>
+          </section>
+
+          <section class="api-provider-module is-llm" data-api-provider="llm">
+            <div class="api-provider-module-header"><span><b>语言</b><small>提示词扩写 · 长剧本 · 画布文本</small></span><button type="button" class="api-add-key" data-api-add-profile="llm" aria-label="添加语言 API Key">＋</button></div>
+            <div id="apiProfilesLlm" class="api-profile-list"></div>
+          </section>
+
+          <section class="api-provider-module is-video" data-api-provider="video">
+            <div class="api-provider-module-header"><span><b>视频</b><small>创作 · 画布视频</small></span><button type="button" class="api-add-key" data-api-add-profile="video" aria-label="添加视频 API Key">＋</button></div>
+            <div id="apiProfilesVideo" class="api-profile-list"></div>
+          </section>
+
+          <div class="hidden" aria-hidden="true">
+          
+          <!-- 第一部分：🎬 生视频 API 设置 (Video Diffusion API) -->
+          <div class="api-section-card" style="background: #e6e6e6; border: 1px solid var(--border-color); padding: 14px; border-radius: var(--radius-md);" data-page-node-id="PPr4MYfz6JCBYGeEp4c5EW">
+            <div style="font-size: 0.875rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;" data-page-node-id="Eqx816XiPvzBpi80c7zO9S">
+              <span data-page-node-id="mamvQhxPVaWLWvHQahqmNH">🎬 1. AI 生视频 API 算力接口设置 (Video API)</span>
+            </div>
+
+            <div class="form-group" data-page-node-id="df3CtQRbNHceROCggmqoIC">
+              <label for="cfgApiBaseUrl" class="form-label" data-page-node-id="Q5j2DA5G4q9q6niQHBBYEW">视频 API URL</label>
+              <input type="url" id="cfgApiBaseUrl" class="form-control code-font" placeholder="例如：https://your-provider.example/v1" autocomplete="off" data-page-node-id="U4Y2jTboJf9wL7GOnUokf7">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="PsIdkcwAa1oFdGnr0MUO1q">
+              <label for="cfgApiKey" class="form-label" data-page-node-id="I6xG2jQPuUj5c5QIMcTxK2">视频 API Key</label>
+              <input type="password" id="cfgApiKey" class="form-control code-font" placeholder="请填写自己的视频 API Key；留空保持不变" autocomplete="new-password" data-page-node-id="T7cQeKCV6mpaLHxaALyEFs">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="nVpFbMlts50OyuyMlqjVqr">
+              <label for="cfgDefaultModel" class="form-label" data-page-node-id="ADxnfI5pPkbiUdNAesdBM8">🤖 默认视频模型</label>
+              <input id="cfgDefaultModel" class="form-control code-font" value="sora-v3-2.5-720p-per-second" placeholder="填写供应商的视频模型 ID" data-page-node-id="eYQQ5O2efIO6Iv8b0F6wC4">
+            </div>
+          </div>
+
+          <!-- 第二部分：🧠 LLM 大语言模型 API 设置 (支持中转站) -->
+          <div class="api-section-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px; border-radius: var(--radius-md);" data-page-node-id="y71MFF6yOxF2PFhFR90LeP">
+            <div style="font-size: 0.875rem; font-weight: 700; color: #15803d; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;" data-page-node-id="AO1GiN2wrABc5eldqNq3xi">
+              <span data-page-node-id="Y2XH8RCnEMSkKE5MzP2cNC">🧠 2. LLM 大语言模型 API</span>
+            </div>
+
+            <div class="form-group" data-page-node-id="QV5t1AAJIgFjal9S4aHshj">
+              <label for="cfgLlmBaseUrl" class="form-label" data-page-node-id="p7bmZS7tD108E04Aa8NazS">LLM API URL</label>
+              <input type="url" id="cfgLlmBaseUrl" class="form-control code-font" placeholder="例如：https://your-provider.example/v1" autocomplete="off" data-page-node-id="FZ1QGqA4D3jlUHf1VrGwwv">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="s4VCDvl7ePyYZyA3GNLJZU">
+              <label for="cfgLlmApiKey" class="form-label" data-page-node-id="bb2MFfGLIZ9o1VommQd1eE">LLM API Key</label>
+              <input type="password" id="cfgLlmApiKey" class="form-control code-font" placeholder="请填写自己的 LLM API Key；留空保持不变" autocomplete="new-password" data-page-node-id="cibOT51yPD6b0NOTRiRIp1">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="w3ZcEMprTGlatSBEsVm6Y6">
+              <label for="cfgLlmModelName" class="form-label" data-page-node-id="ZoBnFChGpSsMyiiqAH9Utz">🤖 默认 LLM 模型</label>
+              <input id="cfgLlmModelName" class="form-control code-font" value="gpt-5.6-sol" placeholder="填写供应商的 LLM 模型 ID" data-page-node-id="QdQCLIBo6vIgAbAtOi4dS7">
+            </div>
+          </div>
+
+          <!-- 第三部分：图片生成 API 设置 -->
+          <div class="api-section-card" style="background: #fff7ed; border: 1px solid #fed7aa; padding: 14px; border-radius: var(--radius-md);" data-page-node-id="i0iKe40UvZVqtvDWu59zEJ">
+            <div style="font-size: 0.875rem; font-weight: 700; color: #c2410c; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;" data-page-node-id="yWff2OoG7ivChud2TzVLBd">
+              <span data-page-node-id="ZCYyo6LdK5DhN3gD1K02Em">🖼️ 3. GPT Image 图片 API（Key 1）</span>
+            </div>
+
+            <div class="form-group" data-page-node-id="FIASVLqE3Jgte4oS1IDR3z">
+              <label for="cfgImageBaseUrl" class="form-label" data-page-node-id="VVmyomCzm4N0cHAPhEC9WE">图片 API URL</label>
+              <input type="url" id="cfgImageBaseUrl" class="form-control code-font" placeholder="例如：https://your-provider.example/v1" autocomplete="off" data-page-node-id="KNZVAtTV5dDAwbV5XWmAnw">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="1qmia2ei0aZb1HtTVyqxkr">
+              <label for="cfgImageApiKey" class="form-label" data-page-node-id="MgOI4jSruZmGZuVsQ8Ihcr">图片 API Key</label>
+              <input type="password" id="cfgImageApiKey" class="form-control code-font" placeholder="请填写自己的图片 API Key；留空保持不变" autocomplete="new-password" data-page-node-id="SlCK266qQLSzL4Qz383wRj">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="HFvmEx8cBWLquDM64dGHFQ">
+              <label for="cfgImageModel" class="form-label required" data-page-node-id="xj4GMXrmcm3yDlplOO2Qhl">🤖 图片模型（多个用逗号分隔，首个为默认）</label>
+              <input id="cfgImageModel" class="form-control code-font" value="gpt-image-2.5-flare, gpt-image-2.5-sunburst" placeholder="填写一个或多个供应商图片模型 ID" data-page-node-id="o98FawTDzjmkEkDIAyxqik">
+            </div>
+          </div>
+
+          <!-- 第三部分 B：GPT Image 2 使用独立 Key，运行时按模型自动路由。 -->
+          <div class="api-section-card" style="background: #fefce8; border: 1px solid #fde68a; padding: 14px; border-radius: var(--radius-md);" data-page-node-id="yHv0kC2Vr3SHKYv98Rgju4">
+            <div style="font-size: 0.875rem; font-weight: 700; color: #a16207; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;" data-page-node-id="rkKiKA1bwY6rODkaxXDQsM">
+              <span data-page-node-id="c2TOHMPdppUc1ZzTlpwCRr">🖼️ 4. GPT Image 2 图片 API（Key 2）</span>
+            </div>
+
+            <div class="form-group" data-page-node-id="ysWRUPxK1KH0L9CXzd8R1n">
+              <label for="cfgImage2BaseUrl" class="form-label" data-page-node-id="baeoxzkswlWxFRGtqr9qAp">GPT Image 2 API URL</label>
+              <input type="url" id="cfgImage2BaseUrl" class="form-control code-font" placeholder="例如：https://your-provider.example/v1" autocomplete="off" data-page-node-id="uoIEv39Tkmb0x8Ghgt62k0">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="e2j4cPQlArEsuEdPOGlqkn">
+              <label for="cfgImage2ApiKey" class="form-label" data-page-node-id="Hjui8AawE3WT4cJSgDWkWr">GPT Image 2 API Key</label>
+              <input type="password" id="cfgImage2ApiKey" class="form-control code-font" placeholder="留空保持 HTML 默认值或浏览器已保存值" autocomplete="new-password" data-page-node-id="998Fj9oGaHnGLIDjEgj30G">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="4CbVmJsKTRY4RPungrMO89">
+              <label for="cfgImage2Models" class="form-label required" data-page-node-id="q1575IDyexA5n6e6JSpBDb">🤖 GPT Image 2 模型</label>
+              <input id="cfgImage2Models" class="form-control code-font" value="gpt-image-2" placeholder="填写一个或多个模型 ID" data-page-node-id="6mL4wz53BoQ5IYaNgCWu1s">
+            </div>
+          </div>
+
+          <!-- 第五部分：Nano Banana 使用独立 Key，运行时按模型自动路由。 -->
+          <div class="api-section-card" style="background: #f5f3ff; border: 1px solid #ddd6fe; padding: 14px; border-radius: var(--radius-md);" data-page-node-id="kqYeyUmDnscoM0cYVOV9Z9">
+            <div style="font-size: 0.875rem; font-weight: 700; color: #6d28d9; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;" data-page-node-id="5GhH64fhbjnQCDtgBYBETH">
+              <span data-page-node-id="SLeEBesEyUMPiTWP9nmy2V">🍌 5. Nano Banana 图片 API（Key 3）</span>
+            </div>
+
+            <div class="form-group" data-page-node-id="6ryQ0IsjMax1BK5nfs0FOZ">
+              <label for="cfgNanoImageBaseUrl" class="form-label" data-page-node-id="4QLiJHyijLKLnhJ0wn3m2u">Nano Banana API URL</label>
+              <input type="url" id="cfgNanoImageBaseUrl" class="form-control code-font" placeholder="例如：https://your-provider.example/v1" autocomplete="off" data-page-node-id="q8EYmk7jvHVTchBq4HAxk5">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="Q3nyXexXvBOeaWLByZcj1V">
+              <label for="cfgNanoImageApiKey" class="form-label" data-page-node-id="sbvhN702Ev1TyynwFd69L0">Nano Banana API Key</label>
+              <input type="password" id="cfgNanoImageApiKey" class="form-control code-font" placeholder="留空保持 HTML 默认值或浏览器已保存值" autocomplete="new-password" data-page-node-id="oDWKY6NvmhRG01KYCN0vqC">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;" data-page-node-id="FBq2lP6FGZ2SnWARXK5QlP">
+              <label for="cfgNanoImageModels" class="form-label required" data-page-node-id="y4plRu38lxNA4FeLYwxTK7">🤖 Nano Banana 模型</label>
+              <input id="cfgNanoImageModels" class="form-control code-font" value="nano-banana-2" placeholder="填写一个或多个模型 ID" data-page-node-id="HPmA3a5QvfRec6UlqYWdfB">
+            </div>
+          </div>
+
+          <div class="api-section-card" data-admin-only style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 14px; border-radius: var(--radius-md);" data-page-node-id="j4c5il7ATpVz5QaupUxm9S">
+            <div style="font-size: 0.875rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px;" data-page-node-id="lFDcSOO68cTaxtxSk4qwNr">管理员计价（积分）</div>
+            <div class="form-row-2" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;" data-page-node-id="AmaMnP2rWBoq3ca7XnALGw">
+              <label class="form-group" data-page-node-id="yenmV2WwMcaOVRlUSHsvBP">视频 / 秒<input id="cfgVideoCredits" class="form-control" type="number" min="0" step="1" data-page-node-id="EQyYqN1uDA9mE2iu4CBI0d"></label>
+              <label class="form-group" data-page-node-id="dKBnx3nBpklLT4GLTYERDd">图片 / 张<input id="cfgImageCredits" class="form-control" type="number" min="0" step="1" data-page-node-id="s8fAOpdDL5GELsn1Mj3n8g"></label>
+              <label class="form-group" data-page-node-id="rK2df68FyBvD29EjzKIDhq">LLM / 次<input id="cfgLlmCredits" class="form-control" type="number" min="0" step="1" data-page-node-id="lR0sBMxvQD1JKGFFvFCWGK"></label>
+              <label class="form-group" data-page-node-id="gLF5hJeyymGecpbGK2lxan">长剧本 / 次<input id="cfgLongScriptCredits" class="form-control" type="number" min="0" step="1" data-page-node-id="jI0RVw1KoDyro3YnpD33ky"></label>
+              <label class="form-group" data-page-node-id="GrHRMupt5mTCOpTTsnxr49">多角度图片 / 张<input id="cfgMultiAngleCredits" class="form-control" type="number" min="0" step="1" data-page-node-id="8kq9fDX1RgBY1jOw2LlFdh"></label>
+            </div>
+            <div id="adminUsersPanel" style="margin-top: 12px;" data-page-node-id="keuHDLd2Ef7QTt150HlBFY"></div>
+          </div>
+
+          </div>
+
+          <div id="apiTestResult" class="api-test-status hidden" data-page-node-id="3zyhYoql547mDiXOqaVfmx"></div>
+
+          <div class="modal-footer" style="margin-top: 8px;" data-page-node-id="b1rhM4a2JA7emXEc5MsPaQ">
+            <button type="button" id="btnClearStoredApiConfig" class="btn btn-danger">清除本机 API 配置</button>
+            <button type="button" id="btnTestStandaloneApis" class="btn btn-secondary hidden" data-page-node-id="h7jzZQwMJlcqDDeeQn4VLR">测试连接</button>
+            <button type="button" id="btnSaveApiConfig" class="btn btn-primary" data-page-node-id="o59vjA7AEAtUUuwWI6HUyI">保存配置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📝 提示词编辑/新建 Modal -->
+    <div id="promptTemplateModal" class="modal-overlay hidden" data-page-node-id="A7qKTXiAE503pgpCsIGmfF">
+      <div class="modal-container library-modal-container" data-page-node-id="Up6CvdfnQJ3GlobnN84qDd">
+        <div class="modal-header" data-page-node-id="O68VPskTBbrEYICDKewYOV"><h3 id="promptTemplateModalTitle" data-page-node-id="bjqBwlxR3DBpxNtYs1sHu3">新增提示词</h3><button id="btnClosePromptTemplateModal" class="btn-icon" type="button" data-page-node-id="44kShi8Gk5S18fM69CWUYj">&times;</button></div>
+        <form id="promptTemplateForm" class="modal-body library-form" data-page-node-id="7eXbBZHoHFX3tEYHeWyuJ2">
+          <input id="promptTemplateFormId" type="hidden" data-page-node-id="O0bb45CjAvUSAkRkFRotT4">
+          <div class="library-form-grid" data-page-node-id="LJUjtVbgkXvgySAUeuofi9">
+            <label class="form-group" data-page-node-id="uGcBDBuxJqAenUeX5kaikq"><span class="form-label required" data-page-node-id="60LFISNTlbQDFVyrCcDSMx">标题</span><input id="promptTemplateTitle" class="form-control" maxlength="120" required placeholder="例如：产品微距环绕展示" data-page-node-id="vupaTfjskgAZ150vlc9keg"></label>
+            <label class="form-group" data-page-node-id="E72d5sntTUUQhWpIVWkgkl"><span class="form-label required" data-page-node-id="GyDHGbRveNDzN4C2NBcAuh">分类</span><input id="promptTemplateCategory" class="form-control" maxlength="60" list="promptCategorySuggestions" required value="通用" data-page-node-id="P7Ej15Oeo0rYwEJ5JEEGFO"></label>
+            <label class="form-group" data-page-node-id="TnDa9RWr9oTSqLCgCPDVS2"><span class="form-label" data-page-node-id="sCINF4Pb04sv5YL9CP5GFU">适用类型</span><select id="promptTemplateTarget" class="form-control" data-page-node-id="70GcXmw1gAHDse2deLcF2j"><option value="both" data-page-node-id="eOzw55rEU8txqY4yOvqVk6">图片和视频通用</option><option value="image" data-page-node-id="AVhjMABOgKF3jUZa4GaFV2">图片</option><option value="video" data-page-node-id="YZk5HQgxeQV3VFwx31ibSm">视频</option></select></label>
+            <label class="form-group" id="promptTemplateScopeGroup" data-page-node-id="jrxbm6ljteoMG2GxgfL82D"><span class="form-label" data-page-node-id="DL5xx7s6udp0STC1DlhKh7">可见范围</span><select id="promptTemplateScope" class="form-control" data-page-node-id="uNiF0bcmYQZqKfvKOhGl7B"><option value="private" data-page-node-id="mSiRZCippC76cKDOyUR4P3">仅自己</option><option value="system" data-page-node-id="z9soV48klEYUJYoPMMm1rE">系统模板（所有用户）</option></select></label>
+          </div>
+          <label class="form-group" data-page-node-id="xMWBAGOo0e4S6RkFwb3Kvh"><span class="form-label required" data-page-node-id="WIw8d6Zyx6XkL7Lu7gXP52">提示词正文</span><textarea id="promptTemplatePrompt" class="form-control" rows="8" maxlength="20000" required placeholder="输入可复用的提示词内容"></textarea></label>
+          <label class="form-group" data-page-node-id="vn9FHgxPFClqdPLAjS6sIz"><span class="form-label" data-page-node-id="GQz0WqbtMMf0zSZGRja2Ve">使用说明</span><textarea id="promptTemplateDescription" class="form-control" rows="3" maxlength="1000" placeholder="说明适用场景、替换变量或使用注意事项"></textarea></label>
+          <label class="form-group" data-page-node-id="rVnkDa2Eh5wqGBprSlw89n"><span class="form-label" data-page-node-id="GDPVoytNP6dnMu8MUtosKg">标签</span><input id="promptTemplateTags" class="form-control" placeholder="多个标签用逗号分隔" data-page-node-id="uViCwFC2gN0zuGKgtCh7ZH"></label>
+          <div class="modal-footer" data-page-node-id="LQH5lm1FQHtlfBC8P52wCg"><button id="btnCancelPromptTemplateForm" class="btn btn-secondary" type="button" data-page-node-id="DUEWTqcaOBoMHRH0modoY5">取消</button><button class="btn btn-primary" type="submit" data-page-node-id="Ha6p3pm8h0HlqSte6MCs2a">保存提示词</button></div>
+        </form>
+      </div>
+    </div>
+    <datalist id="promptCategorySuggestions" data-page-node-id="HUPATMmdVmgRXUtco8AfCY"><option value="通用" data-page-node-id="QMI6rm4v899gs5USHPbUtB"><option value="二手新机" data-page-node-id="vvF7C464uD3FdX4QQk9Xgb"><option value="电影画质" data-page-node-id="99ENm56YSwnb5dPe1R34CZ"><option value="卖点爆款" data-page-node-id="RfAzL4HqaRwZ5b7Pabjyhq"><option value="特写细节" data-page-node-id="BAXRTBH345ZCzMSJPnChhC"></datalist>
+
+    <!-- 📦 资产编辑/新建 Modal -->
+    <div id="assetModal" class="modal-overlay hidden" data-page-node-id="23Ar1QUd1gXK9DVLBFNXPx">
+      <div class="modal-container library-modal-container" data-page-node-id="NCbGE60ugu7rXIwuiegUIO">
+        <div class="modal-header" data-page-node-id="rwJVwUS5Z98VLaoSXQcLmj">
+          <h3 id="assetModalTitle" data-page-node-id="Bor2GPzKDbZm1MDWnJNEb8">新增资产</h3>
+          <button id="btnCloseAssetModal" class="btn-icon" data-page-node-id="39rowcqG3h0SCt81duy6iT">&times;</button>
+        </div>
+        <form id="assetForm" class="modal-body library-form" data-page-node-id="edCjEQvAiQgvtKDl1HLi2R">
+          <input type="hidden" id="assetFormId" value="" data-page-node-id="SJXcvgWQGweoapmoZyA6DF">
+          <input type="hidden" id="assetFormImgUrl" value="" data-page-node-id="cLGlFkzm9CG19S2kEuS6ED">
+          <div class="library-form-grid" data-page-node-id="sTO9CH65oYfNBAjiggGrEE">
+            <label class="form-group" data-page-node-id="hLFcEk9U7S6yrd756AG1R9"><span class="form-label required" data-page-node-id="qaVNZ9JH63Qig93FrSwDSx">资产名称</span><input type="text" id="assetFormName" class="form-control" maxlength="120" placeholder="例如：熊主任角色设定" required data-page-node-id="wYxz1a6D2TqwcT8LtcitnJ"></label>
+            <label class="form-group" data-page-node-id="kIlVc1kAA3KIZpY1tXlvD2"><span class="form-label required" data-page-node-id="7rUUK9XALEUspMfOiDbrvU">资产分类</span><select id="assetFormCategory" class="form-control" data-page-node-id="LtYH3H9dUAPFDAhNY46Pjp"><option value="人物" data-page-node-id="KRNR0h8OhOB7ScGDwHcDmM">人物</option><option value="道具" data-page-node-id="m5uS9ahb9gm3Hh38AkctWt">道具</option><option value="场景" data-page-node-id="aMs1HbAQoorHWRQlSiVlpI">场景</option><option value="产品" data-page-node-id="CUFDn0FCzQuCC9GFGFzHpr">产品</option><option value="其他" data-page-node-id="Fy6nmPhTh4AUgXCAjHCoa4">其他</option></select></label>
+            <label class="form-group" id="assetFormScopeGroup" data-page-node-id="I9v01H4SXpmecPFHcpDXr7"><span class="form-label" data-page-node-id="7BO2Y1HT0UKxFXIR2Q4ouP">可见范围</span><select id="assetFormScope" class="form-control" data-page-node-id="i5kmgb2mVONhA8OzOgPaQ9"><option value="private" data-page-node-id="dZkM5tIgO3QaqDSiOOvzG3">仅自己</option><option value="system" data-page-node-id="QGWSJBex4Zyi7nVA17LBgK">系统资产（所有用户）</option></select></label>
+            <label class="form-group" data-page-node-id="aGhFmQtZQfxrotMLSH9sxE"><span class="form-label" data-page-node-id="srT0i9qSl6pF7q40MrWWsG">标签</span><input id="assetFormTags" class="form-control" placeholder="多个标签用逗号分隔" data-page-node-id="8hSVdD5tnB2h0HRa6r3BtE"></label>
+          </div>
+          <label class="form-group" data-page-node-id="e0y4rjDYJ4760wElxSksyu"><span class="form-label" data-page-node-id="yQAMK8hY99g5kxsyx7Nu18">资产说明</span><textarea id="assetFormDesc" class="form-control" rows="3" maxlength="2000" placeholder="角色设定、产品特征、场景说明等"></textarea></label>
+          <div class="form-group" data-page-node-id="AiB2hVs9wyXsJcNrs211tq">
+            <div class="asset-upload-heading" data-page-node-id="J0xZe370z6ScHLRhGmhSSm"><span class="form-label" data-page-node-id="QxIrRW1mdUNzlgVrEDIchy">媒体内容</span><span data-page-node-id="6C3HykLgVwLcpzpZhNQ0gD">支持图片、视频、音频，可多选或拖入</span></div>
+            <div id="assetMediaDropzone" class="asset-media-dropzone" tabindex="0" data-page-node-id="BisayDL6lrdMLOyQKsRMSl"><div data-page-node-id="XqL7OwENDo0gpTZJsBCvfg"><strong data-page-node-id="nMm5ZmUtBFvAsWouK4zDjT">拖动文件到这里</strong><span data-page-node-id="ejCV9zTpmVAKzGJvlR3nnQ">或点击选择文件</span></div><button type="button" id="btnUploadAssetImg" class="btn btn-secondary btn-sm" data-page-node-id="1HGQwbZ7PGC9Sr9n7C1Pim">选择文件</button><input type="file" id="assetFormImgInput" accept="image/*,video/*,audio/*" multiple hidden data-page-node-id="I7GDv4CUcoVWcLPBrNuMou"></div>
+            <div id="assetUploadProgress" class="library-upload-progress hidden" data-page-node-id="7OPOAhimWMDnq4bmgFN1b2"><div data-page-node-id="6MWL3wxTACbmD30gTXCMxo"><span data-page-node-id="zASvJKQqjYHqDJNtABXF3r"></span></div><p data-page-node-id="5q9mvNATlqOEppuu7qVuuK">正在上传…</p></div>
+            <div id="assetFormMediaList" class="asset-form-media-list" data-page-node-id="OgVaW9ibQ0j0QWbXIsZ19d"></div>
+            <img id="assetFormImgPreview" src="" hidden alt="" data-page-node-id="aFidexENCVmHa6aRvECd2E">
+          </div>
+          <div class="modal-footer" data-page-node-id="I9c9cGubMk4n1QLeWANASs">
+            <button type="button" id="btnCancelAssetForm" class="btn btn-secondary" data-page-node-id="77CnqeD2HVz4b4GlAovQfW">取消</button>
+            <button type="submit" class="btn btn-primary" data-page-node-id="jKL68JnfmxGvmje4r47eAq">保存资产</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ☁️ 已上传资源绑定加入资产库 Modal -->
+    <div id="bindResourceModal" class="modal-overlay hidden" data-page-node-id="T6LgN2gayZWp4E1sMQllql">
+      <div class="modal-container" style="max-width: 480px;" data-page-node-id="yt8apXTmeGFbCe2Dz9uwOh">
+        <div class="modal-header" data-page-node-id="7TkTP9wfAkDPqE6w96tNul">
+          <h3 data-page-node-id="XdO1g1woaCESNaHUiPd3h4">➕ 将已上传资源加入资产库</h3>
+          <button id="btnCloseBindModal" class="btn-icon" data-page-node-id="qpSmjmEGeubA8vvgiAnU13">&times;</button>
+        </div>
+        <form id="bindResourceForm" class="modal-body" data-page-node-id="n14O035in3OhsxDEES3f1J">
+          <input type="hidden" id="bindResourceId" value="" data-page-node-id="Y1ItONiqYDR2OhYhTKf0aX">
+          
+          <div style="text-align: center; margin-bottom: 12px;" data-page-node-id="lnbkCiJJeHvkJSZ4e6X9Dk">
+            <img id="bindResourcePreviewImg" src="" style="max-height: 160px; max-width: 100%; border-radius: 10px; border: 1px solid var(--border-color);" data-page-node-id="lHU0phmGD3DaByY43zkU9S">
+          </div>
+
+          <div class="form-group" data-page-node-id="JrZQq8YvyEEyq2lJ86O1yc">
+            <label class="form-label required" data-page-node-id="MNqllGaDtBBKBWXhSp0O4q">🏷️ 绑定资产分类</label>
+            <div class="apple-segment-control" id="bindCategorySeg" data-value="人物" data-page-node-id="3viGaveIegLtuSuvtSJuRm">
+              <button type="button" class="segment-btn active" data-value="人物" data-page-node-id="VKwrgck52wAQECvnDt8w8l">👤 人物</button>
+              <button type="button" class="segment-btn" data-value="道具" data-page-node-id="5CDVPqRW6PAcdpHKZw4G8H">🛠️ 道具</button>
+              <button type="button" class="segment-btn" data-value="场景" data-page-node-id="tF0dUF5t0qM08Ro48hxdfW">🏞️ 场景</button>
+              <input type="hidden" id="bindCategoryInput" value="人物" data-page-node-id="zVlx4wk9k0z0iQsXfeqJMT">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;" data-page-node-id="UXJ9EBbgOcgHWPAZciVRi9">
+            <label for="bindAssetName" class="form-label required" data-page-node-id="hNFggMYCcQMF43do5nzpHt">📝 资产名称</label>
+            <input type="text" id="bindAssetName" class="form-control" placeholder="例如：成色质检单、检测显微镜、数码展柜" required data-page-node-id="3nZaawTuOYFfgr2pAqOdRm">
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;" data-page-node-id="yBDdLA0u9JrdNTojwjzB0h">
+            <label for="bindAssetDesc" class="form-label required" data-page-node-id="ieXaXjRD4VdW8A1TkF13p7">📄 资产介绍说明</label>
+            <textarea id="bindAssetDesc" class="form-control" rows="3" placeholder="输入该资产在二手/新机推广中的作用与画面描述" required></textarea>
+          </div>
+
+          <div class="modal-footer" style="margin-top: 16px;" data-page-node-id="EyVngfHrwVt7itILI83q4X">
+            <button type="button" id="btnCancelBindModal" class="btn btn-secondary" data-page-node-id="FZkcA7pYlXqLpSCufD9n1S">取消</button>
+            <button type="submit" class="btn btn-primary" data-page-node-id="GEkQXxZDIiJG2sKs28Qm9N">确认加入资产库</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container" data-page-node-id="fkxSOKnL1sNBNNpL4VIW87"></div>
+  </div>
+
+
+  <!-- 📂 导入 JSON 画布项目 Modal 弹窗 -->
+  <div id="modalImportCanvas" class="modal-overlay hidden" style="display: none; z-index: 99999; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;" data-page-node-id="JEhPqdXEDg32FWEBzAGOCL">
+    <div class="modal-container" style="background: #ffffff; border-radius: 20px; width: 100%; max-width: 520px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 16px;" data-page-node-id="9I7TRA2EwlNRFffm1vdl27">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;" data-page-node-id="SDCUjvsX6Oz45vLGbfZfds">
+        <div style="display: flex; align-items: center; gap: 8px;" data-page-node-id="9FaiGOVvwyn9hOgMwFxmLM">
+          <span style="font-size: 1.3rem;" data-page-node-id="ciST9dhlEe0VQvhoHyOAgB">📂</span>
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;" data-page-node-id="DNo94YgG3euTNtydkMM5SP">导入 JSON 画布项目</h3>
+        </div>
+        <button type="button" id="btnCloseImportCanvasModal" class="btn-icon" style="font-size: 1.4rem; cursor: pointer; background: transparent; border: none; color: #64748b;" data-page-node-id="TEBqzb1d15hlejidDKjHvt">&times;</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;" data-page-node-id="GqOD6DHYHrJ3Vdu7imukqs">
+        <div id="canvasDropZone" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 32px 20px; background: #e6e6e6; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;" data-page-node-id="vydOeCrE69hVOxTIfDH2oO">
+          <div style="font-size: 2.5rem;" data-page-node-id="rHwstrlOntjAWVFrcdDAts">📥</div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a;" data-page-node-id="I2S1Hn7eX4gSgxdUHQLXg6">将 JSON 文件拖拽到此处</div>
+          <span style="font-size: 0.775rem; color: #64748b;" data-page-node-id="Ucfwcve6peJMpwB0XUYiWN">或者点击下方按钮从电脑选择文件</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnSelectCanvasFile" style="margin-top: 6px;" data-page-node-id="wQVryThFppne3s15WANqZN">📂 选择 JSON 文件</button>
+          <input type="file" id="canvasModalFileInput" accept=".json" style="display: none;" data-page-node-id="0daFeld55P2UZakAqGdXfY" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📜 历史剧本库 弹窗 Modal（顶层独立 绝对不会被父级隐藏） -->
+  <div id="scriptHistoryModal" class="modal-overlay hidden" style="display: none; z-index: 99999; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;" data-page-node-id="FoWcfVM3chCOy4umHjOGGU">
+    <div class="modal-container" style="background: #ffffff; border-radius: 20px; width: 100%; max-width: 860px; max-height: 85vh; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 16px;" data-page-node-id="CVyetQZCZUTZwtec9xSEni">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0;" data-page-node-id="CuLATBfHNfZh9ytj5eTgJG">
+        <div style="display: flex; align-items: center; gap: 10px;" data-page-node-id="sdTNcroLKZjowzbHC8uJCe">
+          <span style="font-size: 1.4rem;" data-page-node-id="G2SDDtxhYlvxYlofxxcAm7">📜</span>
+          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #0f172a;" data-page-node-id="A3CsrhDSRRyz9dy21mQCbU">历史生成剧本库 (含原始输入记录)</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;" data-page-node-id="ekXbsR3tcCr0oEJ1yfFzVk">
+          <button type="button" id="btnClearScriptHistory" class="btn btn-ghost btn-sm" style="font-size: 0.775rem; color: #ef4444; border: 1px solid #fecdd3; border-radius: 8px; padding: 4px 10px;" data-page-node-id="WoJewlMEqbCiCOM9GZQHoA">🗑️ 清空全部历史</button>
+          <button type="button" id="btnCloseScriptHistoryModal" onclick="closeScriptHistoryModal()" class="btn-icon" style="font-size: 1.5rem; cursor: pointer; background: transparent; border: none; color: #64748b;" data-page-node-id="T4hH3162Z92lpKO8SFQYAj">&times;</button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="overflow-y: auto; flex: 1; padding-right: 6px;" data-page-node-id="dZB1y3ism9pmCCPScPUx5I">
+        <div id="scriptHistoryListContainer" style="display: flex; flex-direction: column; gap: 14px;" data-page-node-id="zoXhQBvkrGpPA5kExty0HW">
+          <!-- 动态渲染一条一条的历史剧本卡片 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sessionTrashModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sessionTrashTitle" data-page-node-id="sx74hmtRQhazvOuCzFvdAw">
+    <div class="modal-card session-trash-modal-card" data-page-node-id="pWeCgHWq1A9CudaCONb0XQ">
+      <div class="modal-header" data-page-node-id="d15vr16WFwQJ5RkBdzQy7p">
+        <div data-page-node-id="AFANUXfGREXvKPq0K6w9qF">
+          <h3 id="sessionTrashTitle" data-page-node-id="wFGoLZyDjtBnjeywl86aTE">回收站</h3>
+          <p data-page-node-id="C1cnEult4fpJ9RmtIFFxmJ">已删除会话永久保留，可恢复或永久删除。</p>
+        </div>
+        <div class="session-trash-header-actions" data-page-node-id="6bNhwgfL2VyWMEyuhjNRdt">
+          <button type="button" id="btnToggleTrashBatchEdit" class="session-trash-edit-button" title="批量管理" aria-label="批量管理" data-page-node-id="leeq98h0VAiSZdgwLQyojj">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="pROcflj68uScJbK2AEEUxg"><path d="M9 11l3 3L22 4" data-page-node-id="ZRt2y06CjUuhcLUrj7RZuz"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" data-page-node-id="xuHvhZnAX0x54ATECSXA0C"></path></svg>
+          </button>
+          <button type="button" id="btnCloseSessionTrash" class="btn-close" aria-label="关闭回收站" data-page-node-id="YIFgmUZ5Q45DHSYuMORmOz">×</button>
+        </div>
+      </div>
+      <div id="sessionTrashBatchActionBar" class="session-trash-batch-action-bar" hidden data-page-node-id="7e0CScf4Z4CTE1RHybFdvI">
+        <button type="button" id="btnTrashBatchSelectAll" class="session-batch-text-button" data-page-node-id="2HPtB2u3aHHsn5fZO43pPY">全选</button>
+        <span id="sessionTrashBatchSelectedCount" data-page-node-id="B4nUis2GaOV8HsegLChqFc">已选 0 项</span>
+        <button type="button" id="btnTrashBatchDelete" class="session-batch-delete-button" disabled data-page-node-id="Zu7DFYZSSSUd48oNb8DxeM">永久删除</button>
+        <button type="button" id="btnTrashBatchCancel" class="session-batch-text-button" data-page-node-id="1LMHbClCu9Ha6YvSGiz0Iy">取消</button>
+      </div>
+      <div id="sessionTrashList" class="session-trash-list" data-page-node-id="apRZMM7Ya8x0nxghdr5KX5"></div>
+    </div>
+  </div>
+
+  <div id="creationMediaPreviewModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="creationMediaPreviewTitle" data-page-node-id="GYbHqTN3HmXFaj81bZAfXs">
+    <div class="creation-media-preview-card" data-page-node-id="hOxKNVy6Db5XgKINlLyFFz">
+      <div class="creation-media-preview-header" data-page-node-id="xnYYpcY7HBRHQzVsZ9vDD0">
+        <div data-page-node-id="iCSYhKDmz8RtlYsWqWGmrR">
+          <h3 id="creationMediaPreviewTitle" data-page-node-id="5GamkgNFWCxm011TrNEe8m">生成结果预览</h3>
+          <p id="creationMediaPreviewMeta" data-page-node-id="rFqBCKjNEMcpnfSfGpDgMf"></p>
+        </div>
+        <button type="button" id="btnCloseCreationMediaPreview" class="btn-close" aria-label="关闭预览" data-page-node-id="lZyZLSWqkauz3SEc0tRG88">×</button>
+      </div>
+      <div id="creationMediaPreviewBody" class="creation-media-preview-body" data-page-node-id="r3KgkvP7T2azA3PrP6Epic"></div>
+      <div class="creation-media-preview-actions" data-page-node-id="vFlv3Y4AZ5VKEHwx1wwR6B">
+        <button type="button" id="btnOpenCreationMediaSession" class="btn btn-secondary" data-page-node-id="zaJ9wIK1QZzEjygh9Or2Sy">查看原会话</button>
+        <button type="button" id="btnDownloadCreationMedia" class="btn btn-primary" data-page-node-id="JNM7OeNV35rig0UAMMCOAr">下载</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="standalone-client.js?v=20260921_privacy_a1"></script>
+  <script src="app.js?v=20260921_privacy_a1"></script>
+
+  <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
+  <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">
+    <div class="modal-container" class="canvas-picker-modal-container" data-page-node-id="vNlzMHEkLlQJ8Bnq9i5awd">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color);" data-page-node-id="uomR1kn2iNjc31fmRCWSSu">
+        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a;" data-page-node-id="nX5vhXGohuu0YaNweCji2e">📚 从提示词库选择模板导入</h3>
+        <button type="button" class="btn-close-mini" onclick="document.getElementById('modalCanvasPromptPicker').classList.add('hidden')" data-page-node-id="iixZhZK0kSkpxfBexf1VEa">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 420px; overflow-y: auto; padding: 16px;" data-page-node-id="l5Vyt0A3ggzz9K5aTYAD5P">
+        <div id="canvasPromptPickerList" style="display: flex; flex-direction: column; gap: 10px;" data-page-node-id="tj8F7gVixAjT4jotStScK8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：📦 从资产库选择图片/视频导入到画布节点 (包含 5 大分类 Pill 标签页) -->
+  <div id="modalCanvasAssetPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="D9YcDaqlxxeQdXZABJhj2g">
+    <div class="modal-container" class="canvas-picker-modal-container" data-page-node-id="YR5j4EMe8S4luVe4yZ3Beg">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color);" data-page-node-id="yYR50SrAfLY27ZREhjOnON">
+        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a;" data-page-node-id="03jToHHWTxfVmGKAIaESlB">📦 从资产库选择图片/视频导入</h3>
+        <button type="button" class="btn-close-mini" onclick="document.getElementById('modalCanvasAssetPicker').classList.add('hidden')" data-page-node-id="7GKHS7GxW58Aq35MVVcpZ8">✕</button>
+      </div>
+
+      <!-- 5 大分类 Pill 切换条 -->
+      <div style="display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid #f1f5f9; overflow-x: auto;" id="canvasAssetCategoryTabs" data-page-node-id="XsYCOFsVIVDVKIssXQHpaa">
+        <button type="button" class="canvas-asset-tab active" onclick="switchCanvasAssetCategory('all')" data-page-node-id="y4MhK6OEqCJNv61NhdwC15">📦 全部资产</button>
+        <button type="button" class="canvas-asset-tab" onclick="switchCanvasAssetCategory('renwu')" data-page-node-id="WX7CPRFRpIHJQ5j3f6ofjc">👤 人物</button>
+        <button type="button" class="canvas-asset-tab" onclick="switchCanvasAssetCategory('daoju')" data-page-node-id="7Yh4gscweFBAGoD6sKvoiA">🛠️ 道具</button>
+        <button type="button" class="canvas-asset-tab" onclick="switchCanvasAssetCategory('changjing')" data-page-node-id="gFokYdhfIQa2aqSxa534ii">🏞️ 场景</button>
+        <button type="button" class="canvas-asset-tab" onclick="switchCanvasAssetCategory('uploaded')" data-page-node-id="HyYKCQtMJEpfwkVvxtu6Ey">☁️ 已上传资源</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 420px; overflow-y: auto; padding: 16px;" data-page-node-id="BaPIlJTmv9evwEho8xBCDX">
+        <div id="canvasAssetPickerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;" data-page-node-id="09dD4vhEMCAEGCPS9X45R6"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 弹窗：长剧本聊天从资产库导入图片 -->
+  <div id="modalLongScriptAssetPicker" class="modal-overlay hidden" onclick="if(event.target===this) closeLongScriptAssetPicker()" data-page-node-id="1RbsqACYc1r4BDo1LfDm4w">
+    <div class="modal-container ls-asset-picker-modal" data-page-node-id="6s4HQa43asd4ukM6JZ1g9w">
+      <div class="modal-header ls-asset-picker-header" data-page-node-id="2yvKgEIOVWC9KutBSRNIvF">
+        <div data-page-node-id="B3MnWSKc3sl91CgRa6cr6n">
+          <h3 data-page-node-id="tc0gyu5RnyXbcicFn5Dv5l">从资产库导入图片</h3>
+          <p data-page-node-id="wui9OXeGPTwvNdaZbHcuib">可选择人物、道具、场景或已上传的图片资源</p>
+        </div>
+        <button type="button" class="btn-close-mini" onclick="closeLongScriptAssetPicker()" aria-label="关闭" data-page-node-id="LdtLgVt6ngNgDngv0t1m89">✕</button>
+      </div>
+      <div id="longScriptAssetPickerGrid" class="ls-asset-picker-grid" data-page-node-id="AM0nM2UO3K21Wp1GR7aHa4"></div>
+    </div>
+  </div>
+
+  <!-- 长剧本应用到对话创作：镜头选择弹窗 -->
+  <div id="modalLongScriptConversationApply" class="modal-overlay hidden" onclick="if(event.target===this) closeLongScriptApplyModal('conversation')" data-page-node-id="9rEyIi0W4gDwIv35Pq7cMp">
+    <div class="modal-container ls-apply-modal" data-page-node-id="CzaebDSYeYQnjju9x8AInC">
+      <div class="modal-header ls-apply-modal-header" data-page-node-id="t1ZSNtG7jpeUDj6q0WeE0C">
+        <div data-page-node-id="5CAdCUlUPGGZt9qOOQ7ofo">
+          <h3 data-page-node-id="m5ytm45GdUFo5ij8MWTbhA">应用到对话创作</h3>
+          <p data-page-node-id="saoas0EifjuugSvH7rZmSo">选择要应用的镜头，默认全选；完整文案和参考图会一并带入菜单栏“创作”页面。</p>
+        </div>
+        <button type="button" class="btn-close-mini" onclick="closeLongScriptApplyModal('conversation')" aria-label="关闭" data-page-node-id="n2meE9VZ9MLzwj50r6JJWN">✕</button>
+      </div>
+      <div class="ls-apply-modal-toolbar" data-page-node-id="i7RwLbysY7gai4cnILFmgn">
+        <label data-page-node-id="vUk3n7jASk0voxnZYpeAkj"><input type="checkbox" id="longScriptConversationSelectAll" onchange="toggleLongScriptApplySelectAll('conversation', this.checked)" checked data-page-node-id="6CwCzmqlKoUQ1pvfTWyXXy"> 全选</label>
+        <span id="longScriptConversationSelectedCount" data-page-node-id="kBHTKNoVAHE64ik1474Y3b">已选 0 个镜头</span>
+      </div>
+      <div id="longScriptConversationShotList" class="ls-apply-shot-list" data-page-node-id="VcZdoOaFQCxk22NVkPlFQ9"></div>
+      <div class="modal-footer ls-apply-modal-footer" data-page-node-id="Hq2NGtV2aZ8GBDnGxZ5xCo">
+        <button type="button" class="btn btn-secondary" onclick="closeLongScriptApplyModal('conversation')" data-page-node-id="71HzJGZ7W1qFx7Cla9lwdH">取消</button>
+        <button type="button" class="btn btn-primary" onclick="applyLongScriptShotsToConversation()" data-page-node-id="l4BuUPNFnC2DpPDQExb2ol">应用到创作</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 长剧本应用到画布：镜头合并弹窗 -->
+  <div id="modalLongScriptCanvasApply" class="modal-overlay hidden" onclick="if(event.target===this) closeLongScriptApplyModal('canvas')" data-page-node-id="9p2J1OPPEF22iz8fLY2Qkq">
+    <div class="modal-container ls-apply-modal" data-page-node-id="OwYGOm2YjVwjtBurCTskWw">
+      <div class="modal-header ls-apply-modal-header" data-page-node-id="DCKflZTSqimaAkJRqoOxMf">
+        <div data-page-node-id="VAr5k55pLAJ6OmyU30rxCs">
+          <h3 data-page-node-id="xO4DroXOcHiV0SYpXoKCta">应用到画布</h3>
+          <p data-page-node-id="a4GvF9tO9T1IB6a8cM7sYX">默认全不选；可使用底部“全选”，点击“合并”后所选条目收缩为一个新条目，最后只应用仍勾选的条目。</p>
+        </div>
+        <button type="button" class="btn-close-mini" onclick="closeLongScriptApplyModal('canvas')" aria-label="关闭" data-page-node-id="WvabsfSOFrRCyCsMpnyx41">✕</button>
+      </div>
+      <div class="ls-apply-modal-toolbar" data-page-node-id="hhPXMojDSKHC5hF3LMbCBe">
+        <span data-page-node-id="VyYFLvBmfKGZJ74NgIo6BE">默认全不选。勾选要合并的条目后点击“合并”；最后只应用仍勾选的条目。</span>
+        <span id="longScriptCanvasSelectedCount" data-page-node-id="PDUXdeUIJMsgdr472Z30D3">已选 0 个镜头</span>
+      </div>
+      <div id="longScriptCanvasMergeSummary" class="ls-canvas-merge-summary" data-page-node-id="xCFxRB2bWBoU1usJXkJ8do">
+        <span data-page-node-id="GIMlDCJVsakBBrBwDX5uZu">尚未合并条目。请勾选需要应用或合并的镜头。</span>
+      </div>
+      <div id="longScriptCanvasShotList" class="ls-apply-shot-list" data-page-node-id="th8YFOwmjtPGrdDq9xfSIc"></div>
+      <div class="modal-footer ls-apply-modal-footer" data-page-node-id="JsST4XMgissx6y6w9ZFAww">
+        <button type="button" class="btn btn-secondary" onclick="closeLongScriptApplyModal('canvas')" data-page-node-id="nTIsHMQL7CcadQ4X9eAYBB">取消</button>
+        <button type="button" id="btnLongScriptCanvasSelectAll" class="btn btn-secondary" onclick="toggleAllLongScriptCanvasItems()" data-page-node-id="9gaT9X1MGbqTSL3Xb5O63W">全选</button>
+        <button type="button" class="btn btn-secondary" onclick="clearLongScriptCanvasMerges()" data-page-node-id="7ZLqsJdjAkstQAEtFBVfDj">清除合并</button>
+        <button type="button" class="btn btn-secondary ls-merge-btn" onclick="mergeSelectedLongScriptCanvasShots()" data-page-node-id="eJjvieOVlaxyqS02RV56bb">合并</button>
+        <button type="button" class="btn btn-primary" onclick="applyLongScriptShotsToCanvas()" data-page-node-id="7dBzYh4abHPbYuFaAA4YnI">应用到画布</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚠️ 高颜值清空画布确认弹窗 -->
+  <div id="modalCanvasClearConfirm" class="modal-overlay hidden" style="z-index: 99999;" data-page-node-id="nC5WgLsyyZTqPmYLGiDf0x">
+    <div class="glass-modal-card" style="width: 380px; padding: 24px; text-align: center; border-radius: 16px; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,0.15);" data-page-node-id="HxLB9aw2bmWaIZShD5VTld">
+      <div style="width: 52px; height: 52px; background: #fef2f2; border-radius: 50%; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 16px auto; border: 1px solid #fee2e2;" data-page-node-id="JunJVVorbVePapKcIxL01D">
+        ⚠️
+      </div>
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;" data-page-node-id="FCuHOSirda9EHHbw3CgKZQ">清空画布确认</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 24px; line-height: 1.5;" data-page-node-id="Va29QF50UNWVXpktJBU4dZ">您确定要清空当前画布上的所有节点和连线吗？此操作不可撤销。</p>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;" data-page-node-id="dbnexXZhBQbnhFFUaBDGiT">
+        <button type="button" class="btn btn-secondary" style="flex: 1; border-radius: 8px; font-weight: 600;" onclick="closeClearCanvasConfirmModal()" data-page-node-id="YFJPBh4ON7dZgMZyXcoGZV">取消</button>
+        <button type="button" class="btn btn-primary" style="flex: 1; background: #ef4444; border-color: #ef4444; border-radius: 8px; color: white; font-weight: 600;" onclick="confirmClearCanvas()" data-page-node-id="BEUgIEqra0CFsJN1ID8X98">确定清空</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalCanvasBulkStartConfirm" class="modal-overlay hidden canvas-bulk-start-overlay" role="dialog" aria-modal="true" aria-labelledby="canvasBulkStartTitle" onclick="if(event.target===this) closeCanvasBulkStartConfirm()" data-page-node-id="o5APwU2BCW8UAkCF32QiI2">
+    <div class="canvas-bulk-start-modal" data-page-node-id="wyKD5ipHILFqbkOWrdrQrC">
+      <header class="canvas-bulk-start-header" data-page-node-id="NvrEF7pNADY6ihLfKaEeSr">
+        <div data-page-node-id="jV2FGK7M84UODK7sgRWFEr">
+          <span class="canvas-bulk-start-kicker" data-page-node-id="IHPKXEvrNUuXEF8SxTdw8s">批量任务</span>
+          <h3 id="canvasBulkStartTitle" data-page-node-id="e6YvmSbRZTA2ukZ0HR4GXX">确认同时开始</h3>
+        </div>
+        <button type="button" class="canvas-bulk-start-close" onclick="closeCanvasBulkStartConfirm()" title="关闭" aria-label="关闭" data-page-node-id="jKeCwq3s0Xt7uDhxdOuKV6">×</button>
+      </header>
+      <p id="canvasBulkStartSummary" class="canvas-bulk-start-summary" data-page-node-id="yAjVgbFTQFIqK7f6JynFps"></p>
+      <div class="canvas-bulk-start-groups" data-page-node-id="RGmHHIL6cBQAiN0QCHJqXm">
+        <section class="canvas-bulk-start-group is-ready" aria-labelledby="canvasBulkReadyTitle" data-page-node-id="1jQ21B9mYmwsOGaGqiHXOX">
+          <div class="canvas-bulk-start-group-title" data-page-node-id="iv8zr76AAFx3gICteoQj2V">
+            <strong id="canvasBulkReadyTitle" data-page-node-id="JY5gKmHPlKEcf2uDbjVEGy">可以执行</strong>
+            <span id="canvasBulkReadyCount" data-page-node-id="nsxd1zxRG81iPhosMwBuF8">0</span>
+          </div>
+          <div id="canvasBulkReadyList" class="canvas-bulk-start-list" data-page-node-id="EzGGPkiBHCyzOLsAPs0RQR"></div>
+        </section>
+        <section class="canvas-bulk-start-group is-blocked" aria-labelledby="canvasBulkBlockedTitle" data-page-node-id="OyxROUyTdmHrzsmSrkNff6">
+          <div class="canvas-bulk-start-group-title" data-page-node-id="hawkmSKK3Ml3VZ9C3HJWHx">
+            <strong id="canvasBulkBlockedTitle" data-page-node-id="4laJjEGPHxGAjgeo7aJURh">不能执行</strong>
+            <span id="canvasBulkBlockedCount" data-page-node-id="bfvMByt84vyfGkl56fuQM0">0</span>
+          </div>
+          <div id="canvasBulkBlockedList" class="canvas-bulk-start-list" data-page-node-id="5IsUNbH7qVqwzAikFBwrMt"></div>
+        </section>
+      </div>
+      <p class="canvas-bulk-start-note" data-page-node-id="EoeVmGGlyCsEBv2vw0gEOk">任务会立即同时提交；视频节点只使用当前已经存在的上游内容，不等待本轮图片生成结果。</p>
+      <footer class="canvas-bulk-start-actions" data-page-node-id="iOBaBas8RHuSuDxYmtMGwD">
+        <button type="button" class="btn btn-secondary" onclick="closeCanvasBulkStartConfirm()" data-page-node-id="7OWUqeHKZfCEZfxtx15OAB">取消</button>
+        <button type="button" id="btnConfirmCanvasBulkStart" class="btn btn-primary" onclick="confirmCanvasBulkStart()" data-page-node-id="lppc0KQlrkVtRHOiS06yK9">开始执行</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 💾 保存收录至画布库弹窗 -->
+  <div id="modalCanvasSaveLibrary" class="modal-overlay hidden" style="z-index: 99999;" data-page-node-id="bxZ6WjXFHz9YGNLoleyLjw">
+    <div class="glass-modal-card" style="width: 440px; padding: 24px; border-radius: 16px; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,0.15);" data-page-node-id="2RWctNKmThEBzTcgZ71VaE">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;" data-page-node-id="eRSBcpIGGudqmSeFDQiGjt">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;" data-page-node-id="7plnEQjrfpjMoo7OErBP2L">
+          <span data-page-node-id="wv7FtSbbYgBJrzkpGF0QJV">💾</span> 保存当前工作流至画布库
+        </h3>
+        <button type="button" class="btn btn-secondary btn-xs" onclick="closeSaveCanvasLibraryModal()" style="border-radius: 50%; width: 24px; height: 24px; padding: 0; display: flex; align-items: center; justify-content: center;" data-page-node-id="CXvieNJ0WNNJ5KqaM0YT8R">✕</button>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;" data-page-node-id="U1Cqja37xubFYioNZqMFAy">
+        <div data-page-node-id="NluuhRJ5EVItTTQDTDpEkw">
+          <label style="display: block; font-size: 0.825rem; font-weight: 600; color: #475569; margin-bottom: 6px;" data-page-node-id="AT1OiwHlnbHKX4VNE7boW5">画布名称 <span style="color: #ef4444;" data-page-node-id="tnjw20RyC7phzITrSbFXJ8">*</span></label>
+          <input type="text" id="inputSaveCanvasTitle" class="form-input" placeholder="例如：Sora 黄金特写全流程工作流" style="width: 100%; border-radius: 8px; font-size: 0.875rem; padding: 8px 12px;" data-page-node-id="mT9Ji62KUR1h9MdOiNGPNI" />
+        </div>
+        <div data-page-node-id="uAMRrEg7uxWx31GIVKQmEG">
+          <label style="display: block; font-size: 0.825rem; font-weight: 600; color: #475569; margin-bottom: 6px;" data-page-node-id="C6Kg0xtQ0e6vvatGWiHWRu">画布备注 / 使用说明</label>
+          <textarea id="inputSaveCanvasDesc" class="form-input" rows="3" placeholder="填写该工作流的简单描述或参数说明..." style="width: 100%; border-radius: 8px; font-size: 0.85rem; padding: 8px 12px; resize: none;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;" data-page-node-id="BAjyF1LgsX8DBdrY1XkcF5">
+        <button type="button" class="btn btn-secondary" style="border-radius: 8px; padding: 8px 16px; font-weight: 600;" onclick="closeSaveCanvasLibraryModal()" data-page-node-id="zhtEJBKPYczbP9EeoeZPlk">取消</button>
+        <button type="button" class="btn btn-primary" style="border-radius: 8px; padding: 8px 20px; font-weight: 600;" onclick="confirmSaveCanvasToLibrary()" data-page-node-id="bbBRTMy2AEGaZoNFoCCtDM">确认收录</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

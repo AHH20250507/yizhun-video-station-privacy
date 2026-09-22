@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">壹准视频站图标</title>
+  <desc id="desc">蓝色圆角方形中的白色熊头与闪电眼标识</desc>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="42" x2="442" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38bdf8"/>
+      <stop offset="0.52" stop-color="#1677e8"/>
+      <stop offset="1" stop-color="#123fbe"/>
+    </linearGradient>
+    <linearGradient id="ear" x1="294" y1="74" x2="407" y2="196" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4cc9ff"/>
+      <stop offset="1" stop-color="#1766d5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <path d="M106 182V132c0-47 37-82 82-82 31 0 59 18 73 45 14-27 42-45 73-45 45 0 82 35 82 82v50c19 29 30 64 30 102 0 104-83 188-185 188h-1c-102 0-185-84-185-188 0-38 11-73 31-102Z" fill="#fff"/>
+  <path d="M334 57c45 0 82 35 82 82v50c-21-24-48-42-79-52-17-6-31-22-31-40 0-14 9-28 28-40Z" fill="url(#ear)" opacity=".92"/>
+  <path d="m154 178 39-43-13 39h34l-49 58 14-42h-32Z" fill="#1683ed"/>
+  <path d="m323 178 39-43-13 39h34l-49 58 14-42h-32Z" fill="#1557c8"/>
+  <path d="M183 316c21 20 45 30 73 30s52-10 73-30" fill="none" stroke="#1677e8" stroke-width="20" stroke-linecap="round"/>
+  <path d="M206 365c14 17 31 25 50 25s36-8 50-25" fill="none" stroke="#123fbe" stroke-width="14" stroke-linecap="round" opacity=".8"/>
+</svg>

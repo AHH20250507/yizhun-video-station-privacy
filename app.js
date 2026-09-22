@@ -591,7 +591,7 @@ const LegacyBackendClient = (() => {
       if (options.onProgress) options.onProgress(task);
     }
     if (task.status !== 'completed') {
-      const error = new Error(task.errorMessage || '生成失败，预扣积分已退回');
+      const error = new Error(task.errorMessage || '生成失败，请稍后重试');
       error.task = task;
       throw error;
     }
@@ -1241,7 +1241,7 @@ const SessionSystem = (() => {
     if (['refunded', 'failed'].includes(task.status)) {
       node.status = 'failed';
       node.progress = 100;
-      node.errorMsg = task.errorMsg || '生成失败，积分已退回';
+      node.errorMsg = task.errorMsg || '生成失败，请稍后重试';
       return;
     }
     if (task.status === 'canceled') {
@@ -1644,6 +1644,7 @@ const SessionSystem = (() => {
   }
 
   async function openInitial() {
+    if (EPHEMERAL_SESSION_MODE) return startDraft('creation');
     const requestedId = localStorage.getItem(ACTIVE_KEY);
     const target = sessions.find(item => item.id === requestedId && !item.deletedAt)
       || sessions.filter(item => !item.deletedAt).sort((a, b) => b.updatedAt - a.updatedAt)[0];
@@ -2065,14 +2066,7 @@ const SessionSystem = (() => {
     }
     const source = safeMediaUrl(previewMediaItem.videoUrl);
     if (!source) return showToast('视频地址无效或使用了不安全协议', 'error');
-    const link = document.createElement('a');
-    link.href = source;
-    link.download = `video_${String(previewMediaItem.taskId || Date.now()).slice(0, 12)}.mp4`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    await downloadGeneratedVideo(source, previewMediaItem);
   }
 
   function closeContextMenu() {
@@ -2679,8 +2673,12 @@ const SessionSystem = (() => {
       if (cancelButton) cancelTask(cancelButton.dataset.cancelTask);
       const resumeButton = event.target.closest('[data-resume-task]');
       if (resumeButton) resumeTask(resumeButton.dataset.resumeTask);
-      const saveVideoButton = event.target.closest('[data-save-video-task]');
-      if (saveVideoButton) saveCompletedVideoTaskToKnowledgeBase(saveVideoButton.dataset.saveVideoTask);
+      const downloadVideoButton = event.target.closest('[data-download-video-task]');
+      if (downloadVideoButton) {
+        const taskId = downloadVideoButton.dataset.downloadVideoTask;
+        const task = state.taskHistory.find(item => item.taskId === taskId) || state.activeTasks.find(item => item.taskId === taskId);
+        if (task?.videoUrl) void downloadGeneratedVideo(task.videoUrl, task);
+      }
     });
     document.addEventListener('click', event => { if (event.target.closest('#viewAdmin')) handleAdminAction(event); });
     document.addEventListener('submit', event => { if (event.target.closest('#viewAdmin')) handleAdminFormSubmit(event); });
@@ -2846,8 +2844,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (SessionSystem.isInitialized()) await SessionSystem.openInitial();
   } catch (error) {
     console.error('Initial session restore failed:', error);
-    if (typeof switchView === 'function') switchView('videoGen');
   }
+  // 公开版每次打开都从“创作”入口开始，不恢复上次会话所在的其他页面。
+  switchView('videoGen');
   try {
     await loadPrompts();
   } catch (err) {
@@ -3446,92 +3445,21 @@ function getCreationPricingPayload() {
 }
 
 async function updateCreationPricePreview() {
-  void updateAuxiliaryPricePreviews();
-  const target = el.creationPricePreview || document.getElementById('creationPricePreview');
-  if (!target) return;
-  const payload = getCreationPricingPayload();
-  const requestId = ++state.pricingPreviewRequestId;
-  if (!payload) {
-    target.textContent = '--';
-    target.title = '暂无可用模型';
-    target.classList.add('is-error');
-    return;
-  }
-  target.classList.remove('is-error');
-  target.textContent = '--';
-  target.title = '正在读取实际积分';
-  try {
-    const pricing = await BackendClient.previewPricing(payload);
-    if (requestId !== state.pricingPreviewRequestId) return;
-    target.innerHTML = `<strong>${pricing.credits} 积分</strong>`;
-    target.title = `实际消耗：${pricing.credits} 积分`;
-  } catch (error) {
-    if (requestId !== state.pricingPreviewRequestId) return;
-    target.textContent = '--';
-    target.title = `暂不可用：${error.message}`;
-    target.classList.add('is-error');
-  }
+  return;
 }
 
 async function updateCanvasPricePreviews() {
-  if (!Array.isArray(canvasState?.nodes)) return;
-  await Promise.all(canvasState.nodes.map(async node => {
-    if (node.type === 'video') {
-      const model = getPreferredServerModel('canvas', 'video', node.model);
-      await previewPriceBadge(`canvas-video-price-${node.id}`, model ? { mode: 'canvas', operation: 'video', model, duration: Number(node.duration) || 15 } : null);
-    } else if (node.type === 'asset') {
-      const model = getPreferredServerModel('canvas', 'image', node.model);
-      await previewPriceBadge(`canvas-image-price-${node.id}`, model ? { mode: 'canvas', operation: 'image', model, count: 1 } : null);
-    } else if (node.type === 'agent') {
-      const model = getPreferredServerModel('canvas', 'llm');
-      await previewPriceBadge(`canvas-agent-price-${node.id}`, model ? { mode: 'canvas', operation: 'llm', model } : null);
-    }
-  }));
+  return;
 }
 
-function setPriceBadge(id, pricing, error = '') {
-  const target = document.getElementById(id);
-  if (!target) return;
-  target.classList.toggle('is-error', !!error);
-  if (error) {
-    target.textContent = '积分预算：--';
-    target.title = error;
-    return;
-  }
-  if (!pricing) {
-    target.textContent = '积分预算：--';
-    return;
-  }
-  const unit = pricing.unit === 'second' ? '积分/秒' : pricing.unit === 'image' ? '积分/张' : '积分/次';
-  target.textContent = `✦ ${pricing.credits} 积分`;
-  target.title = `实际价格：${pricing.multiplier} × ${pricing.unitCredits} ${unit}`;
-}
+function setPriceBadge() {}
 
-async function previewPriceBadge(id, payload) {
-  if (!state.priceBadgeRequestIds) state.priceBadgeRequestIds = {};
-  const requestId = Number(state.priceBadgeRequestIds[id] || 0) + 1;
-  state.priceBadgeRequestIds[id] = requestId;
-  if (!payload) return setPriceBadge(id, null, '暂无可用模型');
-  setPriceBadge(id, null);
-  try {
-    const pricing = await BackendClient.previewPricing(payload);
-    if (state.priceBadgeRequestIds[id] !== requestId) return;
-    setPriceBadge(id, pricing);
-  } catch (error) {
-    if (state.priceBadgeRequestIds[id] !== requestId) return;
-    setPriceBadge(id, null, error.message || '价格读取失败');
-  }
+async function previewPriceBadge() {
+  return;
 }
 
 async function updateAuxiliaryPricePreviews() {
-  const longScriptModel = getPreferredServerModel('long-script', 'long-script', state.apiConfig?.llmModelName);
-  const scriptModel = getPreferredServerModel('long-script', 'long-script', state.apiConfig?.llmModelName);
-  await Promise.all([
-    previewPriceBadge('longScriptPricePreview', longScriptModel ? { mode: 'long-script', operation: 'long-script', model: longScriptModel } : null),
-    previewPriceBadge('scriptPricePreview', scriptModel ? { mode: 'long-script', operation: 'long-script', model: scriptModel } : null),
-    previewPriceBadge('formVideoPricePreview', getCreationPricingPayload()),
-    previewPriceBadge('detailVideoPricePreview', getCreationPricingPayload())
-  ]);
+  return;
 }
 
 function syncChatGenerationMode(mode, options = {}) {
@@ -4853,15 +4781,6 @@ function setSafeVideoResult(target, videoUrl, options = {}) {
   openLink.style.cssText = 'flex:1;justify-content:center;font-size:.75rem;';
   openLink.textContent = '🌐 展开大屏';
   actions.appendChild(openLink);
-  if (options.onSave) {
-    const saveButton = document.createElement('button');
-    saveButton.type = 'button';
-    saveButton.className = 'btn btn-primary btn-save-kb';
-    saveButton.style.cssText = 'flex:1;font-size:.75rem;';
-    saveButton.textContent = '📥 快捷存入镜头库';
-    saveButton.addEventListener('click', options.onSave);
-    actions.appendChild(saveButton);
-  }
   target.appendChild(actions);
   observeManagedVideos(target);
   return source;
@@ -5727,7 +5646,6 @@ function updateTaskQueueUI() {
               </div>
               <button type="button" class="btn btn-secondary btn-sm btn-jump-chat-q" data-taskid="${t.taskId}" data-prompt="${escapeHTML(t.prompt)}" style="font-size: 0.75rem; padding: 4px 10px;">💬 跳转对话</button>
             </div>
-            ${renderTaskCreditBreakdown(t)}
           </div>
         `;
       }).join('')}
@@ -5757,7 +5675,7 @@ function renderStatusText(status) {
     case 'reconciling': return '<span class="spin-icon" style="margin-right: 4px;">🔄</span>网络波动，自动恢复中';
     case 'needs_review': return '<span class="dot-status gray" style="margin-right: 4px;"></span>等待供应商状态确认';
     case 'completed': return '<span class="dot-status green" style="margin-right: 4px;"></span>✅ 生成完成';
-    case 'refunded': return '<span class="dot-status red" style="margin-right: 4px;"></span>↩ 已退款';
+    case 'refunded': return '<span class="dot-status red" style="margin-right: 4px;"></span>❌ 生成失败';
     case 'failed': return '<span class="dot-status red" style="margin-right: 4px;"></span>❌ 生成失败';
     default: return status;
   }
@@ -5772,18 +5690,6 @@ function applyBackendTaskBilling(target, backendTask, pricing = null) {
   target.mode = backendTask.mode || target.mode || target.sessionType || 'creation';
   target.operation = backendTask.operation || target.operation || target.mediaType || 'video';
   return target;
-}
-
-function renderTaskCreditBreakdown(task) {
-  const reserved = Number(task?.reservedCredits || 0);
-  const consumed = Number(task?.consumedCredits || 0);
-  const status = task?.status;
-  if (!reserved && !consumed) return '';
-  let settlement = `<span>预扣 <strong>${reserved}</strong> 积分</span>`;
-  if (status === 'completed') settlement += `<span class="credit-consumed">已结算 <strong>${consumed || reserved}</strong> 积分</span>`;
-  else if (status === 'failed' || status === 'refunded' || status === 'canceled') settlement += `<span class="credit-refunded">已释放/退回 <strong>${reserved}</strong> 积分</span>`;
-  else settlement += '<span class="credit-pending">等待结算</span>';
-  return `<div class="task-credit-breakdown">${settlement}</div>`;
 }
 
 function updateStatusIndicators() {
@@ -5926,7 +5832,7 @@ function startTaskQueuePoller() {
           }
           await SessionSystem.reconcileBackendGenerationTasks();
         } else if (['failed', 'refunded', 'canceled'].includes(parsed.status)) {
-          const errMsg = parsed.errorMsg || (parsed.status === 'canceled' ? '任务已取消' : '生成失败，积分已退回');
+          const errMsg = parsed.errorMsg || (parsed.status === 'canceled' ? '任务已取消' : '生成失败，请稍后重试');
           completeTask(task.taskId, parsed.status, null, errMsg, task.prompt, task.model, info);
           showToast(`❌ 任务失败: ${errMsg}`);
           await SessionSystem.reconcileBackendGenerationTasks();
@@ -6152,16 +6058,7 @@ async function batchDownloadSelectedHistory() {
         await new Promise(resolve => setTimeout(resolve, 250));
       }
     } else if (item.videoUrl) {
-      const source = safeMediaUrl(item.videoUrl);
-      if (!source) continue;
-      const a = document.createElement('a');
-      a.href = source;
-      a.download = `video_${item.taskId.slice(0, 8)}.mp4`;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      await downloadGeneratedVideo(item.videoUrl, item);
     }
     await new Promise(resolve => setTimeout(resolve, 600));
   }
@@ -6254,7 +6151,6 @@ function renderHistoryListUI() {
                   ? `<button type="button" class="btn btn-secondary btn-sm btn-jump-multi-angle">返回多角度创作</button>`
                   : `<button type="button" class="btn btn-secondary btn-sm btn-jump-chat" data-taskid="${t.taskId}" data-prompt="${escapeHTML(t.prompt)}">跳转对话</button>`}
                 <button type="button" class="btn btn-secondary btn-sm btn-download-image-hist" data-taskid="${t.taskId}">${imageEntries.length > 1 ? `下载全部（${imageEntries.length}）` : '下载图片'}</button>
-                <button type="button" class="btn btn-primary btn-sm btn-save-image-asset-hist" data-taskid="${t.taskId}">${imageEntries.length > 1 ? `全部存入资产库（${imageEntries.length}）` : '存入资产库'}</button>
               </div>
             ` : (isCompleted && safeVideoUrl ? `
               <div class="apple-video-container">
@@ -6267,7 +6163,7 @@ function renderHistoryListUI() {
                   <button type="button" class="btn btn-secondary btn-sm btn-jump-chat" data-taskid="${t.taskId}" data-prompt="${escapeHTML(t.prompt)}">💬 跳转对话</button>
                 `}
                 <a href="${escapeHTML(safeVideoUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">🌐 大屏</a>
-                <button type="button" class="btn btn-primary btn-sm btn-save-kb-hist" data-prompt="${escapeHTML(t.prompt)}" data-url="${escapeHTML(safeVideoUrl)}" onclick="event.stopPropagation();">📥 存入镜头库</button>
+                <button type="button" class="btn btn-secondary btn-sm btn-download-video-hist" data-taskid="${escapeHTML(t.taskId)}" onclick="event.stopPropagation();">下载视频</button>
               </div>
             ` : '')}
 
@@ -6369,38 +6265,11 @@ function renderHistoryListUI() {
     });
   });
 
-  el.historyListContainer.querySelectorAll('.btn-save-image-asset-hist').forEach(btn => {
+  el.historyListContainer.querySelectorAll('.btn-download-video-hist').forEach(btn => {
     btn.addEventListener('click', async event => {
       event.stopPropagation();
       const task = state.taskHistory.find(item => item.taskId === btn.dataset.taskid);
-      if (!task) return;
-      const sources = await loadTaskImageSources(task);
-      for (let index = 0; index < sources.length; index += 1) {
-        await saveGeneratedImageToAssetLibrary(sources[index], { ...task, imageIndex: index });
-      }
-    });
-  });
-
-  el.historyListContainer.querySelectorAll('.btn-save-kb-hist').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const promptText = btn.dataset.prompt;
-      const videoUrl = btn.dataset.url;
-      const newItem = {
-        id: `prompt-${Date.now()}`,
-        title: promptText.slice(0, 20) + (promptText.length > 20 ? '...' : ''),
-        prompt: promptText,
-        shotSize: '特写',
-        movement: '推镜头',
-        angle: '平视角度',
-        category: '人物肖像',
-        videoUrl: videoUrl,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-      await PromptStore.save(newItem);
-      await loadPrompts();
-      showToast('✅ 已存入镜头库！');
+      if (task?.videoUrl) await downloadGeneratedVideo(task.videoUrl, task);
     });
   });
 
@@ -7349,23 +7218,7 @@ function showAtMenuPopover(targetTextarea = null) {
     `;
   }).join('');
 
-  // 4. 1 级 Popover 主 HTML (从资产库导入)
-  const importItemHtml = `
-    <div class="at-flyout-item at-category-trigger at-import-trigger">
-      <div class="at-cat-label">
-        <span>📦</span>
-        <span>从资产库导入</span>
-      </div>
-      <span class="at-arrow">›</span>
-      
-      <!-- 2 级展开浮窗 (5 大分类) -->
-      <div class="at-secondary-flyout">
-        ${secondaryItemsHtml}
-      </div>
-    </div>
-  `;
-
-  el.atMenuList.innerHTML = `${mediaItemsHtml}${importItemHtml}`;
+  el.atMenuList.innerHTML = mediaItemsHtml;
 
   // 5. 绑定点击事件：已上传参考图
   el.atMenuList.querySelectorAll('.at-ref-item').forEach(item => {
@@ -7774,7 +7627,7 @@ async function reconcileChatImageTask(task, card = null) {
         task.taskId,
         backendTask.status,
         null,
-        backendTask.errorMessage || '图片生成失败，预扣积分已退回',
+        backendTask.errorMessage || '图片生成失败，请稍后重试',
         task.prompt,
         task.model,
         backendTask
@@ -7824,18 +7677,11 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   const sources = (Array.isArray(imageSources) ? imageSources : [imageSources]).filter(Boolean);
   const expectedCount = clampImageCount(task.count || task.options?.count || sources.length || 1);
   const providerJobs = Array.isArray(task.providerJobs) && task.providerJobs.length === expectedCount ? task.providerJobs : [];
-  let creditsArea = card?.querySelector('.task-credit-breakdown-slot');
-  if (!creditsArea && card) {
-    creditsArea = document.createElement('div');
-    creditsArea.className = 'task-credit-breakdown-slot';
-    card.querySelector('.chat-image-loading')?.before(creditsArea);
-  }
-  if (creditsArea) creditsArea.innerHTML = renderTaskCreditBreakdown(task);
   if (badge) {
     badge.className = `task-status-badge ${task.status}`;
     badge.textContent = task.status === 'completed'
       ? (sources.length < expectedCount ? `部分完成（${sources.length}/${expectedCount} 张）` : `生成完成${sources.length > 1 ? `（${sources.length} 张）` : ''}`)
-      : (task.status === 'canceled' ? '已取消' : (task.status === 'refunded' ? '已退款' : '生成失败'));
+      : (task.status === 'canceled' ? '已取消' : '生成失败');
   }
   if (!target) return;
   if (task.status === 'canceled') {
@@ -7845,7 +7691,7 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   }
   if ((task.status === 'failed' || task.status === 'refunded') && !providerJobs.length) {
     target.className = '';
-    target.innerHTML = `<div style="color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;text-align:left;"><strong>${task.status === 'refunded' ? '图片生成失败，积分已退回：' : '图片生成失败：'}</strong>${escapeHTML(task.errorMsg || '接口响应失败')}</div>`;
+    target.innerHTML = `<div style="color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;text-align:left;"><strong>图片生成失败：</strong>${escapeHTML(task.errorMsg || '接口响应失败')}</div>`;
     return;
   }
   if (!sources.length && !providerJobs.length) {
@@ -7871,7 +7717,6 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
       <img class="task-image-preview" src="${escapeHTML(item.source)}" alt="AI 生成图片 ${item.index + 1}">
       <div class="apple-card-actions" style="margin-top:10px;">
         <button type="button" class="btn btn-secondary btn-sm btn-download-chat-image" data-image-index="${item.sourceIndex}">下载</button>
-        <button type="button" class="btn btn-primary btn-sm btn-save-chat-image" data-image-index="${item.sourceIndex}">存入资产库</button>
       </div>
     </div>
   ` : `
@@ -7883,10 +7728,6 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   target.querySelectorAll('.btn-download-chat-image').forEach(button => {
     const source = sources[Number(button.dataset.imageIndex)];
     button.addEventListener('click', () => downloadGeneratedImage(source, { ...task, imageIndex: Number(button.dataset.imageIndex) }));
-  });
-  target.querySelectorAll('.btn-save-chat-image').forEach(button => {
-    const source = sources[Number(button.dataset.imageIndex)];
-    button.addEventListener('click', () => saveGeneratedImageToAssetLibrary(source, { ...task, imageIndex: Number(button.dataset.imageIndex) }));
   });
 }
 
@@ -8013,47 +7854,67 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
   scrollChatToBottom();
 }
 
-async function downloadGeneratedImage(source, task) {
+function triggerBrowserDownload(href, filename, options = {}) {
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = filename;
+  if (options.openInNewTab) {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  }
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function downloadGeneratedMedia(source, filename, options = {}) {
+  const mediaSource = String(source || '').trim();
+  if (!mediaSource) throw new Error('素材地址为空');
   try {
-    const response = await fetch(source);
+    const response = await fetch(mediaSource, { mode: 'cors', credentials: 'omit' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
+    if (!blob.size) throw new Error('下载内容为空');
     const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    const imageSuffix = Number.isInteger(task?.imageIndex) ? `_${task.imageIndex + 1}` : '';
-    link.download = `image_${task.taskId.slice(0, 16)}${imageSuffix}.${blob.type.includes('jpeg') ? 'jpg' : (blob.type.split('/')[1] || 'png')}`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    try {
+      triggerBrowserDownload(objectUrl, filename);
+    } finally {
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    }
+    return true;
   } catch (error) {
-    showToast(`图片下载失败：${error.message}`);
+    const fallbackUrl = options.safeUrl ? safeMediaUrl(mediaSource, { allowDataImage: options.allowDataImage === true }) : mediaSource;
+    if (!fallbackUrl) throw error;
+    const opensRemoteSource = /^https?:/i.test(fallbackUrl);
+    triggerBrowserDownload(fallbackUrl, filename, { openInNewTab: opensRemoteSource });
+    if (opensRemoteSource) showToast('素材已在新标签页打开；若浏览器未自动保存，请在页面中选择“另存为”。', 'info');
+    return false;
   }
 }
 
-async function saveGeneratedImageToAssetLibrary(source, task) {
+function getGeneratedFileStem(task, prefix) {
+  const taskPart = String(task?.taskId || Date.now()).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 16) || String(Date.now());
+  const itemSuffix = Number.isInteger(task?.imageIndex) ? `_${task.imageIndex + 1}` : '';
+  return `${prefix}_${taskPart}${itemSuffix}`;
+}
+
+async function downloadGeneratedImage(source, task) {
   try {
-    const response = await fetch(source);
-    if (!response.ok) throw new Error(`图片读取失败 (HTTP ${response.status})`);
-    const blob = await response.blob();
-    const extension = blob.type.includes('jpeg') ? 'jpg' : (blob.type.split('/')[1] || 'png');
-    const imageSuffix = Number.isInteger(task?.imageIndex) ? `-${task.imageIndex + 1}` : '';
-    const file = new File([blob], `AI生成图片${imageSuffix}-${Date.now()}.${extension}`, { type: blob.type || 'image/png' });
-    const uploaded = await apiUploadMedia(file);
-    await BackendClient.createLibraryAsset({
-      name: String(task.prompt || 'AI 生成图片').slice(0, 40),
-      description: task.prompt || '',
-      category: '场景',
-      scope: 'private',
-      mediaIds: [uploaded.id],
-      coverMediaId: uploaded.id
-    });
-    await loadLibraryData({ silent: true });
-    if (typeof renderAssetGridUI === 'function') renderAssetGridUI();
-    showToast('图片已存入资产库', 'success');
+    const dataImageMatch = String(source || '').match(/^data:image\/([a-zA-Z0-9.+-]+);/i);
+    const extension = dataImageMatch ? (dataImageMatch[1].toLowerCase() === 'jpeg' ? 'jpg' : dataImageMatch[1].toLowerCase()) : 'png';
+    await downloadGeneratedMedia(source, `${getGeneratedFileStem(task, 'image')}.${extension}`, { safeUrl: true, allowDataImage: true });
   } catch (error) {
-    showToast(`存入资产库失败：${error.message}`, 'error');
+    showToast(`图片下载失败：${error.message}`, 'error');
+  }
+}
+
+async function downloadGeneratedVideo(source, task) {
+  try {
+    const safeSource = safeMediaUrl(source);
+    if (!safeSource) throw new Error('视频地址无效或使用了不安全协议');
+    await downloadGeneratedMedia(safeSource, `${getGeneratedFileStem(task, 'video')}.mp4`, { safeUrl: true });
+  } catch (error) {
+    showToast(`视频下载失败：${error.message}`, 'error');
   }
 }
 
@@ -8441,28 +8302,8 @@ function renderCompletedChatVideoTarget(task) {
     <video class="task-video-preview" data-lazy-video-src="${escapeHTML(source)}" data-click-video-load="1" controls loop muted playsinline preload="none"></video>
     <div style="display:flex;gap:8px;margin-top:8px;">
       <a href="${escapeHTML(source)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="flex:1;justify-content:center;font-size:0.75rem;">展开大屏</a>
-      <button type="button" class="btn btn-primary btn-save-kb" data-save-video-task="${escapeHTML(task.taskId)}" style="flex:1;font-size:0.75rem;">存入知识库</button>
+      <button type="button" class="btn btn-secondary" data-download-video-task="${escapeHTML(task.taskId)}" style="flex:1;font-size:0.75rem;">下载视频</button>
     </div>`;
-}
-
-async function saveCompletedVideoTaskToKnowledgeBase(taskId) {
-  const task = state.taskHistory.find(item => item.taskId === taskId) || state.activeTasks.find(item => item.taskId === taskId);
-  if (!task?.videoUrl) return;
-  const newItem = {
-    id: `prompt-${Date.now()}`,
-    title: (task.prompt || 'AI 生成视频').slice(0, 20),
-    prompt: task.prompt || '',
-    shotSize: '特写',
-    movement: '推镜头',
-    angle: '平视角度',
-    category: '人物肖像',
-    videoUrl: task.videoUrl,
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  };
-  await PromptStore.save(newItem);
-  await loadPrompts();
-  showToast('已成功保存到知识库');
 }
 
 function shortenChatTaskId(taskId) {
@@ -8601,7 +8442,6 @@ function createChatGenCard(container, taskId, promptText, model, aspectRatio, du
     <div style="font-size: 0.775rem; color: var(--text-muted);">
       ⚙️ 模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 时长: ${duration}s
     </div>
-    <div id="chat-credits-${escapeHTML(taskId)}">${renderTaskCreditBreakdown(billingTask)}</div>
     <div class="progress-track chat-video-progress-track" data-video-progress-track data-status="${escapeHTML(initialStatus)}" role="progressbar" aria-label="视频生成进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressValue}">
       <div class="progress-bar-inner" id="chat-progress-${taskId}" style="width: ${progressValue}%;"></div>
       <div class="chat-video-progress-label" data-video-progress-label aria-live="polite">${renderChatVideoProgressLabel(initialStatus, initialProgress, billingTask)}</div>
@@ -8674,8 +8514,6 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         taskInState.progress = progress;
         applyBackendTaskBilling(taskInState, info);
       }
-      const creditsArea = currentCardEl?.querySelector(`#chat-credits-${CSS.escape(taskId)}`);
-      if (creditsArea) creditsArea.innerHTML = renderTaskCreditBreakdown(taskInState || info);
       updateTaskQueueUI();
       updateStatusIndicators();
 
@@ -10273,24 +10111,7 @@ function updateMultiAngleGenerateState() {
 }
 
 async function updateMultiAnglePricePreview() {
-  const target = document.getElementById('multiAnglePricePreview');
-  if (!target) return;
-  const model = getMultiAngleModel();
-  const count = getMultiAngleGenerationPoses().length;
-  const requestId = ++multiAngleState.priceRequestId;
   updateMultiAngleGenerateState();
-  if (!model) { target.textContent = '积分预算：--'; return; }
-  target.textContent = '积分预算：读取中';
-  try {
-    const pricing = await BackendClient.previewPricing({ mode: 'multi-angle', operation: 'image', model, count });
-    if (requestId !== multiAngleState.priceRequestId) return;
-    target.textContent = `${pricing.credits} 积分`;
-    target.title = `${count} 张 × ${pricing.unitCredits} 积分/张`;
-  } catch (error) {
-    if (requestId !== multiAngleState.priceRequestId) return;
-    target.textContent = '积分预算：--';
-    target.title = error.message;
-  }
 }
 
 function persistMultiAngleResults() {
@@ -10489,7 +10310,7 @@ function renderMultiAngleResults() {
       : item.status === 'failed'
         ? `<div class="result-error">生成失败<br>${escapeHTML(item.error || '请稍后重试')}</div>`
         : `<img ${item.imageResultId ? `data-image-result-id="${escapeHTML(item.imageResultId)}"` : ''} ${item.source ? `src="${escapeHTML(item.source)}"` : ''} alt="${escapeHTML(item.label)}生成结果">`;
-    const actions = item.status === 'completed' ? `<div class="multi-angle-result-actions"><button type="button" data-ma-action="download" data-result-id="${item.id}">下载</button><button type="button" data-ma-action="save" data-result-id="${item.id}">存入资产库</button><button type="button" data-ma-action="continue" data-result-id="${item.id}">继续换角度</button></div>` : '';
+    const actions = item.status === 'completed' ? `<div class="multi-angle-result-actions"><button type="button" data-ma-action="download" data-result-id="${item.id}">下载</button><button type="button" data-ma-action="continue" data-result-id="${item.id}">继续换角度</button></div>` : '';
     if (card.dataset.renderKey !== renderKey) {
       card.innerHTML = `<div class="multi-angle-result-media">${media}</div><div class="multi-angle-result-info"><strong>${escapeHTML(item.label)}</strong><small>${detail}</small>${actions}</div>`;
       card.dataset.renderKey = renderKey;
@@ -10550,11 +10371,6 @@ async function generateMultiAngleImages() {
   if (!multiAngleState.source) return showToast('请先上传原始图片', 'warning');
   if (!getMultiAngleModel()) return showToast('暂无可用的多角度图片模型，请联系管理员', 'error');
   const poses = getMultiAngleGenerationPoses();
-  const pricing = await BackendClient.previewPricing({ mode: 'multi-angle', operation: 'image', model: getMultiAngleModel(), count: poses.length }).catch(error => {
-    showToast(`无法确认积分：${error.message}`, 'error');
-    return null;
-  });
-  if (!pricing) return;
   multiAngleState.generating = true;
   updateMultiAngleGenerateState();
   const createdAt = Date.now();
@@ -10567,7 +10383,7 @@ async function generateMultiAngleImages() {
   multiAngleState.results.unshift(...pending);
   renderMultiAngleResults();
   document.querySelector('.multi-angle-results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showToast(`已提交 ${poses.length} 个角度，预计消耗 ${pricing.credits} 积分`);
+  showToast(`已提交 ${poses.length} 个角度`);
   let cursor = 0;
   const worker = async () => {
     while (cursor < pending.length) {
@@ -10579,7 +10395,7 @@ async function generateMultiAngleImages() {
   multiAngleState.generating = false;
   updateMultiAngleGenerateState();
   const completed = pending.filter(item => item.status === 'completed').length;
-  showToast(completed === pending.length ? `已完成 ${completed} 个角度` : `完成 ${completed}/${pending.length}，失败任务已自动释放积分`, completed ? 'success' : 'error');
+  showToast(completed === pending.length ? `已完成 ${completed} 个角度` : `完成 ${completed}/${pending.length}，部分任务生成失败`, completed ? 'success' : 'error');
 }
 
 async function handleMultiAngleResultAction(event) {
@@ -10590,7 +10406,6 @@ async function handleMultiAngleResultAction(event) {
   const source = item.imageResultId ? await loadImageResultData(item.imageResultId).catch(() => null) : item.source;
   if (!source) return showToast('图片暂时不可用，请稍后重试', 'warning');
   if (button.dataset.maAction === 'download') return downloadGeneratedImage(source, { taskId: item.taskId, prompt: item.prompt });
-  if (button.dataset.maAction === 'save') return saveGeneratedImageToAssetLibrary(source, { taskId: item.taskId, prompt: item.prompt, model: item.model || getMultiAngleModel() });
   if (button.dataset.maAction === 'continue') {
     try {
       await setMultiAngleSource(source, `${item.label}生成结果`, '已设为新的视角参考图');
@@ -13273,7 +13088,7 @@ async function reconcileCanvasImageTask(task) {
       return completedTask;
     }
 
-    const message = backendTask.errorMessage || (backendTask.status === 'canceled' ? '任务已取消' : '图片生成失败，积分已退回');
+    const message = backendTask.errorMessage || (backendTask.status === 'canceled' ? '任务已取消' : '图片生成失败，请稍后重试');
     const finalStatus = backendTask.status === 'canceled' ? 'canceled' : backendTask.status;
     const failedTask = completeTask(task.taskId, finalStatus, null, message, task.prompt, task.model, backendTask);
     await patchCanvasTaskNode(task, {
@@ -13491,7 +13306,7 @@ function startCanvasVideoTaskPoller(task, node) {
       } else if (['failed', 'refunded', 'canceled'].includes(parsed.status)) {
         clearInterval(poller);
         SessionSystem.unregisterPoller(taskId, poller);
-        const errorMsg = parsed.errorMsg || (parsed.status === 'refunded' ? '渲染失败，积分已退回' : (parsed.status === 'canceled' ? '任务已取消' : '渲染接口返回失败'));
+        const errorMsg = parsed.errorMsg || (parsed.status === 'canceled' ? '任务已取消' : '渲染接口返回失败');
         if (activeNode) {
           activeNode.status = parsed.status === 'canceled' ? 'idle' : 'failed';
           activeNode.progress = parsed.status === 'canceled' ? 0 : 100;
@@ -14116,7 +13931,6 @@ function renderCanvasAssetNodeComposer(node, inputControlHtml, isGenerating) {
         ${renderCanvasNodeModelPicker(node, 'image')}
         ${inputControlHtml}
         <button type="button" class="canvas-composer-tool" onclick="triggerCanvasNodeUpload('${node.id}')" ${isGenerating ? 'disabled' : ''}>⬆ 上传</button>
-        <button type="button" class="canvas-composer-tool" onclick="openCanvasAssetPicker('${node.id}')" ${isGenerating ? 'disabled' : ''}>📦 资产库</button>
       </div>
       <button type="button" class="canvas-composer-send" onclick="runCanvasImageGeneration('${node.id}')" ${isGenerating ? 'disabled' : ''} aria-label="发送图片生成请求">
         <span>${isGenerating ? '生成中' : '➤ 发送'}</span>
@@ -14363,8 +14177,7 @@ function renderCanvasNodesAndLines() {
 
           <div style="display: flex; gap: 6px; padding: 6px 12px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; align-items: center;">
             ${inputControlHtml}
-            <button type="button" class="btn btn-secondary btn-xs" onclick="event.stopPropagation(); openCanvasAssetPicker('${node.id}')">📦 从资产库导入</button>
-            <button type="button" class="btn btn-primary btn-xs" onclick="event.stopPropagation(); runCanvasImageGeneration('${node.id}')" ${isGenerating ? 'disabled' : ''}>${isGenerating ? '生成中...' : '生成图片'} <span id="canvas-image-price-${node.id}" class="send-price-badge send-price-badge-light">积分预算：--</span></button>
+            <button type="button" class="btn btn-primary btn-xs" onclick="event.stopPropagation(); runCanvasImageGeneration('${node.id}')" ${isGenerating ? 'disabled' : ''}>${isGenerating ? '生成中...' : '生成图片'}</button>
           </div>
 
           <div class="canvas-node-body canvas-asset-dropzone" data-node-id="${node.id}" ondragover="event.preventDefault(); event.stopPropagation(); this.classList.add('drag-over');" ondragleave="event.preventDefault(); event.stopPropagation(); this.classList.remove('drag-over');" ondrop="event.preventDefault(); event.stopPropagation(); this.classList.remove('drag-over'); handleCanvasNodeImageDrop('${node.id}', event);" style="flex: 1; display: flex; flex-direction: column; padding: 10px; overflow: hidden; min-height: 150px; background: #ffffff; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
@@ -14419,7 +14232,7 @@ function renderCanvasNodesAndLines() {
             <textarea class="canvas-node-textarea agent-input-textarea" placeholder="快捷点击上方模式，或自行输入指令..." oninput="onAgentNodePromptInput('${node.id}', this.value)" onclick="event.stopPropagation()" onwheel="event.stopPropagation()" style="height: 50px; min-height: 38px; max-height: 100px; font-size: 0.8rem; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; overflow-y: auto; resize: vertical; flex-shrink: 0;">${escapeHTML(node.systemPrompt || '')}</textarea>
 
               <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); runCanvasAgentNode('${node.id}')" style="width: 100%; margin-top: 8px; font-weight: 700; background: linear-gradient(135deg, #7c3aed, #2563eb); color: #ffffff; border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); flex-shrink: 0;">
-              ${isGenerating ? '⏳ 智能体思考分析中...' : '⚡ 运行智能体生成输出'} <span id="canvas-agent-price-${node.id}" class="send-price-badge">积分预算：--</span>
+              ${isGenerating ? '⏳ 智能体思考分析中...' : '⚡ 运行智能体生成输出'}
             </button>
 
             ${node.outputContent ? `
@@ -14541,7 +14354,7 @@ function renderCanvasNodesAndLines() {
               </div>
             ` : `
               <button type="button" class="btn btn-primary btn-run-canvas-video" data-node-id="${node.id}" style="width: 100%; border-radius: 8px; margin-top: auto; flex-shrink: 0;">
-                ⚡ 运行节点生成视频 <span id="canvas-video-price-${node.id}" class="send-price-badge">积分预算：--</span>
+                ⚡ 运行节点生成视频
               </button>
             `)}
           </div>

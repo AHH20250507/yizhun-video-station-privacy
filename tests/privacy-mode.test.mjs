@@ -24,6 +24,35 @@ function textFiles(dir) {
   }).filter(file => statSync(file).size < 2_000_000);
 }
 
+test('privacy mode always opens the creation page by default', () => {
+  assert.match(app, /async function openInitial\(\)[\s\S]*if \(EPHEMERAL_SESSION_MODE\) return startDraft\('creation'\)/);
+});
+test('public sidebar contains exactly the four requested creation entries', () => {
+  const sidebar = html.match(/<nav class="sidebar-menu"[\s\S]*?<\/nav>/)?.[0] || '';
+  const ids = [...sidebar.matchAll(/id="(nav[^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(ids, ['navCreate', 'navCanvasMode', 'navLongScriptGen', 'navMultiAngle']);
+  assert.doesNotMatch(sidebar, /灵感中心|AI 视频生成|img-hot-badge|hot_flame_badge/);
+});
+
+test('public creation UI contains no asset-library or credit controls', () => {
+  assert.doesNotMatch(html, /id="creditPill"|积分预算|管理员计价（积分）|id="btnCanvasToggleDrawer"|id="canvasDrawer"|id="btnLongScriptAssetLibrary"/);
+  assert.doesNotMatch(app, /btn-save-chat-image|btn-save-image-asset-hist|btn-save-kb-hist|data-save-video-task|data-ma-action="save"/);
+  assert.doesNotMatch(app, />存入资产库<|>存入知识库<|存入镜头库|<span>从资产库导入<|onclick="openCanvasAssetPicker/);
+  assert.doesNotMatch(app, /renderTaskCreditBreakdown\(task\)|class="send-price-badge[^"\n]*">积分预算/);
+});
+
+test('public runtime messages contain no credit or refund wording', () => {
+  assert.doesNotMatch(app, /生成失败，预扣积分已退回|生成失败，积分已退回|图片生成失败，预扣积分已退回|图片生成失败，积分已退回|渲染失败，积分已退回|无法确认积分|预计消耗[^\n`]*积分|失败任务已自动释放积分|case 'refunded': return[^\n]*已退款/);
+  const multiAngleFlow = app.match(/async function generateMultiAngleImages\(\)[\s\S]*?\n}\n\nasync function handleMultiAngleResultAction/)?.[0] || '';
+  assert.doesNotMatch(multiAngleFlow, /previewPricing|积分/);
+});
+test('generated media downloads use blob-first download with a browser fallback', () => {
+  assert.match(app, /async function downloadGeneratedMedia/);
+  assert.match(app, /URL\.createObjectURL\(blob\)/);
+  assert.match(app, /triggerBrowserDownload/);
+  assert.match(app, /downloadGeneratedImage\(source, task\)[\s\S]*downloadGeneratedMedia/);
+  assert.match(app, /downloadGeneratedVideo/);
+});
 test('published source contains no embedded provider secret', () => {
   assert.equal(html.includes('embeddedProviderConfig'), false);
   const findings = [];

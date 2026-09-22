@@ -83,6 +83,11 @@ test('conversation history exposes deletion controls', () => {
   assert.match(app, /data-delete-local-conversation/);
 });
 
+test('favicon uses the user-provided PNG instead of the old SVG', () => {
+  assert.match(html, /assets\/bear_head_icon_favicon\.png\?v=20260922_icon_b1/);
+  assert.doesNotMatch(html, /assets\/favicon\.svg/);
+});
+
 test('published source contains no embedded provider secret', () => {
   assert.equal(html.includes('embeddedProviderConfig'), false);
   const findings = [];

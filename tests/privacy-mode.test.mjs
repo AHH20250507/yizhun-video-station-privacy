@@ -46,6 +46,17 @@ test('public runtime messages contain no credit or refund wording', () => {
   const multiAngleFlow = app.match(/async function generateMultiAngleImages\(\)[\s\S]*?\n}\n\nasync function handleMultiAngleResultAction/)?.[0] || '';
   assert.doesNotMatch(multiAngleFlow, /previewPricing|积分/);
 });
+test('creation chat stream keeps the first message visible when content grows', () => {
+  assert.match(html, /id="aiChatStream"[^>]*justify-content: flex-start/);
+  assert.match(css, /\.ai-chat-stream[\s\S]*?justify-content:\s*flex-start/);
+});
+
+test('creation prompt editor can be resized upward', () => {
+  assert.match(html, /id="aiChatResizeHandle"/);
+  assert.match(css, /\.ai-chat-resize-handle[\s\S]*cursor:\s*ns-resize/);
+  assert.match(app, /function initChatInputResize\(\)[\s\S]*setPointerCapture[\s\S]*window\.addEventListener\('pointermove'/);
+});
+
 test('generated media downloads use blob-first download with a browser fallback', () => {
   assert.match(app, /async function downloadGeneratedMedia/);
   assert.match(app, /URL\.createObjectURL\(blob\)/);

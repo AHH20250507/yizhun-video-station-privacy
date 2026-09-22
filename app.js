@@ -3902,9 +3902,51 @@ function insertPlainTextIntoChatEditor(editor, text) {
   editor.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+function initChatInputResize() {
+  const handle = document.getElementById('aiChatResizeHandle');
+  const inputBox = handle?.closest('.ai-chat-input-box');
+  const editor = el.aiChatTextarea;
+  if (!handle || !inputBox || !editor || handle.dataset.resizeReady === '1') return;
+  handle.dataset.resizeReady = '1';
+
+  const getBounds = () => {
+    const styles = getComputedStyle(editor);
+    const min = parseFloat(styles.minHeight) || 72;
+    const max = parseFloat(styles.maxHeight) || Math.max(min, Math.floor(window.innerHeight * 0.42));
+    return { min, max };
+  };
+
+  handle.addEventListener('pointerdown', event => {
+    if (event.button !== 0 && event.pointerType !== 'touch') return;
+    event.preventDefault();
+    const startY = event.clientY;
+    const startHeight = editor.getBoundingClientRect().height;
+    const { min, max } = getBounds();
+    const pointerId = event.pointerId;
+    inputBox.classList.add('is-resizing');
+    try { handle.setPointerCapture?.(pointerId); } catch (_) { /* 非活动指针时由窗口监听兜底 */ }
+
+    const updateHeight = moveEvent => {
+      const nextHeight = Math.max(min, Math.min(max, startHeight + startY - moveEvent.clientY));
+      editor.style.height = `${Math.round(nextHeight)}px`;
+    };
+    const finish = () => {
+      inputBox.classList.remove('is-resizing');
+      try { handle.releasePointerCapture?.(pointerId); } catch (_) { /* 已释放时忽略 */ }
+      window.removeEventListener('pointermove', updateHeight);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+    };
+    window.addEventListener('pointermove', updateHeight);
+    window.addEventListener('pointerup', finish, { once: true });
+    window.addEventListener('pointercancel', finish, { once: true });
+  });
+}
+
 function initChatPromptEditor() {
   const editor = el.aiChatTextarea;
   if (!editor?.isContentEditable || editor.dataset.inlineMediaReady === '1') return;
+  initChatInputResize();
   editor.dataset.inlineMediaReady = '1';
   Object.defineProperty(editor, 'value', {
     configurable: true,

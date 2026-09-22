@@ -84,9 +84,16 @@ test('conversation history exposes deletion controls', () => {
 });
 
 test('collapsed sidebar tooltip stays above the main content layer', () => {
-  assert.match(css, /aside\.sidebar\.collapsed\s*\{[\s\S]*flex:\s*0\s+0\s+68px\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed\s*\{[\s\S]*flex:\s*0\s+0\s+64px\s*!important/);
   assert.match(css, /aside\.sidebar\.collapsed\s*\{[\s\S]*z-index:\s*2000\s*!important/);
   assert.match(css, /aside\.sidebar\.collapsed \[data-tooltip\]::after[\s\S]*z-index:\s*99999/);
+});
+
+test('collapsed sidebar uses a clean icon-only rail', () => {
+  assert.match(css, /\/\* Premium collapsed icon rail \*\/[\s\S]*width:\s*64px\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed \.local-conversation-panel[\s\S]*display:\s*none\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed \.submenu-item\s*\{[\s\S]*width:\s*40px\s*!important[\s\S]*height:\s*40px\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed \.sidebar-collapsed-logo-wrapper\s*\{[\s\S]*width:\s*40px\s*!important[\s\S]*height:\s*40px\s*!important/);
 });
 
 test('favicon uses the user-provided PNG instead of the old SVG', () => {

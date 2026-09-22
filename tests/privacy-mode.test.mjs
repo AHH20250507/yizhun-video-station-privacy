@@ -83,6 +83,12 @@ test('conversation history exposes deletion controls', () => {
   assert.match(app, /data-delete-local-conversation/);
 });
 
+test('collapsed sidebar tooltip stays above the main content layer', () => {
+  assert.match(css, /aside\.sidebar\.collapsed\s*\{[\s\S]*flex:\s*0\s+0\s+68px\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed\s*\{[\s\S]*z-index:\s*2000\s*!important/);
+  assert.match(css, /aside\.sidebar\.collapsed \[data-tooltip\]::after[\s\S]*z-index:\s*99999/);
+});
+
 test('favicon uses the user-provided PNG instead of the old SVG', () => {
   assert.match(html, /assets\/bear_head_icon_favicon\.png\?v=20260922_icon_b1/);
   assert.doesNotMatch(html, /assets\/favicon\.svg/);

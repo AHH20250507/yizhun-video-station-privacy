@@ -738,6 +738,7 @@ aside.sidebar.collapsed {
   min-width: 68px !important;
   max-width: 68px !important;
   overflow: visible !important;
+  z-index: 1000 !important;
 }
 
 aside.sidebar.collapsed .sidebar-header {
@@ -9923,4 +9924,14 @@ aside.sidebar.collapsed .session-trash-button {
   display: block;
   margin-top: 10px;
   color: #64748b;
+}
+
+/* Keep the collapsed rail above the workspace and enforce its compact width. */
+aside.sidebar.collapsed {
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  flex: 0 0 68px !important;
+  overflow: visible !important;
+  z-index: 2000 !important;
 }

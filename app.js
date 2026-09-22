@@ -801,7 +801,139 @@ async function backendGenerateText({ mode = 'creation', operation = 'llm', model
 let el = {};
 
 const EPHEMERAL_SESSION_MODE = window.PRIVACY_EPHEMERAL_MODE !== false;
+const LOCAL_CONVERSATION_STORAGE_KEY = 'vkb_local_conversations_v1';
+const LOCAL_CONVERSATION_ACTIVE_KEY = 'vkb_local_conversation_active_v1';
+const localConversationHistory = [];
+let activeLocalConversation = null;
+let localConversationWelcomeHtml = '';
+
+function localConversationId() {
+  return `conversation_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readLocalConversations() {
+  try {
+    const value = JSON.parse(localStorage.getItem(LOCAL_CONVERSATION_STORAGE_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function writeLocalConversations(items) {
+  localStorage.setItem(LOCAL_CONVERSATION_STORAGE_KEY, JSON.stringify(items.slice(0, 100)));
+}
+
+function safeConversationMediaUrl(value, kind = 'image') {
+  const url = safeMediaUrl(value, { allowDataImage: false });
+  if (!url || /^(blob:|data:)/i.test(url)) return '';
+  if (kind === 'video' && !/^https?:/i.test(url)) return '';
+  return url;
+}
+
+function extractLocalConversationLinks(task) {
+  const links = [];
+  const imageUrls = Array.isArray(task?.imageUrls) ? task.imageUrls : (task?.imageUrl ? [task.imageUrl] : []);
+  imageUrls.forEach(url => {
+    const safe = safeConversationMediaUrl(url, 'image');
+    if (safe) links.push({ type: 'image', url: safe });
+  });
+  const video = safeConversationMediaUrl(task?.videoUrl, 'video');
+  if (video) links.push({ type: 'video', url: video });
+  return links;
+}
+
+function localConversationRecord() {
+  const now = Date.now();
+  return { id: localConversationId(), title: '新对话', createdAt: now, updatedAt: now, messages: [] };
+}
+
+function persistActiveLocalConversation() {
+  if (!activeLocalConversation || !activeLocalConversation.messages.length) return;
+  const items = readLocalConversations().filter(item => item.id !== activeLocalConversation.id);
+  activeLocalConversation.updatedAt = Date.now();
+  items.unshift(activeLocalConversation);
+  writeLocalConversations(items);
+  renderLocalConversationHistory();
+}
+
+function appendLocalConversationMessage(role, text, task = null) {
+  if (!activeLocalConversation) activeLocalConversation = localConversationRecord();
+  const content = String(text || '').trim();
+  const links = extractLocalConversationLinks(task);
+  if (!content && !links.length) return;
+  activeLocalConversation.messages.push({ role, text: content, links, createdAt: Date.now() });
+  if (role === 'user' && content && activeLocalConversation.title === '新对话') activeLocalConversation.title = content.slice(0, 28);
+  persistActiveLocalConversation();
+}
+
+function renderLocalConversationHistory() {
+  const list = document.getElementById('localConversationHistory');
+  if (!list) return;
+  const items = readLocalConversations();
+  list.innerHTML = items.length ? items.map(item => `<div class="local-conversation-row" data-local-conversation-id="${escapeHTML(item.id)}">
+    <button type="button" class="local-conversation-open" data-open-local-conversation="${escapeHTML(item.id)}" title="打开对话">
+      <span class="local-conversation-row-title">${escapeHTML(item.title || '新对话')}</span>
+      <span class="local-conversation-row-meta">${item.messages?.length || 0} 条消息</span>
+    </button>
+    <button type="button" class="local-conversation-delete" data-delete-local-conversation="${escapeHTML(item.id)}" title="删除对话" aria-label="删除对话">×</button>
+  </div>`).join('') : '<div class="local-conversation-empty">暂无历史对话</div>';
+}
+
+function renderLocalConversationMessages(conversation) {
+  if (!conversation) return;
+  const stream = document.getElementById('aiChatStream');
+  if (!stream) return;
+  stream.innerHTML = '';
+  (conversation.messages || []).forEach(message => {
+    if (message.role === 'user') appendAiUserBubble(message.text, null, { skipLocalPersistence: true });
+    else if (message.text) appendAiAssistantBubble(message.text, { skipLocalPersistence: true });
+    (message.links || []).forEach(link => {
+      const safe = safeConversationMediaUrl(link.url, link.type);
+      if (!safe) return;
+      const row = document.createElement('div');
+      row.className = 'local-conversation-link-row';
+      row.innerHTML = `<span>${link.type === 'video' ? '视频' : '图片'}已生成：</span><a href="${escapeHTML(safe)}" target="_blank" rel="noopener noreferrer">打开${link.type === 'video' ? '视频' : '图片'} ↗</a>`;
+      stream.appendChild(row);
+    });
+  });
+  if (!conversation.messages.length) stream.innerHTML = localConversationWelcomeHtml || '<div class="gemini-welcome-card"><h2>你好</h2></div>';
+}
+
+function startNewLocalConversation() {
+  persistActiveLocalConversation();
+  activeLocalConversation = localConversationRecord();
+  localStorage.setItem(LOCAL_CONVERSATION_ACTIVE_KEY, activeLocalConversation.id);
+  renderLocalConversationMessages(activeLocalConversation);
+  renderLocalConversationHistory();
+  switchView('videoGen');
+}
+
+function openLocalConversation(id) {
+  persistActiveLocalConversation();
+  const conversation = readLocalConversations().find(item => item.id === id);
+  if (!conversation) return;
+  activeLocalConversation = conversation;
+  localStorage.setItem(LOCAL_CONVERSATION_ACTIVE_KEY, id);
+  renderLocalConversationMessages(conversation);
+  switchView('videoGen');
+}
+
+function deleteLocalConversation(id) {
+  const next = readLocalConversations().filter(item => item.id !== id);
+  writeLocalConversations(next);
+  if (activeLocalConversation?.id === id) {
+    activeLocalConversation = null;
+    startNewLocalConversation();
+  }
+  renderLocalConversationHistory();
+}
+
+window.startNewLocalConversation = startNewLocalConversation;
+window.openLocalConversation = openLocalConversation;
+window.deleteLocalConversation = deleteLocalConversation;
 const ephemeralSessionStores = { sessions: new Map(), meta: new Map() };
+
 
 /* ========================================================================== 
    Multi-session core (privacy mode keeps session payloads in memory only)
@@ -2806,6 +2938,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initElements();
   initChatPromptEditor();
+  localConversationWelcomeHtml = el.aiChatStream?.innerHTML || '';
+  renderLocalConversationHistory();
+  startNewLocalConversation();
+  document.getElementById('btnNewLocalConversation')?.addEventListener('click', startNewLocalConversation);
+  document.getElementById('localConversationHistory')?.addEventListener('click', event => {
+    const openButton = event.target.closest('[data-open-local-conversation]');
+    if (openButton) openLocalConversation(openButton.dataset.openLocalConversation);
+    const deleteButton = event.target.closest('[data-delete-local-conversation]');
+    if (deleteButton) deleteLocalConversation(deleteButton.dataset.deleteLocalConversation);
+  });
 
   // 会话历史必须优先初始化，避免其他可选 UI 模块报错时阻断 IndexedDB 会话读取与侧栏渲染。
   try {
@@ -5823,6 +5965,7 @@ function completeTask(taskId, status, videoUrl = null, errorMsg = null, fallback
   updateTaskQueueUI();
   updateStatusIndicators();
   void SessionSystem.handleTaskFinished(task, status).catch(error => console.warn('Finished task session save failed:', error));
+  appendLocalConversationMessage('assistant', status === 'completed' ? '' : (task.errorMsg || '生成失败，请稍后重试'), task);
   syncCreationSubmitButtonState();
   return task;
 }
@@ -7841,6 +7984,8 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
       try {
         await saveImageResultData(imageResultId, generatedSource);
         imageResultIds.push(imageResultId);
+        const remoteImageUrl = safeConversationMediaUrl(generatedSource, 'image');
+        if (remoteImageUrl) imageUrls.push(remoteImageUrl);
         displaySources.push(await loadImageResultData(imageResultId) || generatedSource);
       } catch (storageError) {
         if (/^https?:\/\//i.test(generatedSource)) {
@@ -8265,7 +8410,8 @@ document.addEventListener('click', event => {
   void copyChatMessageText(button);
 });
 
-function appendAiUserBubble(text, refMediaList) {
+function appendAiUserBubble(text, refMediaList, options = {}) {
+  if (!options.skipLocalPersistence) appendLocalConversationMessage('user', text);
   const geminiWelcomeCard = document.getElementById('geminiWelcomeCard');
   if (geminiWelcomeCard) {
     geminiWelcomeCard.style.setProperty('display', 'none', 'important');
@@ -8307,7 +8453,7 @@ function appendAiUserBubble(text, refMediaList) {
   scrollChatToBottom();
 }
 
-function appendAiAssistantBubble(initialText) {
+function appendAiAssistantBubble(initialText, options = {}) {
   const geminiWelcomeCard = document.getElementById('geminiWelcomeCard');
   if (geminiWelcomeCard) {
     geminiWelcomeCard.style.setProperty('display', 'none', 'important');

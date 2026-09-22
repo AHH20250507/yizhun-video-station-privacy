@@ -8796,6 +8796,48 @@ body.space-panning-active * {
   overflow-y: auto;
 }
 
+.local-conversation-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+  max-height: 34vh;
+  border-top: 1px solid var(--border-color);
+  background: #fff;
+}
+
+.local-conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  color: var(--text-main);
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.local-conversation-new,
+.local-conversation-delete {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.local-conversation-new { font-size: .75rem; }
+.local-conversation-history { overflow-y: auto; padding: 0 8px 8px; }
+.local-conversation-empty { padding: 12px 8px; color: var(--text-muted); font-size: .75rem; text-align: center; }
+.local-conversation-row { display: flex; align-items: center; gap: 4px; min-width: 0; border-radius: 8px; }
+.local-conversation-row:hover { background: #f1f5f9; }
+.local-conversation-open { flex: 1; min-width: 0; border: 0; background: transparent; padding: 8px; text-align: left; cursor: pointer; font: inherit; }
+.local-conversation-row-title { display: block; overflow: hidden; color: var(--text-main); font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
+.local-conversation-row-meta { display: block; margin-top: 2px; color: var(--text-muted); font-size: .66rem; }
+.local-conversation-delete { padding: 5px 8px; color: #94a3b8; font-size: 1.1rem; }
+.local-conversation-delete:hover { color: #dc2626; }
+.local-conversation-link-row { align-self: flex-start; margin: 0 0 12px 48px; padding: 8px 12px; border: 1px solid #bfdbfe; border-radius: 10px; background: #eff6ff; color: #334155; font-size: .8rem; }
+.local-conversation-link-row a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.local-conversation-link-row a:hover { text-decoration: underline; }
+
 .session-history-section {
   display: flex;
   flex: 1 1 180px;

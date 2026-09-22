@@ -12,7 +12,7 @@
 
   const CONFIG_KEY = 'vkb_standalone_provider_config_v2';
   const LEGACY_CONFIG_KEY = 'vkb_standalone_provider_config_v1';
-  const ALLOWED_LOCAL_STORAGE_KEYS = new Set([CONFIG_KEY]);
+  const ALLOWED_LOCAL_STORAGE_KEYS = new Set([CONFIG_KEY, 'vkb_local_conversations_v1']);
   const volatileLocalStorage = new Map();
   const storagePrototype = Object.getPrototypeOf(window.localStorage);
   const storageGetItem = storagePrototype.getItem;

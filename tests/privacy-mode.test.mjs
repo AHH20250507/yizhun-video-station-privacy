@@ -64,6 +64,25 @@ test('generated media downloads use blob-first download with a browser fallback'
   assert.match(app, /downloadGeneratedImage\(source, task\)[\s\S]*downloadGeneratedMedia/);
   assert.match(app, /downloadGeneratedVideo/);
 });
+test('local conversation persistence stores text and safe media links only', () => {
+  assert.match(app, /LOCAL_CONVERSATION_STORAGE_KEY/);
+  assert.match(app, /localConversation|本地对话/);
+  assert.match(app, /safeMediaUrl/);
+  assert.match(app, /safeConversationMediaUrl[\s\S]*blob:\|data:/i);
+});
+
+test('each page load starts a new conversation while history remains available', () => {
+  assert.match(app, /startNewLocalConversation|createNewConversation/);
+  assert.match(app, /localConversationHistory/);
+  assert.match(html, /新建对话/);
+  assert.match(html, /历史对话/);
+});
+
+test('conversation history exposes deletion controls', () => {
+  assert.match(app, /deleteLocalConversation|删除对话/);
+  assert.match(app, /data-delete-local-conversation/);
+});
+
 test('published source contains no embedded provider secret', () => {
   assert.equal(html.includes('embeddedProviderConfig'), false);
   const findings = [];

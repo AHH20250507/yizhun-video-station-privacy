@@ -5154,7 +5154,7 @@ async function openDynamicApiConfigModal() {
   renderApiProviderDraft();
   el.apiConfigModal.classList.remove('hidden');
   el.apiTestResult.className = 'api-test-status success';
-  el.apiTestResult.textContent = '配置按 Key 保存；模型会同步到全部创作入口。';
+  el.apiTestResult.textContent = '填写并保存后，已选择的模型会出现在对应的创作功能中。';
 }
 
 async function openApiConfigModal() {

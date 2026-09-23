@@ -234,6 +234,15 @@ test('copy fallback reports failure instead of false success', () => {
   assert.match(app, /复制失败，请手动选择文字复制/);
 });
 
+test('mobile API dialog keeps save actions visible above bottom navigation', () => {
+  assert.match(css, /@media \(max-width: 768px\)[\s\S]*\.modal-overlay\s*\{[\s\S]*z-index:\s*6000\s*!important/);
+  assert.match(html, /class="api-config-actions"[\s\S]*id="apiTestResult"[\s\S]*id="btnSaveApiConfig"/);
+  assert.match(css, /\.api-config-actions\s*\{[\s\S]*flex:\s*0 0 auto/);
+  assert.match(css, /#btnSaveApiConfig\s*\{[\s\S]*min-height:\s*44px/);
+  assert.match(app, /填写并保存后，已选择的模型会出现在对应的创作功能中。/);
+  assert.doesNotMatch(app, /配置按 Key 保存；模型会同步到全部创作入口。/);
+});
+
 test('canvas video polling has bounded failure and duration limits', () => {
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_ERRORS/);
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_DURATION_MS/);

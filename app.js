@@ -2938,6 +2938,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initElements();
   initChatPromptEditor();
+  initMobileNavigation();
   localConversationWelcomeHtml = el.aiChatStream?.innerHTML || '';
   renderLocalConversationHistory();
   startNewLocalConversation();
@@ -6973,6 +6974,29 @@ async function handleAdminAction(event) {
   } catch (error) { showToast(`操作失败：${error.message}`, 'error'); }
 }
 
+const MOBILE_VIEW_NAV_IDS = {
+  videoGen: 'mobileNavCreate',
+  canvasMode: 'mobileNavCanvas',
+  longScriptGen: 'mobileNavLongScript',
+  multiAngle: 'mobileNavMultiAngle'
+};
+
+function syncMobileNavigation(viewName) {
+  document.querySelectorAll('[data-mobile-view]').forEach(button => {
+    const active = button.dataset.mobileView === viewName;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-current', active ? 'page' : 'false');
+  });
+}
+
+function initMobileNavigation() {
+  document.getElementById('mobileBottomNav')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-mobile-view]');
+    if (!button) return;
+    switchView(button.dataset.mobileView);
+  });
+}
+
 const PRIVACY_DISABLED_VIEWS = new Set(['taskQueue', 'historyLog', 'creationHistory', 'showcase', 'lensKb', 'promptKb', 'assetKb', 'canvasKb']);
 
 function switchView(viewName) {
@@ -7126,6 +7150,7 @@ function switchView(viewName) {
     if (el.topbarSub) el.topbarSub.textContent = '账号、模型、计费与生成运营数据';
     renderAdminView(panel);
   }
+  syncMobileNavigation(viewName);
   window.requestAnimationFrame(() => {
     document.querySelectorAll('.page-view:not(.hidden)').forEach(view => observeManagedVideos(view));
   });

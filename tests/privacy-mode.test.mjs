@@ -96,6 +96,24 @@ test('collapsed sidebar uses a clean icon-only rail', () => {
   assert.match(css, /aside\.sidebar\.collapsed \.sidebar-collapsed-logo-wrapper\s*\{[\s\S]*width:\s*40px\s*!important[\s\S]*height:\s*40px\s*!important/);
 });
 
+test('mobile layout provides a bottom navigation and safe viewport sizing', () => {
+  assert.match(html, /id="mobileBottomNav"/);
+  assert.match(html, /id="mobileNavCreate"/);
+  assert.match(html, /id="mobileNavCanvas"/);
+  assert.match(html, /id="mobileNavLongScript"/);
+  assert.match(html, /id="mobileNavMultiAngle"/);
+  assert.match(css, /@media\s*\(max-width:\s*768px\)[\s\S]*\.mobile-bottom-nav/);
+  assert.match(css, /padding-bottom:\s*env\(safe-area-inset-bottom/);
+  assert.match(css, /height:\s*100dvh/);
+});
+
+test('mobile core creation pages avoid fixed desktop widths', () => {
+  assert.match(css, /@media\s*\(max-width:\s*768px\)[\s\S]*#viewLongScriptGen[\s\S]*flex-direction:\s*column/);
+  assert.match(css, /@media\s*\(max-width:\s*768px\)[\s\S]*\.long-script-chat-panel[\s\S]*width:\s*100%\s*!important/);
+  assert.match(css, /@media\s*\(max-width:\s*768px\)[\s\S]*\.multi-angle-workbench[\s\S]*grid-template-columns:\s*1fr/);
+  assert.match(css, /@media\s*\(max-width:\s*768px\)[\s\S]*\.canvas-top-toolbar[\s\S]*overflow-x:\s*auto/);
+});
+
 test('favicon uses the user-provided PNG instead of the old SVG', () => {
   assert.match(html, /assets\/bear_head_icon_favicon\.png\?v=20260922_icon_b1/);
   assert.doesNotMatch(html, /assets\/favicon\.svg/);

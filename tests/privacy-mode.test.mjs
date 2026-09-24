@@ -243,6 +243,25 @@ test('mobile API dialog keeps save actions visible above bottom navigation', () 
   assert.doesNotMatch(app, /配置按 Key 保存；模型会同步到全部创作入口。/);
 });
 
+test('image results are capped to the number requested by the user', () => {
+  assert.match(app, /function limitImageSourcesToRequestedCount\(/);
+  assert.match(app, /const generatedSources = limitImageSourcesToRequestedCount\([\s\S]*normalizedCount/);
+  assert.match(app, /const sources = limitImageSourcesToRequestedCount\([\s\S]*expectedCount/);
+  assert.match(app, /async function loadTaskImageSources\(task\)[\s\S]*limitImageSourcesToRequestedCount/);
+  assert.match(app, /function getTaskImageEntries\(task\)[\s\S]*slice\(0, expectedCount\)/);
+});
+
+test('all input hint text is removed across static and dynamic editors', () => {
+  assert.match(app, /function stripInputHintText\(/);
+  assert.match(app, /new MutationObserver\(/);
+  assert.match(app, /removeAttribute\('placeholder'\)/);
+  assert.match(app, /removeAttribute\('data-placeholder'\)/);
+  assert.doesNotMatch(app, /el\.aiChatTextarea\.placeholder\s*=/);
+  assert.match(css, /input::placeholder[\s\S]*opacity:\s*0\s*!important/);
+  assert.match(css, /textarea::placeholder[\s\S]*opacity:\s*0\s*!important/);
+  assert.match(css, /\[contenteditable="true"\]\[data-placeholder\]:empty::before[\s\S]*content:\s*none\s*!important/);
+});
+
 test('canvas video polling has bounded failure and duration limits', () => {
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_ERRORS/);
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_DURATION_MS/);

@@ -10635,3 +10635,15 @@ aside.sidebar.collapsed [data-tooltip]::before {
   left: calc(100% + 5px) !important;
   border-color: transparent rgba(15, 23, 42, .94) transparent transparent !important;
 }
+
+/* Input fields intentionally show no placeholder or example copy. */
+input::placeholder,
+textarea::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
+[contenteditable="true"][data-placeholder]:empty::before {
+  content: none !important;
+  display: none !important;
+}

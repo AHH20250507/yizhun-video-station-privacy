@@ -2937,6 +2937,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   localStorage.removeItem('api_imageBaseUrl');
 
   initElements();
+  initInputHintRemoval();
   initChatPromptEditor();
   initMobileNavigation();
   localConversationWelcomeHtml = el.aiChatStream?.innerHTML || '';
@@ -3632,11 +3633,6 @@ function syncChatGenerationMode(mode, options = {}) {
   if (el.chatUploadMediaLabel) el.chatUploadMediaLabel.textContent = isImageMode ? '上传参考图' : '上传参考媒体';
   if (el.chatDragOverlayTitle) el.chatDragOverlayTitle.textContent = isImageMode ? '释放鼠标，即刻上传参考图片' : '释放鼠标，即刻上传图片 / 视频 / 音频';
   if (el.chatDragOverlayHint) el.chatDragOverlayHint.textContent = isImageMode ? '支持常见图片格式' : '支持常见图片、视频和音频格式';
-  if (el.aiChatTextarea) {
-    el.aiChatTextarea.placeholder = isImageMode
-      ? '描述你想要生成的图片画面（例如：产品广告主视觉、人物海报、场景概念图...）'
-      : '描述你想要生成的视频画面（例如：一条在森林清澈溪流中游动的锦鲤，阳光穿透水面...）';
-  }
   if (el.chatSubmitButtonLabel) {
     el.chatSubmitButtonLabel.setAttribute('aria-label', isImageMode ? '生成图片' : '生成视频');
   }
@@ -4083,6 +4079,33 @@ function initChatInputResize() {
     window.addEventListener('pointermove', updateHeight);
     window.addEventListener('pointerup', finish, { once: true });
     window.addEventListener('pointercancel', finish, { once: true });
+  });
+}
+
+function stripInputHintText(root = document) {
+  if (root instanceof Element) {
+    if (root.matches('input[placeholder], textarea[placeholder]')) root.removeAttribute('placeholder');
+    if (root.matches('[contenteditable="true"][data-placeholder]')) root.removeAttribute('data-placeholder');
+  }
+  root.querySelectorAll?.('input[placeholder], textarea[placeholder]').forEach(field => field.removeAttribute('placeholder'));
+  root.querySelectorAll?.('[contenteditable="true"][data-placeholder]').forEach(editor => editor.removeAttribute('data-placeholder'));
+}
+
+function initInputHintRemoval() {
+  stripInputHintText(document);
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') mutation.addedNodes.forEach(node => {
+        if (node instanceof Element) stripInputHintText(node);
+      });
+      if (mutation.type === 'attributes' && mutation.target instanceof Element) stripInputHintText(mutation.target);
+    });
+  });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['placeholder', 'data-placeholder']
   });
 }
 
@@ -7742,8 +7765,14 @@ function startChatImageProgress(task) {
   return () => window.clearInterval(timer);
 }
 
+function limitImageSourcesToRequestedCount(sources, requestedCount = 1) {
+  const limit = clampImageCount(requestedCount);
+  return [...new Set((Array.isArray(sources) ? sources : [sources]).filter(Boolean))].slice(0, limit);
+}
+
 async function loadTaskImageSources(task) {
   const sources = [];
+  const expectedCount = clampImageCount(task?.count || task?.options?.count || 1);
   const resultIds = Array.isArray(task?.imageResultIds) && task.imageResultIds.length
     ? task.imageResultIds
     : (task?.imageResultId ? [task.imageResultId] : []);
@@ -7755,10 +7784,11 @@ async function loadTaskImageSources(task) {
     ? task.imageUrls
     : (task?.imageUrl ? [task.imageUrl] : []);
   remoteUrls.filter(Boolean).forEach(source => sources.push(source));
-  return [...new Set(sources)];
+  return limitImageSourcesToRequestedCount(sources, expectedCount);
 }
 
 function getTaskImageEntries(task) {
+  const expectedCount = clampImageCount(task?.count || task?.options?.count || 1);
   const resultIds = Array.isArray(task?.imageResultIds) && task.imageResultIds.length
     ? task.imageResultIds
     : (task?.imageResultId ? [task.imageResultId] : []);
@@ -7768,7 +7798,7 @@ function getTaskImageEntries(task) {
   return [
     ...resultIds.map(imageResultId => ({ imageResultId, imageUrl: null })),
     ...remoteUrls.map(imageUrl => ({ imageResultId: null, imageUrl }))
-  ];
+  ].slice(0, expectedCount);
 }
 
 const activeImageReconciliations = new Set();
@@ -7847,7 +7877,11 @@ async function reconcileChatImageTask(task, card = null) {
       return failedTask;
     }
 
-    const sources = extractImageSourcesFromOutput(backendTask.output || {});
+    const expectedCount = clampImageCount(task.count || task.options?.count || 1);
+    const sources = limitImageSourcesToRequestedCount(
+      extractImageSourcesFromOutput(backendTask.output || {}),
+      expectedCount
+    );
     if (!sources.length) throw new Error('服务端任务已完成，但没有返回图片地址或图片数据');
     const imageResultIds = [];
     const imageUrls = [];
@@ -7884,8 +7918,8 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   const badge = card?.querySelector(`#chat-image-badge-${task.taskId}`);
   const target = card?.querySelector(`#chat-image-target-${task.taskId}`);
   card?.querySelector(`[data-cancel-task="${CSS.escape(task.taskId)}"]`)?.remove();
-  const sources = (Array.isArray(imageSources) ? imageSources : [imageSources]).filter(Boolean);
-  const expectedCount = clampImageCount(task.count || task.options?.count || sources.length || 1);
+  const expectedCount = clampImageCount(task.count || task.options?.count || 1);
+  const sources = limitImageSourcesToRequestedCount(imageSources, expectedCount);
   const providerJobs = Array.isArray(task.providerJobs) && task.providerJobs.length === expectedCount ? task.providerJobs : [];
   if (badge) {
     badge.className = `task-status-badge ${task.status}`;
@@ -7998,7 +8032,10 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
       frontendTaskId: taskId,
       onProgress: handleBatchProgress
     });
-    const generatedSources = (generated.sources || [generated.source]).filter(Boolean);
+    const generatedSources = limitImageSourcesToRequestedCount(
+      generated.sources || [generated.source],
+      normalizedCount
+    );
     applyBackendTaskBilling(task, generated.task, generated.pricing);
     const imageResultIds = [];
     const imageUrls = [];

@@ -151,13 +151,48 @@
     return {};
   }
 
+  function normalizeResolutionValues(values) {
+    const source = Array.isArray(values) ? values : (values == null ? [] : [values]);
+    return [...new Set(source.flatMap(value => {
+      if (typeof value === 'string' || typeof value === 'number') return String(value).split(/[,，]/);
+      if (value && typeof value === 'object') return [value.value, value.id, value.name, value.label].filter(Boolean);
+      return [];
+    }).map(value => String(value || '').trim()).filter(value => value && value.length <= 64))];
+  }
+
+  function extractDiscoveredModelMetadata(item) {
+    if (!item || typeof item !== 'object') return { resolutions: [] };
+    const resolutions = normalizeResolutionValues([
+      ...(normalizeResolutionValues(item.resolutions)),
+      ...(normalizeResolutionValues(item.supported_resolutions)),
+      ...(normalizeResolutionValues(item.supportedResolutions)),
+      ...(normalizeResolutionValues(item.resolution)),
+      ...(normalizeResolutionValues(item.capabilities?.resolutions)),
+      ...(normalizeResolutionValues(item.capabilities?.supported_resolutions)),
+      ...(normalizeResolutionValues(item.capabilities?.supportedResolutions)),
+      ...(normalizeResolutionValues(item.metadata?.resolutions)),
+      ...(normalizeResolutionValues(item.metadata?.supported_resolutions)),
+      ...(normalizeResolutionValues(item.metadata?.supportedResolutions))
+    ]);
+    return { resolutions };
+  }
+
+  function normalizeModelMetadata(metadata = {}) {
+    if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return {};
+    return Object.fromEntries(Object.entries(metadata).map(([model, value]) => [
+      String(model || '').trim(),
+      { resolutions: normalizeResolutionValues(value?.resolutions || value?.supported_resolutions || value?.supportedResolutions) }
+    ]).filter(([model]) => model));
+  }
+
   function normalizeProviderProfile(profile = {}, index = 0, name = 'image') {
     return {
       id: String(profile.id || `${name}-${index + 1}`).trim(),
       label: String(profile.label || `${PROVIDER_LABELS[name] || name} Key ${index + 1}`).trim(),
       baseUrl: normalizeBaseUrl(profile.baseUrl || ''),
       apiKey: String(profile.apiKey || '').trim(),
-      models: uniqueModels(profile.models)
+      models: uniqueModels(profile.models),
+      modelMetadata: normalizeModelMetadata(profile.modelMetadata)
     };
   }
 
@@ -810,9 +845,9 @@
 
   function modelRows() {
     const config = readConfig();
-    const row = (mode, operation, model, displayName, providerName, isDefault = true) => ({
+    const row = (mode, operation, model, displayName, providerName, isDefault = true, modelMetadata = {}) => ({
       id: `${mode}:${operation}:${model}`, mode, operation, model, display_name: displayName || model,
-      provider_name: providerName, is_active: true, metadata: { isDefault, description: '使用本机浏览器 API 配置' }
+      provider_name: providerName, is_active: true, metadata: { isDefault, description: '使用本机浏览器 API 配置', ...modelMetadata }
     });
     const configuredModels = provider => {
       const profileModels = (provider.profiles || [])
@@ -821,8 +856,12 @@
       if (profileModels.length) return uniqueModels(profileModels);
       return provider.baseUrl && provider.apiKey ? uniqueModels(provider.models || []) : [];
     };
+    const modelMetadataFor = (provider, model) => {
+      const profile = (provider.profiles || []).find(item => (item.models || []).includes(model));
+      return profile?.modelMetadata?.[model] || provider.modelMetadata?.[model] || {};
+    };
     const rowsFor = (modes, operation, providerName) => modes.flatMap(mode => configuredModels(config[providerName]).map(model =>
-      row(mode, operation, model, model, providerName, model === config[providerName].model)
+      row(mode, operation, model, model, providerName, model === config[providerName].model, modelMetadataFor(config[providerName], model))
     ));
     return [
       ...rowsFor(['creation', 'canvas'], 'video', 'video'),
@@ -924,9 +963,15 @@
     if (!profile.baseUrl || !profile.apiKey) throw new Error('请先填写 API 地址和 Key');
     const scoped = { ...DEFAULTS[name], ...profile, name, cacheKey: `${name}:${profile.id || 'draft'}` };
     let models = [];
+    let modelMetadata = {};
     try {
       const body = await providerRequest(scoped, '/v1/models', { method: 'GET', timeoutMs: 30000 });
-      models = (body?.data || body?.models || []).map(item => item?.id || item).filter(Boolean);
+      const items = body?.data || body?.models || [];
+      models = items.map(item => item?.id || item?.model || item).filter(Boolean).map(String);
+      modelMetadata = Object.fromEntries(items.map(item => {
+        const id = String(item?.id || item?.model || (typeof item === 'string' ? item : '')).trim();
+        return id ? [id, extractDiscoveredModelMetadata(item)] : null;
+      }).filter(Boolean));
     } catch (modelsError) {
       try {
         const usage = await providerRequest(scoped, '/api/usage/token/', { method: 'GET', timeoutMs: 30000 });
@@ -937,7 +982,7 @@
     }
     models = uniqueModels(models);
     if (!models.length) throw new Error('连接成功，但这个 Key 没有返回可用模型');
-    return { name, models };
+    return { name, models, modelMetadata: normalizeModelMetadata(modelMetadata) };
   }
 
   async function testProvider(name, override = null) {

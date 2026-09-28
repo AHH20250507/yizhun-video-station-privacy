@@ -272,6 +272,22 @@ test('video status checks stay functional without technical auto-query wording',
   assert.doesNotMatch(poller, /自动查询|自动重试|自动恢复/);
 });
 
+test('video resolution is model-aware, user-selectable and sent to the API', () => {
+  assert.match(html, /id="chatVideoResolutionGroup"/);
+  assert.match(html, /id="chatResolutionSelect"/);
+  assert.match(html, /id="chatCustomResolutionInput"/);
+  assert.match(app, /function extractVideoModelResolutions\(/);
+  assert.match(app, /function syncChatResolutionControl\(/);
+  assert.match(app, /supported_resolutions|supportedResolutions|capabilities/);
+  assert.match(app, /const resolution = getSelectedChatVideoResolution\(\)/);
+  assert.match(app, /const options = \{ model, duration, resolution, aspectRatio/);
+  assert.match(app, /normalizeVideoResolution\(options\.resolution, '720p'\)/);
+  assert.match(app, /input\.resolution\s*=\s*resolution/);
+  assert.match(app, /videoResolution:\s*el\.chatResolutionSelect/);
+  assert.match(client, /modelMetadata/);
+  assert.match(client, /supported_resolutions|supportedResolutions|resolutions/);
+});
+
 test('canvas video polling has bounded failure and duration limits', () => {
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_ERRORS/);
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_DURATION_MS/);

@@ -1075,6 +1075,7 @@ const SessionSystem = (() => {
       model: document.getElementById('chatModelSelect')?.value || state.apiConfig.model,
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
       videoAspect: document.getElementById('chatAspectSelect')?.value || '16:9',
+      videoResolution: document.getElementById('chatResolutionSelect') ? getSelectedChatVideoResolution() : '720p',
       imageAspect: document.getElementById('chatImageAspectSelect')?.value || '1:1',
       imageCount: document.getElementById('chatImageCountInput')?.value || '1',
       duration: document.getElementById('chatDurationSelect')?.value || '5',
@@ -1181,6 +1182,7 @@ const SessionSystem = (() => {
       model: el.chatModelSelect?.value || state.apiConfig.model,
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
       videoAspect: el.chatAspectSelect?.value || '16:9',
+      videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
       imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
       imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
       duration: el.chatDurationSelect?.value || '5',
@@ -1237,6 +1239,7 @@ const SessionSystem = (() => {
     const parsed = parseVideoTaskResponse(combinedResponse, new Date(backendTask.createdAt || Date.now()).getTime());
     const duration = Number(backendTask.input?.duration || previous?.duration || 5);
     const aspectRatio = backendTask.input?.metadata?.aspect_ratio || previous?.options?.aspectRatio || '16:9';
+    const resolution = normalizeVideoResolution(backendTask.input?.resolution || previous?.options?.resolution, '720p');
     return {
       ...(previous ? clone(previous) : {}),
       source: 'chat',
@@ -1248,7 +1251,7 @@ const SessionSystem = (() => {
       prompt: backendTask.prompt || previous?.prompt || '',
       model: backendTask.model || previous?.model || DEFAULT_VIDEO_MODEL,
       duration,
-      options: { ...(previous?.options || {}), aspectRatio, duration },
+      options: { ...(previous?.options || {}), aspectRatio, duration, resolution },
       status: backendTask.status || parsed.status || previous?.status || 'in_progress',
       progress: backendTask.status === 'completed'
         ? 100
@@ -1643,6 +1646,7 @@ const SessionSystem = (() => {
       if (label && option) label.textContent = option.querySelector('.opt-name')?.textContent || model;
     }
     setSegmentValue(el.chatAspectSelect, next.videoAspect || '16:9');
+    syncChatResolutionControl(model, next.videoResolution || '720p');
     setSegmentValue(el.chatImageAspectSelect, next.imageAspect || '1:1');
     syncChatImageCount(next.imageCount || 1, { persist: false });
     syncChatDurationControl(model, next.duration || 5);
@@ -3146,6 +3150,9 @@ function initElements() {
     chatGenerationModeSegment: document.getElementById('chatGenerationModeSegment'),
     chatModelSelect: document.getElementById('chatModelSelect'),
     chatAspectSelect: document.getElementById('chatAspectSelect'),
+    chatResolutionSelect: document.getElementById('chatResolutionSelect'),
+    chatCustomResolutionInput: document.getElementById('chatCustomResolutionInput'),
+    chatVideoResolutionGroup: document.getElementById('chatVideoResolutionGroup'),
     chatImageAspectSelect: document.getElementById('chatImageAspectSelect'),
     chatImageCountInput: document.getElementById('chatImageCountInput'),
     chatImageCountGroup: document.getElementById('chatImageCountGroup'),
@@ -3416,6 +3423,67 @@ function getModelDisplayName(item) {
   return String(item?.display_name || item?.model || '').trim();
 }
 
+function normalizeVideoResolution(value, fallback = '') {
+  const normalized = String(value || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  return normalized && normalized.length <= 64 ? normalized : fallback;
+}
+
+function extractVideoModelResolutions(model) {
+  const item = getServerModels('creation', 'video').find(candidate => candidate.model === model);
+  const metadata = item?.metadata || {};
+  const candidates = [
+    metadata.resolutions,
+    metadata.supported_resolutions,
+    metadata.supportedResolutions,
+    metadata.resolution,
+    metadata.capabilities?.resolutions,
+    metadata.capabilities?.supported_resolutions,
+    metadata.capabilities?.supportedResolutions,
+    metadata.modelMetadata?.resolutions
+  ];
+  const values = candidates.flatMap(value => Array.isArray(value) ? value : (value == null ? [] : [value]));
+  return [...new Set(values.flatMap(value => {
+    if (typeof value === 'string' || typeof value === 'number') return String(value).split(/[,，]/);
+    if (value && typeof value === 'object') return [value.value, value.id, value.name, value.label].filter(Boolean);
+    return [];
+  }).map(value => normalizeVideoResolution(value)).filter(Boolean))];
+}
+
+function getSelectedChatVideoResolution() {
+  const selected = el.chatResolutionSelect?.value || '';
+  if (selected === '__custom__') return normalizeVideoResolution(el.chatCustomResolutionInput?.value, '720p');
+  return normalizeVideoResolution(selected, '720p');
+}
+
+function syncChatResolutionControl(model, requestedResolution = '') {
+  const select = el.chatResolutionSelect || document.getElementById('chatResolutionSelect');
+  const customInput = el.chatCustomResolutionInput || document.getElementById('chatCustomResolutionInput');
+  if (!select || !customInput) return normalizeVideoResolution(requestedResolution, '720p');
+  const detected = extractVideoModelResolutions(model);
+  const requested = normalizeVideoResolution(requestedResolution, getSelectedChatVideoResolution() || '720p');
+  const selectable = detected.length ? detected : ['720p'];
+  select.replaceChildren(...selectable.map(value => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    return option;
+  }));
+  const customOption = document.createElement('option');
+  customOption.value = '__custom__';
+  customOption.textContent = detected.length ? '自定义' : '自定义填写';
+  select.appendChild(customOption);
+  if (selectable.includes(requested)) {
+    select.value = requested;
+    customInput.classList.add('hidden');
+  } else {
+    select.value = '__custom__';
+    customInput.value = requested;
+    customInput.classList.remove('hidden');
+  }
+  select.dataset.detected = detected.length ? 'true' : 'false';
+  return getSelectedChatVideoResolution();
+}
+
 function getServerModelLabel(mode, operation, model) {
   const item = getServerModels(mode, operation).find(candidate => candidate.model === model);
   return getModelDisplayName(item) || String(model || '');
@@ -3475,6 +3543,7 @@ function renderChatVideoModelOptions() {
         if (hiddenInput) hiddenInput.value = option.dataset.value;
         menu.querySelectorAll('.pill-option').forEach(item => item.classList.toggle('active', item === option));
         syncChatDurationControl(option.dataset.value, document.getElementById('chatDurationSelect')?.value || 15);
+        syncChatResolutionControl(option.dataset.value, getSelectedChatVideoResolution());
         dropdown.classList.remove('open');
         updateCreationPricePreview();
       });
@@ -3483,6 +3552,7 @@ function renderChatVideoModelOptions() {
   if (state.apiConfig) state.apiConfig.model = preferred;
   localStorage.setItem('api_model', preferred);
   syncChatDurationControl(preferred, document.getElementById('chatDurationSelect')?.value || state.apiConfig?.duration || 15);
+  syncChatResolutionControl(preferred, getSelectedChatVideoResolution());
 }
 
 function renderChatImageModel() {
@@ -3622,6 +3692,7 @@ function syncChatGenerationMode(mode, options = {}) {
   const isImageMode = normalizedMode === 'image';
   el.chatVideoModelGroup?.classList.toggle('hidden', isImageMode);
   el.chatVideoAspectGroup?.classList.toggle('hidden', isImageMode);
+  el.chatVideoResolutionGroup?.classList.toggle('hidden', isImageMode);
   el.chatDurationGroup?.classList.toggle('hidden', isImageMode);
   el.chatImageModelGroup?.classList.toggle('hidden', !isImageMode);
   el.chatImageAspectGroup?.classList.toggle('hidden', !isImageMode);
@@ -3721,10 +3792,29 @@ function initAppleControls() {
         if (dropdown.id === 'chatModelDropdown') {
           const currentDuration = document.getElementById('chatDurationSelect')?.value || 5;
           syncChatDurationControl(val, currentDuration);
+          syncChatResolutionControl(val, getSelectedChatVideoResolution());
         }
         dropdown.classList.remove('open');
       });
     });
+  });
+
+  const resolutionSelect = document.getElementById('chatResolutionSelect');
+  const customResolutionInput = document.getElementById('chatCustomResolutionInput');
+  resolutionSelect?.addEventListener('change', () => {
+    const isCustom = resolutionSelect.value === '__custom__';
+    customResolutionInput?.classList.toggle('hidden', !isCustom);
+    if (isCustom && customResolutionInput) {
+      if (!normalizeVideoResolution(customResolutionInput.value)) customResolutionInput.value = '720p';
+      customResolutionInput.focus();
+    }
+  });
+  customResolutionInput?.addEventListener('input', () => {
+    const sanitized = normalizeVideoResolution(customResolutionInput.value);
+    if (sanitized !== customResolutionInput.value) customResolutionInput.value = sanitized;
+  });
+  customResolutionInput?.addEventListener('change', () => {
+    customResolutionInput.value = normalizeVideoResolution(customResolutionInput.value, '720p');
   });
 
   const customDurationInput = document.getElementById('chatCustomDurationInput');
@@ -5048,6 +5138,7 @@ function createEmptyApiProfile(name, index = 0) {
     apiKey: '',
     models: [],
     availableModels: [],
+    modelMetadata: {},
     testState: '',
     testMessage: ''
   };
@@ -5064,6 +5155,7 @@ function createApiProviderDraft() {
       apiKey: profile.apiKey || '',
       models: uniqueApiModels(profile.models),
       availableModels: uniqueApiModels(profile.models),
+      modelMetadata: profile.modelMetadata && typeof profile.modelMetadata === 'object' ? clone(profile.modelMetadata) : {},
       testState: '',
       testMessage: ''
     })) : [];
@@ -5151,6 +5243,7 @@ function renderApiProviderDraft() {
         const result = await BackendClient.discoverProviderModels(name, profile);
         const models = uniqueApiModels(result.models);
         profile.availableModels = models;
+        profile.modelMetadata = result.modelMetadata && typeof result.modelMetadata === 'object' ? clone(result.modelMetadata) : {};
         profile.models = uniqueApiModels(profile.models).filter(model => models.includes(model));
         if (!profile.models.length) profile.models = [...models];
         profile.testState = 'success';
@@ -5321,7 +5414,8 @@ async function saveDynamicApiConfig() {
           label: `${meta.label} Key ${index + 1}`,
           baseUrl: profile.baseUrl,
           apiKey: profile.apiKey,
-          models: uniqueApiModels(profile.models)
+          models: uniqueApiModels(profile.models),
+          modelMetadata: Object.fromEntries(uniqueApiModels(profile.models).map(model => [model, profile.modelMetadata?.[model] || { resolutions: [] }]))
         };
       });
       const owners = new Map();
@@ -5620,9 +5714,9 @@ async function apiSubmitVideo(prompt, options = {}) {
   const duration = isCustomDurationVideoModel(model)
     ? clampVideoDuration(requestedDuration, 4, 30, 5)
     : requestedDuration;
+  const resolution = normalizeVideoResolution(options.resolution, '720p');
   const input = {
     duration,
-    resolution: options.resolution || '720p',
     n: 1,
     ...(mode === 'canvas' ? {
       client_context: {
@@ -5635,6 +5729,7 @@ async function apiSubmitVideo(prompt, options = {}) {
       client_session_id: options.sessionId || undefined
     }
   };
+  if (resolution) input.resolution = resolution;
   if (options.images?.length) input.images = options.images;
   if (options.videos?.length) input.videos = options.videos;
   if (options.audios?.length) input.audios = options.audios;
@@ -7581,6 +7676,7 @@ function captureCreationSubmissionData() {
     model: el.chatModelSelect?.value || state.apiConfig.model,
     imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
     videoAspect: el.chatAspectSelect?.value || '16:9',
+    videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
     imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
     imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
     duration: el.chatDurationSelect?.value || '5',
@@ -7599,6 +7695,7 @@ async function handleAiChatSubmit() {
   const refMediaList = [...state.chatRefMediaList];
   const model = el.chatModelSelect.value;
   const videoAspectRatio = el.chatAspectSelect.value;
+  const resolution = getSelectedChatVideoResolution();
   const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1';
   const imageCount = clampImageCount(el.chatImageCountInput?.value || state.chatImageCount || 1);
   const duration = isCustomDurationVideoModel(model)
@@ -7646,7 +7743,7 @@ async function handleAiChatSubmit() {
     appendAiUserBubble(text, refMediaList);
     el.aiChatTextarea.value = '';
 
-    const options = { model, duration, aspectRatio: videoAspectRatio, refMediaList, sessionId: originSessionId };
+    const options = { model, duration, resolution, aspectRatio: videoAspectRatio, refMediaList, sessionId: originSessionId };
     if (imageOptions.length > 0) options.images = imageOptions;
     if (videoOptions.length > 0) options.videos = videoOptions;
     if (audioOptions.length > 0) options.audios = audioOptions;
@@ -8223,6 +8320,12 @@ function renderLlmConfirmCard(aiBox, rawPrompt, currentExpandedPrompt, options, 
       <div class="confirm-card-body">
         ${errorBannerHtml}
         ${mediaBadgeHtml}
+        <div class="video-submit-parameter-summary">
+          <span>模型：${escapeHTML(options?.model || '')}</span>
+          <span>比例：${escapeHTML(options?.aspectRatio || '16:9')}</span>
+          <span>分辨率：${escapeHTML(normalizeVideoResolution(options?.resolution, '720p'))}</span>
+          <span>时长：${escapeHTML(String(options?.duration || 5))} 秒</span>
+        </div>
         <div style="font-size: 0.75rem; color: #166534; margin-bottom: 6px; font-weight: 500;">
           💡 提示：您可以在下方编辑框中自由修改或删除不符合意图的词汇，满意后点击提交渲染：
         </div>

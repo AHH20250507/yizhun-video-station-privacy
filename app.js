@@ -8616,7 +8616,7 @@ function renderChatVideoProgressLabel(status, progress = 0, task = null) {
   const statusText = normalizedStatus === 'queued'
     ? '排队中'
     : normalizedStatus === 'reconciling'
-      ? '网络波动，自动恢复中'
+      ? '正在重新连接'
       : normalizedStatus === 'needs_review'
         ? '等待供应商状态确认'
         : '生成中';
@@ -8835,12 +8835,12 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
       consecutivePollErrors += 1;
       console.error('Chat poller error:', err);
       if (targetArea) {
-        targetArea.innerHTML = `<div style="color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 4px;"><strong>状态查询失败 (${consecutivePollErrors}/3)：</strong> ${escapeHTML(err.message)}</div>`;
+        targetArea.innerHTML = `<div style="color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 4px;"><strong>任务状态确认失败（${consecutivePollErrors}/${MAX_VIDEO_POLL_ERRORS}）：</strong> ${escapeHTML(err.message)}</div>`;
       }
       if (consecutivePollErrors >= MAX_VIDEO_POLL_ERRORS) {
         clearInterval(poller);
         SessionSystem.unregisterPoller(taskId, poller);
-        const errMsg = `状态查询连续失败 ${consecutivePollErrors} 次，已停止自动重试：${err.message}`;
+        const errMsg = `任务状态确认失败：${err.message}`;
         const activeTask = state.activeTasks.find(item => item.taskId === taskId);
         if (activeTask) {
           activeTask.status = 'needs_review';
@@ -8850,11 +8850,11 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         if (progressTrack) progressTrack.dataset.status = 'needs_review';
         if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('needs_review', activeTask?.progress || 0, activeTask);
         if (targetArea) {
-          targetArea.innerHTML = `<div style="color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;font-size:.8rem;"><strong>已停止自动查询：</strong> ${escapeHTML(errMsg)}。可刷新当前页面后重新发起任务。</div>`;
+          targetArea.innerHTML = `<div style="color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;font-size:.8rem;"><strong>任务状态确认失败：</strong> ${escapeHTML(err.message)}。请检查 API 配置或网络后重新发起生成。</div>`;
         }
-        showToast('视频状态查询已停止，请检查 API 或网络后重试', 'warning');
+        showToast('任务状态确认失败，请检查 API 配置或网络', 'warning');
       } else if (consecutivePollErrors >= 3) {
-        const errMsg = `任务已提交，网络波动，后台会自动重试查询。${err.message}`;
+        const errMsg = `任务已提交，但当前网络不稳定：${err.message}`;
         const activeTask = state.activeTasks.find(item => item.taskId === taskId);
         if (activeTask) {
           activeTask.status = 'reconciling';
@@ -8866,7 +8866,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         if (targetArea) {
           targetArea.innerHTML = `<div style="color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 4px;"><strong>网络波动：</strong> ${escapeHTML(errMsg)}</div>`;
         }
-        if (consecutivePollErrors === 3) showToast('视频状态查询出现网络波动，后台会继续自动恢复');
+        if (consecutivePollErrors === 3) showToast('网络不稳定，正在重新连接视频任务');
       }
     }
   }, 3000);

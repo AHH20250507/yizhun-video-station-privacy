@@ -262,6 +262,16 @@ test('all input hint text is removed across static and dynamic editors', () => {
   assert.match(css, /\[contenteditable="true"\]\[data-placeholder\]:empty::before[\s\S]*content:\s*none\s*!important/);
 });
 
+test('video status checks stay functional without technical auto-query wording', () => {
+  const poller = app.match(/function startChatCardPoller\([\s\S]*?SessionSystem\.registerPoller\(taskId, poller\);\n}/)?.[0] || '';
+  assert.match(poller, /setInterval\(async \(\) =>/);
+  assert.match(poller, /await apiPollVideo\(pollId\)/);
+  assert.match(poller, /MAX_VIDEO_POLL_ERRORS/);
+  assert.match(poller, /\$\{consecutivePollErrors\}\/\$\{MAX_VIDEO_POLL_ERRORS\}/);
+  assert.match(poller, /任务状态确认失败/);
+  assert.doesNotMatch(poller, /自动查询|自动重试|自动恢复/);
+});
+
 test('canvas video polling has bounded failure and duration limits', () => {
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_ERRORS/);
   assert.match(app, /MAX_CANVAS_VIDEO_POLL_DURATION_MS/);

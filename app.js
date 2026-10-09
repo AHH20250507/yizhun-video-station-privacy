@@ -805,6 +805,7 @@ const LOCAL_CONVERSATION_STORAGE_KEY = 'vkb_local_conversations_v1';
 const LOCAL_CONVERSATION_ACTIVE_KEY = 'vkb_local_conversation_active_v1';
 const localConversationHistory = [];
 let activeLocalConversation = null;
+const liveConversationMarkup = new Map();
 let localConversationWelcomeHtml = '';
 
 function localConversationId() {
@@ -859,12 +860,22 @@ function persistActiveLocalConversation() {
 
 function appendLocalConversationMessage(role, text, task = null) {
   if (!activeLocalConversation) activeLocalConversation = localConversationRecord();
+  const destinationId = task?.localConversationId;
+  const conversation = destinationId && destinationId !== activeLocalConversation.id
+    ? readLocalConversations().find(item => item.id === destinationId)
+    : activeLocalConversation;
+  if (!conversation) return;
   const content = String(text || '').trim();
   const links = extractLocalConversationLinks(task);
   if (!content && !links.length) return;
-  activeLocalConversation.messages.push({ role, text: content, links, createdAt: Date.now() });
-  if (role === 'user' && content && activeLocalConversation.title === '新对话') activeLocalConversation.title = content.slice(0, 28);
-  persistActiveLocalConversation();
+  conversation.messages.push({ role, text: content, links, createdAt: Date.now() });
+  if (role === 'user' && content && conversation.title === '新对话') conversation.title = content.slice(0, 28);
+  if (conversation === activeLocalConversation) persistActiveLocalConversation();
+  else {
+    conversation.updatedAt = Date.now();
+    writeLocalConversations([conversation, ...readLocalConversations().filter(item => item.id !== conversation.id)]);
+    renderLocalConversationHistory();
+  }
 }
 
 function renderLocalConversationHistory() {
@@ -885,6 +896,12 @@ function renderLocalConversationMessages(conversation) {
   const stream = document.getElementById('aiChatStream');
   if (!stream) return;
   stream.innerHTML = '';
+  if (liveConversationMarkup.has(conversation.id)) {
+    stream.innerHTML = liveConversationMarkup.get(conversation.id);
+    observeManagedVideos(stream);
+    void refreshLiveConversationTaskCards(stream);
+    return;
+  }
   (conversation.messages || []).forEach(message => {
     if (message.role === 'user') appendAiUserBubble(message.text, null, { skipLocalPersistence: true });
     else if (message.text) appendAiAssistantBubble(message.text, { skipLocalPersistence: true });
@@ -901,6 +918,7 @@ function renderLocalConversationMessages(conversation) {
 }
 
 function startNewLocalConversation() {
+  if (activeLocalConversation && el.aiChatStream) liveConversationMarkup.set(activeLocalConversation.id, el.aiChatStream.innerHTML);
   persistActiveLocalConversation();
   activeLocalConversation = localConversationRecord();
   localStorage.setItem(LOCAL_CONVERSATION_ACTIVE_KEY, activeLocalConversation.id);
@@ -910,6 +928,7 @@ function startNewLocalConversation() {
 }
 
 function openLocalConversation(id) {
+  if (activeLocalConversation && el.aiChatStream) liveConversationMarkup.set(activeLocalConversation.id, el.aiChatStream.innerHTML);
   persistActiveLocalConversation();
   const conversation = readLocalConversations().find(item => item.id === id);
   if (!conversation) return;
@@ -920,6 +939,7 @@ function openLocalConversation(id) {
 }
 
 function deleteLocalConversation(id) {
+  liveConversationMarkup.delete(id);
   const next = readLocalConversations().filter(item => item.id !== id);
   writeLocalConversations(next);
   if (activeLocalConversation?.id === id) {
@@ -1076,6 +1096,7 @@ const SessionSystem = (() => {
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
       videoAspect: document.getElementById('chatAspectSelect')?.value || '16:9',
       videoResolution: document.getElementById('chatResolutionSelect') ? getSelectedChatVideoResolution() : '720p',
+      videoExpandScript: document.getElementById('chatExpandScriptToggle')?.checked !== false,
       imageAspect: document.getElementById('chatImageAspectSelect')?.value || '1:1',
       imageCount: document.getElementById('chatImageCountInput')?.value || '1',
       duration: document.getElementById('chatDurationSelect')?.value || '5',
@@ -1183,6 +1204,7 @@ const SessionSystem = (() => {
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
       videoAspect: el.chatAspectSelect?.value || '16:9',
       videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
+      videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
       imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
       imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
       duration: el.chatDurationSelect?.value || '5',
@@ -1245,7 +1267,7 @@ const SessionSystem = (() => {
       source: 'chat',
       mediaType: 'video',
       operation: 'video',
-      taskId: backendTask.id,
+      taskId: previous?.taskId || backendTask.requestId || backendTask.id,
       backendTaskId: backendTask.id,
       requestId: backendTask.requestId || previous?.requestId || null,
       prompt: backendTask.prompt || previous?.prompt || '',
@@ -1280,7 +1302,7 @@ const SessionSystem = (() => {
       source: 'chat',
       mediaType: 'image',
       operation: 'image',
-      taskId: backendTask.id,
+      taskId: previous?.taskId || backendTask.requestId || backendTask.id,
       backendTaskId: backendTask.id,
       requestId: backendTask.requestId || previous?.requestId || null,
       prompt: backendTask.prompt || previous?.prompt || '',
@@ -1408,7 +1430,7 @@ const SessionSystem = (() => {
     let activeCreationChanged = false;
     for (const backendTask of eligibleTasks) {
       let targetSession = creationSessions.find(session => (session.data?.tasks || []).some(task =>
-        task.taskId === backendTask.id || task.backendTaskId === backendTask.id
+        task.taskId === backendTask.id || task.backendTaskId === backendTask.id || (backendTask.requestId && (task.taskId === backendTask.requestId || task.requestId === backendTask.requestId))
       ));
       const boundSessionId = backendTask.input?.metadata?.client_session_id;
       if (!targetSession && boundSessionId) {
@@ -1454,7 +1476,7 @@ const SessionSystem = (() => {
       if (!targetSession) continue;
 
       const tasks = Array.isArray(targetSession.data?.tasks) ? targetSession.data.tasks : [];
-      const index = tasks.findIndex(task => task.taskId === backendTask.id || task.backendTaskId === backendTask.id);
+      const index = tasks.findIndex(task => task.taskId === backendTask.id || task.backendTaskId === backendTask.id || (backendTask.requestId && (task.taskId === backendTask.requestId || task.requestId === backendTask.requestId)));
       const nextTask = backendTask.operation === 'image'
         ? frontendImageTaskFromBackend(backendTask, targetSession, index >= 0 ? tasks[index] : null)
         : frontendVideoTaskFromBackend(backendTask, targetSession, index >= 0 ? tasks[index] : null);
@@ -1647,6 +1669,7 @@ const SessionSystem = (() => {
     }
     setSegmentValue(el.chatAspectSelect, next.videoAspect || '16:9');
     syncChatResolutionControl(model, next.videoResolution || '720p');
+    if (el.chatExpandScriptToggle) el.chatExpandScriptToggle.checked = next.videoExpandScript !== false;
     setSegmentValue(el.chatImageAspectSelect, next.imageAspect || '1:1');
     syncChatImageCount(next.imageCount || 1, { persist: false });
     syncChatDurationControl(model, next.duration || 5);
@@ -1722,11 +1745,13 @@ const SessionSystem = (() => {
   function restoreSessionTasks(tasks) {
     (tasks || []).forEach(savedTask => {
       if (!savedTask?.taskId) return;
-      const existing = state.activeTasks.find(task => task.taskId === savedTask.taskId)
-        || state.taskHistory.find(task => task.taskId === savedTask.taskId);
-      const task = { ...(existing ? clone(existing) : {}), ...clone(savedTask) };
-      state.activeTasks = state.activeTasks.filter(item => item.taskId !== task.taskId);
-      state.taskHistory = state.taskHistory.filter(item => item.taskId !== task.taskId);
+      const aliases = new Set([savedTask.taskId, savedTask.requestId, savedTask.backendTaskId].filter(Boolean));
+      const matches = task => [task.taskId, task.requestId, task.backendTaskId].some(id => id && aliases.has(id));
+      const existing = state.activeTasks.find(matches) || state.taskHistory.find(matches);
+      const task = { ...(existing ? clone(existing) : {}), ...clone(savedTask), taskId: existing?.taskId || savedTask.requestId || savedTask.taskId };
+      if (existing?.status === 'canceled') task.status = 'canceled';
+      state.activeTasks = state.activeTasks.filter(item => !matches(item));
+      state.taskHistory = state.taskHistory.filter(item => !matches(item));
       if (['queued', 'in_progress', 'running', 'rendering', 'paused', 'reconciling', 'needs_review'].includes(task.status)) {
         task.status = task.source === 'canvas'
           ? 'rendering'
@@ -2257,6 +2282,7 @@ const SessionSystem = (() => {
 
   function cancelTask(taskId, reason = '已取消') {
     canceledTaskIds.add(taskId);
+    taskReplayControllers.get(taskId)?.abort();
     const task = state.activeTasks.find(item => item.taskId === taskId)
       || state.taskHistory.find(item => item.taskId === taskId);
     const backendTaskId = task?.backendTaskId || ((!String(taskId).startsWith('image_') && !String(taskId).startsWith('fail_')) ? taskId : null);
@@ -2553,6 +2579,7 @@ const SessionSystem = (() => {
 
   function assignTask(task, fallbackType) {
     if (!task) return task;
+    if (task.source === 'chat' && !task.localConversationId) task.localConversationId = activeLocalConversation?.id || null;
     if (!Object.prototype.hasOwnProperty.call(task, 'sessionId')) task.sessionId = activeSession?.id || null;
     if (!Object.prototype.hasOwnProperty.call(task, 'sessionType')) task.sessionType = activeSession?.type || fallbackType || 'creation';
     return task;
@@ -3153,6 +3180,8 @@ function initElements() {
     chatResolutionSelect: document.getElementById('chatResolutionSelect'),
     chatCustomResolutionInput: document.getElementById('chatCustomResolutionInput'),
     chatVideoResolutionGroup: document.getElementById('chatVideoResolutionGroup'),
+    chatExpandScriptGroup: document.getElementById('chatExpandScriptGroup'),
+    chatExpandScriptToggle: document.getElementById('chatExpandScriptToggle'),
     chatImageAspectSelect: document.getElementById('chatImageAspectSelect'),
     chatImageCountInput: document.getElementById('chatImageCountInput'),
     chatImageCountGroup: document.getElementById('chatImageCountGroup'),
@@ -3693,6 +3722,7 @@ function syncChatGenerationMode(mode, options = {}) {
   el.chatVideoModelGroup?.classList.toggle('hidden', isImageMode);
   el.chatVideoAspectGroup?.classList.toggle('hidden', isImageMode);
   el.chatVideoResolutionGroup?.classList.toggle('hidden', isImageMode);
+  el.chatExpandScriptGroup?.classList.toggle('hidden', isImageMode);
   el.chatDurationGroup?.classList.toggle('hidden', isImageMode);
   el.chatImageModelGroup?.classList.toggle('hidden', !isImageMode);
   el.chatImageAspectGroup?.classList.toggle('hidden', !isImageMode);
@@ -3800,6 +3830,7 @@ function initAppleControls() {
   });
 
   const resolutionSelect = document.getElementById('chatResolutionSelect');
+  el.chatExpandScriptToggle?.addEventListener('change', () => SessionSystem.scheduleSave());
   const customResolutionInput = document.getElementById('chatCustomResolutionInput');
   resolutionSelect?.addEventListener('change', () => {
     const isCustom = resolutionSelect.value === '__custom__';
@@ -5740,6 +5771,7 @@ async function apiSubmitVideo(prompt, options = {}) {
     prompt,
     input,
     duration,
+    regenerationRefs: options.refMediaList,
     signal: options.signal
   });
   return { ...result.task, task: result.task, pricing: result.pricing, duplicate: result.duplicate };
@@ -7677,6 +7709,7 @@ function captureCreationSubmissionData() {
     imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
     videoAspect: el.chatAspectSelect?.value || '16:9',
     videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
+    videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
     imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
     imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
     duration: el.chatDurationSelect?.value || '5',
@@ -7692,10 +7725,11 @@ async function handleAiChatSubmit() {
   }
   const text = el.aiChatTextarea.value.trim();
   const generationMode = getChatGenerationMode();
-  const refMediaList = [...state.chatRefMediaList];
+  const refMediaList = clone(state.chatRefMediaList);
   const model = el.chatModelSelect.value;
   const videoAspectRatio = el.chatAspectSelect.value;
   const resolution = getSelectedChatVideoResolution();
+  const expandScript = el.chatExpandScriptToggle?.checked !== false;
   const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1';
   const imageCount = clampImageCount(el.chatImageCountInput?.value || state.chatImageCount || 1);
   const duration = isCustomDurationVideoModel(model)
@@ -7749,8 +7783,18 @@ async function handleAiChatSubmit() {
     if (audioOptions.length > 0) options.audios = audioOptions;
     clearAllChatMediaRefs();
 
+    if (!expandScript) {
+      const aiBox = appendAiAssistantBubble('已关闭脚本扩写，正在按原提示词生成视频。');
+      try {
+        await submitVideoRenderFlow(aiBox, promptText, options);
+      } catch (error) {
+        if (error.name !== 'AbortError') showToast(`视频提交失败：${error.message}`, 'error');
+      }
+      scrollChatToBottom();
+      return;
+    }
     const aiBox = appendAiAssistantBubble('已在下方故事板生成您的提示词。您可直接提交渲染，或点击开始扩写让 AI 精细扩写。');
-    renderLlmConfirmCard(aiBox, text, text, options, null, false);
+    renderLlmConfirmCard(aiBox, promptText, promptText, options, null, false);
     scrollChatToBottom();
   } finally {
     isAiChatSubmitting = false;
@@ -7830,6 +7874,7 @@ function createChatImageResultCard(container, taskId, promptText, model, aspectR
       <span class="task-id-tag">ID: ${escapeHTML(taskId)}</span>
       <span style="display:flex;align-items:center;gap:6px;">
         <span class="task-status-badge in_progress" id="chat-image-badge-${taskId}">生成中</span>
+        <button type="button" class="btn btn-secondary btn-sm" data-regenerate-task="${escapeHTML(taskId)}">再次生成</button>
         <button type="button" class="btn btn-secondary btn-sm danger" data-cancel-task="${escapeHTML(taskId)}">取消</button>
       </span>
     </div>
@@ -7865,6 +7910,15 @@ function startChatImageProgress(task) {
 function limitImageSourcesToRequestedCount(sources, requestedCount = 1) {
   const limit = clampImageCount(requestedCount);
   return [...new Set((Array.isArray(sources) ? sources : [sources]).filter(Boolean))].slice(0, limit);
+}
+
+function validateTaskImageSources(sources, requestedCount = 1) {
+  const selected = limitImageSourcesToRequestedCount(sources, requestedCount);
+  return selected.map(source => {
+    const safe = safeMediaUrl(source, { allowDataImage: true });
+    if (!safe) throw new Error('供应商图片地址使用了不安全协议');
+    return safe;
+  });
 }
 
 async function loadTaskImageSources(task) {
@@ -8016,7 +8070,7 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   const target = card?.querySelector(`#chat-image-target-${task.taskId}`);
   card?.querySelector(`[data-cancel-task="${CSS.escape(task.taskId)}"]`)?.remove();
   const expectedCount = clampImageCount(task.count || task.options?.count || 1);
-  const sources = limitImageSourcesToRequestedCount(imageSources, expectedCount);
+  const sources = validateTaskImageSources(imageSources, expectedCount);
   const providerJobs = Array.isArray(task.providerJobs) && task.providerJobs.length === expectedCount ? task.providerJobs : [];
   if (badge) {
     badge.className = `task-status-badge ${task.status}`;
@@ -8085,6 +8139,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     ? `正在提交 ${normalizedCount} 个独立图片任务，每张图会分别显示进度。`
     : '正在使用图片模型生成画面。');
   const card = createChatImageResultCard(aiBox, taskId, promptText, model, aspectRatio, normalizedCount);
+  card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(promptText, refMediaList)}</div>`);
   const task = SessionSystem.assignTask({
     source: 'chat',
     mediaType: 'image',
@@ -8094,7 +8149,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     imageSize: size,
     status: 'in_progress',
     progress: 10,
-    options: { generationMode: 'image', aspectRatio, size, count: normalizedCount },
+    options: { generationMode: 'image', model, aspectRatio, size, count: normalizedCount, refMediaList: clone(refMediaList) },
     count: normalizedCount,
     providerJobs: window.STANDALONE_MODE && normalizedCount > 1
       ? Array.from({ length: normalizedCount }, (_, index) => ({ index, status: index < 3 ? 'running' : 'queued', output: {}, errorMessage: null }))
@@ -8125,6 +8180,8 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     const generated = await apiGenerateCanvasImage(promptText, imageSources, {
       size,
       mode: 'creation',
+      model,
+      regenerationRefs: refMediaList,
       count: normalizedCount,
       frontendTaskId: taskId,
       onProgress: handleBatchProgress
@@ -8461,6 +8518,7 @@ function renderLlmConfirmCard(aiBox, rawPrompt, currentExpandedPrompt, options, 
 }
 
 async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
+  const localConversationId = activeLocalConversation?.id || null;
   const originSession = SessionSystem.getActive();
   const originSessionId = options.sessionId || (originSession?.type === 'creation' ? originSession.id : null);
   const model = options.model || state.apiConfig.model || DEFAULT_VIDEO_MODEL;
@@ -8480,6 +8538,7 @@ async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
       source: 'chat',
       mediaType: 'video',
       taskId: taskId,
+      localConversationId,
       prompt: finalPrompt,
       model: model,
       duration: duration,
@@ -8496,6 +8555,7 @@ async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
     state.activeTasks.unshift(newTask);
     updateStatusIndicators();
     try {
+      void hydrateTaskReferencePrompt(cardEl, newTask);
       await SessionSystem.trackTask(newTask);
     } catch (error) {
       console.warn('Video task session save failed:', error);
@@ -8510,6 +8570,8 @@ async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
     const failedId = `fail_${Date.now()}`;
     const failedTask = SessionSystem.assignTask({
       taskId: failedId,
+      backendTaskId: err.task?.id || null,
+      localConversationId,
       prompt: finalPrompt,
       model: model,
       duration: duration,
@@ -8529,6 +8591,7 @@ async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
     errDiv.style.cssText = 'color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 0.8rem; line-height: 1.5;';
     errDiv.innerHTML = `<strong>❌ 视频渲染提交失败:</strong> ${escapeHTML(err.message)}`;
     aiBox.appendChild(errDiv);
+    errDiv.insertAdjacentHTML('beforeend', `<div>${renderRegenerateTaskButton(failedId)}</div>`);
     showToast(`❌ 渲染提交失败: ${err.message}`);
     throw err;
   } finally {
@@ -8537,6 +8600,193 @@ async function submitVideoRenderFlow(aiBox, finalPrompt, options) {
 
   scrollChatToBottom();
 }
+
+function renderRegenerateTaskButton(taskId) {
+  return `<button type="button" class="btn btn-secondary btn-sm task-regenerate-button" data-regenerate-task="${escapeHTML(taskId)}">再次生成</button>`;
+}
+
+async function refreshLiveConversationTaskCards(stream) {
+  for (const card of stream.querySelectorAll('[id^="task-card-"]')) {
+    const id = card.id.slice('task-card-'.length);
+    const task = state.taskHistory.find(item => item.taskId === id) || state.activeTasks.find(item => item.taskId === id);
+    if (!task || !['completed', 'failed', 'canceled', 'refunded'].includes(task.status)) continue;
+    if (task.mediaType === 'image') await renderChatImageCardResult(card, task, task.status === 'completed' ? await loadTaskImageSources(task) : []);
+    else {
+      const target = card.querySelector('.chat-video-result-target');
+      if (target && task.status === 'completed') setSafeVideoResult(target, task.videoUrl);
+      else if (target) target.textContent = task.errorMsg || '任务已结束';
+    }
+  }
+}
+
+async function rememberCanvasTaskReferences(task, backendTask) {
+  const snapshot = BackendClient.getRegenerationSnapshot(backendTask?.id || task.backendTaskId || task.taskId);
+  if (!snapshot || !task.canvasNodeId) return;
+  for (const item of snapshot.refMediaList) item.url = await BackendClient.getReferencePreview(item.reference || item.url);
+  await patchCanvasTaskNode(task, { regenerationRefs: snapshot.refMediaList, regenerationPrompt: snapshot.request.prompt });
+}
+
+function renderTaskReferenceGallery(refs = []) {
+  return `<div class="task-reference-gallery">${refs.map(item => renderTaskReferencePrompt(item.tag, [item])).join('')}</div>`;
+}
+
+function renderTaskReferencePrompt(text, refs = []) {
+  const byTag = new Map(refs.map(item => [item.tag, item]));
+  return String(text || '').split(/(@图\d+)/g).map(part => {
+    const item = byTag.get(part);
+    if (!item) return /^@图\d+$/.test(part) ? `<span class="task-reference-missing">${escapeHTML(part)} 素材未保留</span>` : escapeHTML(part);
+    const source = safeMediaUrl(item.url, { allowDataImage: item.type === 'image' });
+    if (!source) return `<span class="task-reference-missing">${escapeHTML(part)} 素材不可用</span>`;
+    const media = item.type === 'audio' ? '<span class="thumb-media-audio">♫</span>'
+      : item.type === 'video' ? `<video src="${escapeHTML(source)}" muted playsinline preload="none"></video>`
+        : `<img src="${escapeHTML(source)}" alt="${escapeHTML(part)}" loading="lazy" />`;
+    return `<span class="chat-inline-media-ref task-inline-reference" data-tag="${escapeHTML(part)}" title="${escapeHTML(part)} · ${escapeHTML(item.fileName || '参考素材')}" tabindex="0">${media}<small>${escapeHTML(part)}</small></span>`;
+  }).join('');
+}
+
+async function getTaskRegenerationSnapshot(task) {
+  let backendId = task.backendTaskId || task.taskId;
+  let snapshot = BackendClient.getRegenerationSnapshot(backendId);
+  if (!snapshot) {
+    const stored = (await BackendClient.listGenerations(1000)).find(item => item.requestId === task.taskId || item.id === task.taskId);
+    if (stored) snapshot = BackendClient.getRegenerationSnapshot(stored.id);
+  }
+  if (!snapshot) throw new Error('原始请求快照不可用，无法保证提示词与参考素材原样对应');
+  window.TaskRegeneration.validate(snapshot);
+  await BackendClient.validateGenerationReferences(snapshot.request.input);
+  for (const item of snapshot.refMediaList) {
+    item.url = await BackendClient.getReferencePreview(item.reference || item.url);
+    if (!safeMediaUrl(item.url, { allowDataImage: item.type === 'image' })) throw new Error(`${item.tag} 的参考素材地址不可用`);
+  }
+  return snapshot;
+}
+
+async function hydrateTaskReferencePrompt(card, task) {
+  try {
+    const snapshot = await getTaskRegenerationSnapshot(task);
+    if (!card?.isConnected || card.querySelector('.task-original-prompt')) return;
+    card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(snapshot.request.prompt, snapshot.refMediaList)}</div>`);
+  } catch { /* Older page-lifetime records may not have replay snapshots. */ }
+}
+
+const activeTaskRegenerations = new Set();
+const taskReplayControllers = new Map();
+async function regenerateGenerationTask(taskId, button = null) {
+  if (activeTaskRegenerations.has(taskId)) return;
+  const clickedSessionId = SessionSystem.getActive()?.id;
+  const localConversationId = activeLocalConversation?.id || null;
+  const original = state.activeTasks.find(item => item.taskId === taskId) || state.taskHistory.find(item => item.taskId === taskId);
+  const angle = multiAngleState.results.find(item => item.taskId === taskId);
+  if (!original && !angle) return showToast('原任务已不可用，请重新上传原素材', 'warning');
+  activeTaskRegenerations.add(taskId);
+  if (button) button.disabled = true;
+  let controller, sessionId, newTask, card, canvasNode, angleResult, replayId;
+  try {
+    const snapshot = await getTaskRegenerationSnapshot(original || angle);
+    const request = window.TaskRegeneration.toRequest(snapshot);
+    if (!getServerModels(request.mode, request.operation).some(item => item.model === request.model)) throw new Error('原任务模型已从 API 配置中移除，请先恢复原模型配置');
+    const session = SessionSystem.getActive();
+    if (session?.id !== clickedSessionId || (activeLocalConversation?.id || null) !== localConversationId) throw new Error('素材校验期间会话已切换，请回原会话再次生成');
+    const isCanvas = request.mode === 'canvas';
+    if (isCanvas && (session?.type !== 'canvas' || session.id !== original.sessionId)) throw new Error('请在原画布会话中再次生成');
+    if (!isCanvas && !angle && session?.type !== 'creation') throw new Error('请先打开创作页面');
+    sessionId = session?.id;
+    controller = new AbortController();
+    if (sessionId) SessionSystem.registerPendingRequest(sessionId, controller);
+    const newId = `regenerate_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    replayId = newId;
+    taskReplayControllers.set(newId, controller);
+    if (request.operation === 'image') activeImageSubmissions.add(newId);
+    if (isCanvas && request.operation === 'image') activeCanvasImageSubmissions.add(newId);
+    const aspectRatio = original?.options?.aspectRatio || request.input?.metadata?.aspect_ratio || original?.imageAspectRatio || '1:1';
+    if (angle) {
+      angleResult = { ...clone(angle), id: newId, taskId: '', imageResultId: null, source: '', status: 'running', error: '', createdAt: Date.now() };
+      multiAngleState.results.unshift(angleResult);
+      renderMultiAngleResults();
+    } else if (isCanvas) {
+      const sourceNode = canvasState.nodes.find(item => item.id === original.canvasNodeId);
+      if (!sourceNode) throw new Error('原画布节点已不可用');
+      canvasNode = { ...clone(sourceNode), id: `node_${newId}`, x: sourceNode.x + (sourceNode.width || 340) + 32, y: sourceNode.y, status: 'generating', progress: 5, taskId: newId, imgUrl: '', videoUrl: '', imageResultId: null, localMediaId: null, errorMsg: '', regenerationRefs: clone(snapshot.refMediaList), regenerationPrompt: request.prompt };
+      ['mediaReference', 'mediaId', 'imageUrl', 'images', 'outputUrl', 'imageResultIds', 'videoResultId', 'videoResultIds', 'audioUrl', 'audios', 'videos', 'output', 'backendTaskId', 'requestId'].forEach(key => delete canvasNode[key]);
+      addCanvasNode(canvasNode);
+      if (request.input.client_context) request.input.client_context = { ...request.input.client_context, session_id: sessionId, node_id: canvasNode.id };
+    } else {
+      appendAiUserBubble(request.prompt, snapshot.refMediaList);
+      const box = appendAiAssistantBubble('正在使用原提示词和原参考素材创建新任务。');
+      card = request.operation === 'image'
+        ? createChatImageResultCard(box, newId, request.prompt, request.model, aspectRatio, request.input.n || request.count || 1)
+        : createChatGenCard(box, newId, request.prompt, request.model, aspectRatio, request.duration, 'queued', 0);
+      card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(request.prompt, snapshot.refMediaList)}</div>`);
+    }
+    if (!angle) {
+      newTask = SessionSystem.assignTask({ source: isCanvas ? 'canvas' : 'chat', mediaType: request.operation, taskId: newId, localConversationId: isCanvas ? null : localConversationId, prompt: request.prompt, model: request.model, count: request.input.n || request.count || 1, duration: request.duration, imageAspectRatio: aspectRatio, imageSize: request.input.size, options: { ...clone(original.options || {}), refMediaList: clone(snapshot.refMediaList) }, status: 'in_progress', progress: 5, sessionId, sessionType: isCanvas ? 'canvas' : 'creation', canvasNodeId: canvasNode?.id, createdAt: Date.now() }, isCanvas ? 'canvas' : 'creation');
+      state.activeTasks.unshift(newTask);
+      await SessionSystem.trackTask(newTask);
+      updateStatusIndicators();
+    }
+    if (controller.signal.aborted || SessionSystem.isTaskCanceled(newId)) return;
+    const onProgress = backend => {
+      if (controller.signal.aborted || SessionSystem.isTaskCanceled(newId) || !newTask) return;
+      applyBackendTaskBilling(newTask, backend);
+      if (Array.isArray(backend.providerJobs)) newTask.providerJobs = clone(backend.providerJobs);
+      if (request.operation === 'image' && !isCanvas) renderChatImageBatchProgress(newTask, document.getElementById(`task-card-${newId}`) || card);
+    };
+    const created = await BackendClient.createGeneration({ ...request, requestId: newId, signal: controller.signal, regenerationRefs: snapshot.refMediaList,
+      onProgress
+    });
+    if (controller.signal.aborted || SessionSystem.isTaskCanceled(newId)) return;
+    if (angleResult) { angleResult.taskId = created.task.id; persistMultiAngleResults(); }
+    if (newTask) { applyBackendTaskBilling(newTask, created.task, created.pricing); await SessionSystem.trackTask(newTask); }
+    if (controller.signal.aborted || SessionSystem.isTaskCanceled(newId)) return;
+    if (request.operation === 'video') {
+      if (isCanvas) { startCanvasVideoTaskPoller(newTask, canvasNode); }
+      else { startChatCardPoller(newId, card, request.prompt, request.model); }
+      return;
+    }
+    const result = await BackendClient.waitForGeneration(created.task, { signal: controller.signal, timeoutMs: 600000, onProgress });
+    if (controller.signal.aborted || SessionSystem.isTaskCanceled(newId)) return;
+    const sources = validateTaskImageSources(extractImageSourcesFromOutput(result.output || {}), request.input.n || request.count || 1);
+    if (!sources.length) throw new Error('供应商未返回图片');
+    if (angleResult) {
+      Object.assign(angleResult, { status: 'completed', source: sources[0], model: request.model });
+      await cacheMultiAngleResultLocally(angleResult, result);
+    } else {
+      applyBackendTaskBilling(newTask, result);
+      if (Array.isArray(result.providerJobs)) newTask.providerJobs = clone(result.providerJobs);
+      newTask.imageUrls = sources;
+      newTask.imageUrl = sources[0];
+      const finished = completeTask(newId, 'completed', null, null, request.prompt, request.model, result);
+      if (isCanvas) await patchCanvasTaskNode(finished, { imgUrl: sources[0], status: 'done', progress: 100, errorMsg: '', mediaAutoSizePending: true });
+      else await renderChatImageCardResult(document.getElementById(`task-card-${newId}`) || card, finished, sources);
+    }
+  } catch (error) {
+    if (controller?.signal.aborted || (replayId && SessionSystem.isTaskCanceled(replayId))) return;
+    if (error.name !== 'AbortError') {
+      if (newTask) {
+        const failed = completeTask(newTask.taskId, 'failed', null, error.message, newTask.prompt, newTask.model, error.task);
+        if (canvasNode) await patchCanvasTaskNode(failed, { status: 'failed', progress: 100, errorMsg: error.message });
+        else if (card && newTask.mediaType === 'image') await renderChatImageCardResult(card, failed, []);
+        else if (card) { const target = card.querySelector('.chat-video-result-target'); if (target) target.textContent = error.message; }
+      }
+      if (angleResult) Object.assign(angleResult, { status: 'failed', error: error.message, taskId: error.task?.id || angleResult.taskId });
+      showToast(error.message || '再次生成失败', 'error');
+    }
+  } finally {
+    if (controller && sessionId) SessionSystem.unregisterPendingRequest(sessionId, controller);
+    if (replayId) { taskReplayControllers.delete(replayId); activeImageSubmissions.delete(replayId); activeCanvasImageSubmissions.delete(replayId); }
+    if (angleResult) { renderMultiAngleResults(); persistMultiAngleResults(); }
+    activeTaskRegenerations.delete(taskId);
+    if (button?.isConnected) button.disabled = false;
+    syncCreationSubmitButtonState();
+  }
+}
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-regenerate-task]');
+  if (!button) return;
+  event.preventDefault(); event.stopPropagation();
+  void regenerateGenerationTask(button.dataset.regenerateTask, button);
+}, true);
 
 function messageCopyButton(text, label = '复制文字') {
   if (!String(text || '').trim()) return '';
@@ -8597,7 +8847,7 @@ function appendAiUserBubble(text, refMediaList, options = {}) {
             : m.type === 'video'
               ? `<video data-lazy-video-src="${escapeHTML(m.url)}" data-lazy-video-release="auto" muted playsinline preload="none" style="width:24px;height:24px;border-radius:4px;object-fit:cover;"></video>`
               : `<img src="${escapeHTML(m.url)}" style="width:24px;height:24px;border-radius:4px;object-fit:cover;" />`}
-          <span>📎 ${m.tag}: ${escapeHTML(m.fileName)}</span>
+          <span>📎 ${escapeHTML(m.tag)}: ${escapeHTML(m.fileName || '参考素材')}</span>
         </div>
       `).join('')}
     </div>`;
@@ -8607,7 +8857,7 @@ function appendAiUserBubble(text, refMediaList, options = {}) {
     <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">👤</div>
     <div class="chat-message-shell is-user">
       <div class="chat-message-bubble" style="background: var(--primary); color: #fff; padding: 12px 16px; border-radius: 18px 18px 2px 18px; font-size: 0.9rem; line-height: 1.5; box-shadow: var(--shadow-sm);">
-        <div class="chat-message-text">${escapeHTML(text)}</div>
+        <div class="chat-message-text">${renderTaskReferencePrompt(text, refMediaList || [])}</div>
         ${tagsHtml}
       </div>
       ${messageCopyButton(text)}
@@ -8791,6 +9041,7 @@ function createChatGenCard(container, taskId, promptText, model, aspectRatio, du
   card.innerHTML = `
     <div class="task-header chat-video-task-header">
       <span class="task-id-tag" title="完整任务 ID：${escapeHTML(fullTaskId)}">ID: ${escapeHTML(shortenChatTaskId(fullTaskId))}</span>
+      ${renderRegenerateTaskButton(taskId)}
     </div>
     <div style="font-size: 0.775rem; color: var(--text-muted);">
       ⚙️ 模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 时长: ${duration}s
@@ -10657,15 +10908,17 @@ function renderMultiAngleResults() {
       card.dataset.maResultCard = item.id;
     }
     const detail = `方位 ${Math.round(item.azimuth)}°·俯仰 ${Math.round(item.elevation)}°·${multiAngleDistanceLabel(item.distance)}`;
-    const renderKey = JSON.stringify([item.status, item.imageResultId || '', item.source || '', item.error || '', detail, item.label]);
+    const renderKey = JSON.stringify([item.status, item.taskId || '', item.imageResultId || '', item.source || '', item.error || '', detail, item.label]);
     const media = item.status === 'running'
       ? '<div class="result-loading">模型正在重建新视角</div>'
       : item.status === 'failed'
         ? `<div class="result-error">生成失败<br>${escapeHTML(item.error || '请稍后重试')}</div>`
         : `<img ${item.imageResultId ? `data-image-result-id="${escapeHTML(item.imageResultId)}"` : ''} ${item.source ? `src="${escapeHTML(item.source)}"` : ''} alt="${escapeHTML(item.label)}生成结果">`;
-    const actions = item.status === 'completed' ? `<div class="multi-angle-result-actions"><button type="button" data-ma-action="download" data-result-id="${item.id}">下载</button><button type="button" data-ma-action="continue" data-result-id="${item.id}">继续换角度</button></div>` : '';
+    const actions = `<div class="multi-angle-result-actions">${item.taskId ? `<button type="button" data-ma-action="regenerate" data-result-id="${escapeHTML(item.id)}">再次生成</button>` : ''}${item.status === 'completed' ? `<button type="button" data-ma-action="download" data-result-id="${escapeHTML(item.id)}">下载</button><button type="button" data-ma-action="continue" data-result-id="${escapeHTML(item.id)}">继续换角度</button>` : ''}</div>`;
     if (card.dataset.renderKey !== renderKey) {
-      card.innerHTML = `<div class="multi-angle-result-media">${media}</div><div class="multi-angle-result-info"><strong>${escapeHTML(item.label)}</strong><small>${detail}</small>${actions}</div>`;
+      const snapshot = item.taskId ? BackendClient.getRegenerationSnapshot(item.taskId) : null;
+      const referenceHtml = snapshot?.refMediaList?.length ? renderTaskReferenceGallery(snapshot.refMediaList) : '';
+      card.innerHTML = `<div class="multi-angle-result-media">${media}</div><div class="multi-angle-result-info"><strong>${escapeHTML(item.label)}</strong><small>${detail}</small>${referenceHtml}${actions}</div>`;
       card.dataset.renderKey = renderKey;
     }
     grid.appendChild(card);
@@ -10678,6 +10931,8 @@ async function runMultiAnglePose(pose, result) {
   const model = getMultiAngleModel();
   const aspect = document.getElementById('multiAngleAspect')?.value || '1:1';
   const prompt = buildMultiAnglePrompt(pose);
+  const source = multiAngleState.source;
+  const regenerationRefs = [{ tag: '@图1', type: 'image', reference: source, url: source, fileName: '原始参考图' }];
   result.prompt = prompt;
   const requestId = `multi_angle_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   try {
@@ -10686,7 +10941,8 @@ async function runMultiAnglePose(pose, result) {
       operation: 'image',
       model,
       prompt,
-      input: { size: MULTI_ANGLE_SIZE_BY_ASPECT[aspect] || '1024x1024', images: [multiAngleState.source], n: 1 },
+      input: { size: MULTI_ANGLE_SIZE_BY_ASPECT[aspect] || '1024x1024', images: [source], n: 1 },
+      regenerationRefs,
       count: 1,
       requestId
     });
@@ -10711,6 +10967,7 @@ async function runMultiAnglePose(pose, result) {
       scheduleMultiAngleReconcile(1500);
     } else {
       result.status = 'failed';
+      result.taskId = error.task?.id || result.taskId;
       result.error = error.message || '生成失败';
     }
   }
@@ -10756,6 +11013,7 @@ async function handleMultiAngleResultAction(event) {
   if (!button) return;
   const item = multiAngleState.results.find(result => result.id === button.dataset.resultId);
   if (!item) return;
+  if (button.dataset.maAction === 'regenerate') return regenerateGenerationTask(item.taskId, button);
   const source = item.imageResultId ? await loadImageResultData(item.imageResultId).catch(() => null) : item.source;
   if (!source) return showToast('图片暂时不可用，请稍后重试', 'warning');
   if (button.dataset.maAction === 'download') return downloadGeneratedImage(source, { taskId: item.taskId, prompt: item.prompt });
@@ -13335,7 +13593,8 @@ async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
     count: mode === 'creation' ? clampImageCount(imageOptions.count || 1) : 1,
     requestId: imageOptions.frontendTaskId,
     signal: imageOptions.signal,
-    onProgress: imageOptions.onProgress
+    onProgress: imageOptions.onProgress,
+    regenerationRefs: imageOptions.regenerationRefs
   });
   // 创建后端任务后立即把 backendTaskId 写回前端 task 对象，保证轮询器能查到
   if (created?.task?.id && imageOptions.frontendTaskId) {
@@ -13567,12 +13826,14 @@ async function runCanvasImageGeneration(nodeId) {
     });
     if (controller.signal.aborted || SessionSystem.isTaskCanceled(taskId)) return;
     applyBackendTaskBilling(task, generated.task, generated.pricing);
+    await rememberCanvasTaskReferences(task, generated.task);
     nodePatch = { imgUrl: generated.source, assetName: 'AI 生成图片', title: '🖼️ 参考图节点', status: 'done', progress: 100, taskId, errorMsg: '', mediaAutoSizePending: true, reservedCredits: task.reservedCredits, consumedCredits: task.consumedCredits };
     completeTask(taskId, 'completed', null, null, inputs.prompt, task.model, generated.task);
     showToast('图片生成成功，已写入原画布会话的参考图节点');
   } catch (error) {
     if (controller.signal.aborted || SessionSystem.isTaskCanceled(taskId)) return;
     nodePatch = { status: 'failed', progress: 100, taskId, errorMsg: error.message || '图片生成失败' };
+    await rememberCanvasTaskReferences(task, error.task).catch(() => {});
     completeTask(taskId, 'failed', null, nodePatch.errorMsg, inputs.prompt, task.model, error.task || null);
     showToast(`图片生成失败：${nodePatch.errorMsg}`);
   } finally {
@@ -13965,6 +14226,7 @@ async function runCanvasVideoGeneration(nodeId) {
   updateStatusIndicators();
   updateTaskQueueUI();
   void SessionSystem.trackTask(newTask).catch(error => console.warn('Canvas task session save failed:', error));
+  await rememberCanvasTaskReferences(newTask, submitResponse).catch(() => {});
 
   // 提交结果始终写回原画布会话；只有原会话仍打开时才更新当前 DOM。
   await SessionSystem.updateSessionData(originSessionId, data => {
@@ -14373,6 +14635,7 @@ function renderCanvasContentOnlyNode(node, context) {
     <div class="canvas-port input ${inputConnectedClass} ${isPortSelected && canvasState.selectedPort?.portType === 'input' ? 'selected' : ''}" data-node-id="${node.id}" data-port-type="input" title="输入端"></div>
     <div class="canvas-content-frame ${node.type === 'asset' && !isGenerating ? 'canvas-asset-drop-target' : ''}" ${assetDropAttributes}>${contentHtml}</div>
     <div class="canvas-port output ${outputConnectedClass} ${isPortSelected && canvasState.selectedPort?.portType === 'output' ? 'selected' : ''}" data-node-id="${node.id}" data-port-type="output" title="输出端"></div>
+    ${node.taskId && ['asset', 'video'].includes(node.type) ? `<div class="canvas-regeneration-tools" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">${renderRegenerateTaskButton(node.taskId)}${node.regenerationRefs?.length ? renderTaskReferenceGallery(node.regenerationRefs) : ''}</div>` : ''}
     ${composerHtml}
   </div>`;
 }

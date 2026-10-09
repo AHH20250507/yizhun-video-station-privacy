@@ -67,6 +67,8 @@
   const terminal = new Set(['completed', 'failed', 'refunded', 'canceled']);
   const liveTasks = new Map();
   const liveMedia = new Map();
+  const regenerationSnapshots = new Map();
+  const referencePreviewUrls = new Map();
   const DEFAULT_IMAGE_MODELS = [
     'gpt-image-2',
     'gpt-image-2.5-flare',
@@ -497,11 +499,11 @@
   function isSuccess(status) { return ['completed', 'complete', 'success', 'successful', 'succeeded', 'done', 'finished'].includes(status); }
   function isFailure(status) { return ['failed', 'failure', 'error', 'errored', 'canceled', 'cancelled'].includes(status); }
 
-  async function mapWithConcurrency(items, limit, worker) {
+  async function mapWithConcurrency(items, limit, worker, shouldStop = () => false) {
     const results = new Array(items.length);
     let nextIndex = 0;
     const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
-      while (nextIndex < items.length) {
+      while (nextIndex < items.length && !shouldStop()) {
         const index = nextIndex;
         nextIndex += 1;
         results[index] = await worker(items[index], index);
@@ -625,7 +627,8 @@
     for (const key of ['images', 'videos', 'audios']) {
       if (!Array.isArray(prepared[key])) continue;
       const values = await Promise.all(prepared[key].map(value => referenceValue(value, provider)));
-      prepared[key] = values.filter(Boolean);
+      if (values.some(value => !value)) throw new Error('参考素材已失效，已阻止缺失素材的生成请求，请重新上传');
+      prepared[key] = values;
       if (!prepared[key].length) delete prepared[key];
     }
     return prepared;
@@ -641,17 +644,62 @@
     return liveTasks.get(id) || await dbGet('tasks', id);
   }
 
-  async function createGeneration({ mode = 'creation', operation, model, prompt = '', input = {}, duration = 1, count = 1, requestId, signal, onProgress }) {
-    const provider = configuredProvider(operation, model);
+  function markGenerationCanceled(task, reason = '用户取消任务') {
+    if (task.status === 'canceled') return;
+    task.status = 'canceled';
+    task.errorMessage = reason;
+    task.finishedAt = nowIso();
+    task.updatedAt = nowIso();
+    task.providerJobs?.forEach(job => {
+      if (!terminal.has(job.status)) job.status = 'canceled';
+    });
+  }
+
+  function throwIfGenerationCanceled(task, signal) {
+    if (signal?.aborted) markGenerationCanceled(task);
+    if (task.status !== 'canceled') return;
+    throw new DOMException(task.errorMessage, 'AbortError');
+  }
+
+  async function generationCancellationError(task) {
+    markGenerationCanceled(task);
+    await saveTask(task);
+    const error = new DOMException(task.errorMessage, 'AbortError');
+    error.task = clone(task);
+    return error;
+  }
+
+  function watchGenerationCancellation(task, signal) {
+    const onAbort = () => {
+      markGenerationCanceled(task);
+      void saveTask(task);
+    };
+    if (signal?.aborted) onAbort();
+    else signal?.addEventListener('abort', onAbort, { once: true });
+    return () => signal?.removeEventListener('abort', onAbort);
+  }
+
+  async function createGeneration({ mode = 'creation', operation, model, prompt = '', input = {}, duration = 1, count = 1, requestId, signal, onProgress, regenerationRefs }) {
     const task = {
       id: uid(), requestId: requestId || uid('request_'), mode, operation, model,
       status: 'running', reservedCredits: 0, consumedCredits: 0, providerTaskId: null,
       prompt, input: clone(input), output: {}, errorMessage: null,
       createdAt: nowIso(), updatedAt: nowIso(), finishedAt: null
     };
+    if (['image', 'video'].includes(operation)) {
+      const refs = regenerationRefs || ['images', 'videos', 'audios'].flatMap((key, typeIndex) =>
+        (input[key] || []).map(value => ({ type: ['image', 'video', 'audio'][typeIndex], reference: typeof value === 'string' ? value : (value.reference || value.url || value.source), url: typeof value === 'string' && !value.startsWith('media://') ? value : '' }))
+      ).map((item, index) => ({ ...item, tag: `@图${index + 1}` }));
+      regenerationSnapshots.set(task.id, window.TaskRegeneration.capture({ mode, operation, model, prompt, input, duration, count }, refs));
+    }
+    const stopWatching = watchGenerationCancellation(task, signal);
     await saveTask(task);
     try {
+      throwIfGenerationCanceled(task, signal);
+      const provider = configuredProvider(operation, model);
+      if (['image', 'video'].includes(operation)) window.TaskRegeneration.validate(regenerationSnapshots.get(task.id));
       const prepared = await prepareProviderInput(input, provider);
+      throwIfGenerationCanceled(task, signal);
       const requestedImageCount = operation === 'image' ? Math.min(10, Math.max(1, Number(prepared.n) || Number(count) || 1)) : 1;
       if (operation === 'image' && requestedImageCount > 1) {
         task.providerJobs = Array.from({ length: requestedImageCount }, (_, index) => ({
@@ -663,14 +711,17 @@
         }));
         updateImageBatchTask(task);
         await saveTask(task);
+        throwIfGenerationCanceled(task, signal);
         onProgress?.(clone(task));
         const jobResults = await mapWithConcurrency(
           Array.from({ length: requestedImageCount }, (_, index) => index),
           3,
           async index => {
+            throwIfGenerationCanceled(task, signal);
             task.providerJobs[index] = { ...task.providerJobs[index], status: 'running' };
             updateImageBatchTask(task);
             onProgress?.(clone(task));
+            throwIfGenerationCanceled(task, signal);
             let job;
             try {
               // 部分 OpenAI 兼容图片服务会忽略 n>1。拆成独立的 n=1 请求，确保每个模型都能可靠批量生成。
@@ -679,18 +730,23 @@
                 body: JSON.stringify({ model, prompt, ...prepared, n: 1 }),
                 signal
               });
+              throwIfGenerationCanceled(task, signal);
               job = imageJobFromOutput(output, index);
             } catch (error) {
+              throwIfGenerationCanceled(task, signal);
               job = { index, status: 'failed', providerTaskId: null, output: {}, errorMessage: error.message || '图片生成失败' };
             }
             task.providerJobs[index] = job;
             updateImageBatchTask(task);
             task.updatedAt = nowIso();
             await saveTask(task);
+            throwIfGenerationCanceled(task, signal);
             onProgress?.(clone(task));
             return job;
-          }
+          },
+          () => signal?.aborted || task.status === 'canceled'
         );
+        throwIfGenerationCanceled(task, signal);
         task.providerJobs = jobResults;
         updateImageBatchTask(task);
         task.updatedAt = nowIso();
@@ -709,6 +765,7 @@
           : { model, messages: prepared.messages || [{ role: 'user', content: prompt }], stream: false, temperature: prepared.temperature ?? 0.7, ...prepared };
       const path = operation === 'video' ? provider.createPath : operation === 'image' ? provider.createPath : provider.createPath;
       const output = await providerRequest(provider, path, { method: 'POST', body: JSON.stringify(body), signal });
+      throwIfGenerationCanceled(task, signal);
       const providerStatus = statusOf(output);
       task.providerTaskId = providerTaskIdOf(output);
       task.output = output;
@@ -727,74 +784,96 @@
       }
       task.updatedAt = nowIso();
       await saveTask(task);
+      throwIfGenerationCanceled(task, signal);
       return { task: clone(task), pricing: pricingFor({ operation, duration, count }), duplicate: false };
     } catch (error) {
-      task.status = 'failed';
-      task.errorMessage = error.message || '生成失败';
-      task.finishedAt = nowIso();
-      task.updatedAt = nowIso();
+      if (signal?.aborted || error?.name === 'AbortError' || task.status === 'canceled') {
+        markGenerationCanceled(task);
+        error = new DOMException(task.errorMessage, 'AbortError');
+      } else {
+        task.status = 'failed';
+        task.errorMessage = error.message || '生成失败';
+        task.finishedAt = nowIso();
+        task.updatedAt = nowIso();
+      }
       await saveTask(task);
       error.task = clone(task);
       throw error;
+    } finally {
+      stopWatching();
     }
   }
 
   async function getGeneration(taskId, signal) {
     const task = await loadTask(taskId);
     if (!task) { const error = new Error('本地任务不存在'); error.status = 404; throw error; }
+    if (signal?.aborted) throw await generationCancellationError(task);
     if (terminal.has(task.status) || !task.providerTaskId) return clone(task);
-    const provider = configuredProvider(task.operation, task.model);
-    const pathTemplate = provider.pollPath || (task.operation === 'video' ? '/v1/videos/{id}' : '/v1/image/generations/{id}');
-    if (task.operation === 'image' && Array.isArray(task.providerJobs) && task.providerJobs.length) {
+    const stopWatching = watchGenerationCancellation(task, signal);
+    try {
+      const provider = configuredProvider(task.operation, task.model);
+      const pathTemplate = provider.pollPath || (task.operation === 'video' ? '/v1/videos/{id}' : '/v1/image/generations/{id}');
+      if (task.operation === 'image' && Array.isArray(task.providerJobs) && task.providerJobs.length) {
+        try {
+          const pendingJobs = task.providerJobs.filter(job => !terminal.has(job.status));
+          const polledJobs = await mapWithConcurrency(pendingJobs, 3, async job => {
+            throwIfGenerationCanceled(task, signal);
+            try {
+              const output = await providerRequest(provider, pathTemplate.replaceAll('{id}', encodeURIComponent(job.providerTaskId)), { method: 'GET', signal, timeoutMs: 90000 });
+              throwIfGenerationCanceled(task, signal);
+              return imageJobFromOutput(output, job.index);
+            } catch (error) {
+              throwIfGenerationCanceled(task, signal);
+              if (error?.name === 'AbortError') throw error;
+              // 网络或服务端异常交给外层重试；不可解析的“完成”响应只标记该张失败，避免拖死整批任务。
+              if (error?.status || /超时|无法连接|Failed to fetch/i.test(String(error?.message))) throw error;
+              return { ...job, status: 'failed', errorMessage: error.message || '图片任务返回异常' };
+            }
+          }, () => signal?.aborted || task.status === 'canceled');
+          throwIfGenerationCanceled(task, signal);
+          const updates = new Map(polledJobs.map(job => [job.index, job]));
+          task.providerJobs = task.providerJobs.map(job => updates.get(job.index) || job);
+          updateImageBatchTask(task);
+          task.updatedAt = nowIso();
+          await saveTask(task);
+        } catch (error) {
+          if (signal?.aborted || error?.name === 'AbortError' || task.status === 'canceled') throw await generationCancellationError(task);
+          task.errorMessage = error.message || '批量图片状态查询失败';
+          task.updatedAt = nowIso();
+          await saveTask(task);
+          throw error;
+        }
+        return clone(task);
+      }
       try {
-        const pendingJobs = task.providerJobs.filter(job => !terminal.has(job.status));
-        const polledJobs = await mapWithConcurrency(pendingJobs, 3, async job => {
-          try {
-            const output = await providerRequest(provider, pathTemplate.replaceAll('{id}', encodeURIComponent(job.providerTaskId)), { method: 'GET', signal, timeoutMs: 90000 });
-            return imageJobFromOutput(output, job.index);
-          } catch (error) {
-            // 网络或服务端异常交给外层重试；不可解析的“完成”响应只标记该张失败，避免拖死整批任务。
-            if (error?.status || /超时|无法连接|Failed to fetch/i.test(String(error?.message))) throw error;
-            return { ...job, status: 'failed', errorMessage: error.message || '图片任务返回异常' };
-          }
-        });
-        const updates = new Map(polledJobs.map(job => [job.index, job]));
-        task.providerJobs = task.providerJobs.map(job => updates.get(job.index) || job);
-        updateImageBatchTask(task);
+        const output = await providerRequest(provider, pathTemplate.replaceAll('{id}', encodeURIComponent(task.providerTaskId)), { method: 'GET', signal, timeoutMs: 90000 });
+        throwIfGenerationCanceled(task, signal);
+        const providerStatus = statusOf(output);
+        task.output = output;
+        if (isFailure(providerStatus)) {
+          task.status = providerStatus.startsWith('cancel') ? 'canceled' : 'failed';
+          task.errorMessage = output?.error?.message || output?.message || '供应商生成失败';
+          task.finishedAt = nowIso();
+        } else if (hasOutput(task.operation, output) || isSuccess(providerStatus)) {
+          if (!hasOutput(task.operation, output)) throw new Error('供应商报告任务完成，但没有返回可识别的结果地址');
+          task.status = 'completed';
+          task.finishedAt = nowIso();
+        } else {
+          task.status = ['queued', 'pending', 'waiting'].includes(providerStatus) ? 'queued' : 'running';
+        }
         task.updatedAt = nowIso();
         await saveTask(task);
       } catch (error) {
-        task.errorMessage = error.message || '批量图片状态查询失败';
+        if (signal?.aborted || error?.name === 'AbortError' || task.status === 'canceled') throw await generationCancellationError(task);
+        task.errorMessage = error.message || '状态查询失败';
         task.updatedAt = nowIso();
         await saveTask(task);
         throw error;
       }
       return clone(task);
+    } finally {
+      stopWatching();
     }
-    try {
-      const output = await providerRequest(provider, pathTemplate.replaceAll('{id}', encodeURIComponent(task.providerTaskId)), { method: 'GET', signal, timeoutMs: 90000 });
-      const providerStatus = statusOf(output);
-      task.output = output;
-      if (isFailure(providerStatus)) {
-        task.status = providerStatus.startsWith('cancel') ? 'canceled' : 'failed';
-        task.errorMessage = output?.error?.message || output?.message || '供应商生成失败';
-        task.finishedAt = nowIso();
-      } else if (hasOutput(task.operation, output) || isSuccess(providerStatus)) {
-        if (!hasOutput(task.operation, output)) throw new Error('供应商报告任务完成，但没有返回可识别的结果地址');
-        task.status = 'completed';
-        task.finishedAt = nowIso();
-      } else {
-        task.status = ['queued', 'pending', 'waiting'].includes(providerStatus) ? 'queued' : 'running';
-      }
-      task.updatedAt = nowIso();
-      await saveTask(task);
-    } catch (error) {
-      task.errorMessage = error.message || '状态查询失败';
-      task.updatedAt = nowIso();
-      await saveTask(task);
-      throw error;
-    }
-    return clone(task);
   }
 
   async function waitForGeneration(taskOrId, options = {}) {
@@ -802,15 +881,22 @@
     const started = Date.now();
     const timeoutMs = Number(options.timeoutMs || 3600000);
     let errors = 0;
+    const checkCancellation = async () => {
+      const current = await loadTask(task.id) || task;
+      if (options.signal?.aborted || current.status === 'canceled') throw await generationCancellationError(current);
+    };
     while (!terminal.has(task.status)) {
-      if (options.signal?.aborted) throw new DOMException('已取消', 'AbortError');
+      await checkCancellation();
       if (Date.now() - started > timeoutMs) throw new Error('生成任务等待超时，可稍后在当前浏览器中继续查看');
       await new Promise(resolve => setTimeout(resolve, Number(options.intervalMs || 1500)));
       try {
         task = await getGeneration(task.id, options.signal);
+        await checkCancellation();
         errors = 0;
         options.onProgress?.(clone(task));
       } catch (error) {
+        if (error?.name === 'AbortError') throw error;
+        await checkCancellation();
         errors += 1;
         options.onTransientError?.(error, { attempt: errors, maxAttempts: 12, taskId: task.id });
         if (errors > 12) throw error;
@@ -827,14 +913,14 @@
 
   async function listGenerations(limit = 100) {
     const rows = await dbAll('tasks');
-    rows.forEach(task => liveTasks.set(task.id, task));
-    return rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, limit).map(clone);
+    rows.forEach(task => { if (!liveTasks.has(task.id)) liveTasks.set(task.id, task); });
+    return rows.map(task => liveTasks.get(task.id)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, limit).map(clone);
   }
 
   async function cancelGeneration(taskId, reason = '用户取消任务') {
     const task = await loadTask(taskId);
     if (!task) throw new Error('本地任务不存在');
-    task.status = 'canceled'; task.errorMessage = reason; task.finishedAt = nowIso(); task.updatedAt = nowIso();
+    markGenerationCanceled(task, reason);
     await saveTask(task);
     return clone(task);
   }
@@ -1072,6 +1158,36 @@
     refreshWallet: async () => localWallet,
     getWalletLedger: async () => [],
     createGeneration,
+    getRegenerationSnapshot: taskId => {
+      const snapshot = regenerationSnapshots.get(taskId);
+      return snapshot ? clone(snapshot) : null;
+    },
+    getReferencePreview: async value => {
+      const ref = typeof value === 'string' ? value : (value?.reference || value?.url || value?.source);
+      if (typeof ref !== 'string' || !ref) throw new Error('参考素材已失效');
+      if (!ref.startsWith('media://')) return ref;
+      const mediaId = ref.slice('media://'.length);
+      const media = await dbGet('media', mediaId);
+      if (!media) throw new Error('参考素材已失效，请重新上传');
+      if (media.dataUrl) return media.dataUrl;
+      if (!referencePreviewUrls.has(mediaId) && media.blob) referencePreviewUrls.set(mediaId, URL.createObjectURL(media.blob));
+      return referencePreviewUrls.get(mediaId) || '';
+    },
+    validateGenerationReferences: async input => {
+      for (const key of ['images', 'videos', 'audios']) {
+        for (const value of input?.[key] || []) {
+          const ref = typeof value === 'string' ? value : (value?.reference || value?.url || value?.source);
+          if (!ref || (ref.startsWith('media://') && !await dbGet('media', ref.slice('media://'.length)))) {
+            throw new Error('参考素材已失效，不能只发送文字，请重新上传');
+          }
+          if (ref.startsWith('blob:')) {
+            try { const response = await fetch(ref); if (!response.ok) throw new Error(); }
+            catch { throw new Error('参考素材已失效，不能只发送文字，请重新上传'); }
+          }
+        }
+      }
+      return true;
+    },
     getGeneration,
     listGenerations,
     cacheGenerationMedia,

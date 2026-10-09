@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="240x290" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="alternate icon" type="image/png" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="apple-touch-icon" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
-  <link rel="stylesheet" href="style.css?v=20260928_video_resolution_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="stylesheet" href="style.css?v=20261009_optional_expand_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
@@ -314,6 +314,15 @@
                   </select>
                   <input type="text" id="chatCustomResolutionInput" class="hidden" value="720p" maxlength="64" autocomplete="off" aria-label="自定义视频分辨率">
                 </div>
+              </div>
+
+              <div class="param-group" id="chatExpandScriptGroup">
+                <label class="apple-param-label" for="chatExpandScriptToggle">脚本扩写</label>
+                <label class="video-expand-switch" title="关闭后直接使用原提示词和参考素材生成视频">
+                  <input type="checkbox" id="chatExpandScriptToggle" role="switch" aria-label="脚本扩写" checked>
+                  <span class="video-expand-switch-track" aria-hidden="true"></span>
+                  <span class="video-expand-switch-state" aria-hidden="true"></span>
+                </label>
               </div>
 
               <!-- 苹果风格时长分段选择器 -->
@@ -1641,8 +1650,9 @@
     </div>
   </div>
 
-  <script src="standalone-client.js?v=20260928_video_resolution_a1"></script>
-  <script src="app.js?v=20260928_video_resolution_a1"></script>
+  <script src="task-regeneration.js?v=20261009_optional_expand_a1"></script>
+  <script src="standalone-client.js?v=20261009_optional_expand_a1"></script>
+  <script src="app.js?v=20261009_optional_expand_a1"></script>
 
   <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
   <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">

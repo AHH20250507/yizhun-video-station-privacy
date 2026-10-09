@@ -3308,9 +3308,7 @@ function initElements() {
     detailCategoryVal: document.getElementById('detailCategoryVal'),
     
     btnEditDetail: document.getElementById('btnEditDetail'),
-    btnDeleteDetail: document.getElementById('btnDeleteDetail'),
-    
-    toastContainer: document.getElementById('toastContainer')
+    btnDeleteDetail: document.getElementById('btnDeleteDetail')
   };
 }
 
@@ -5039,19 +5037,7 @@ function copyToClipboard(text) {
 }
 
 function showToast(message, type = 'success', options = {}) {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  const icon = type === 'error' ? '!' : (type === 'warning' ? '!' : '✓');
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-message">${escapeHTML(message)}</span>${options.actionLabel ? `<button type="button" class="toast-action">${escapeHTML(options.actionLabel)}</button>` : ''}`;
-  if (options.actionLabel && typeof options.onAction === 'function') {
-    toast.querySelector('.toast-action')?.addEventListener('click', () => {
-      options.onAction();
-      toast.remove();
-    });
-  }
-  el.toastContainer?.appendChild(toast);
-  const timeoutId = setTimeout(() => toast.remove(), options.actionLabel ? 6000 : 2500);
-  toast.addEventListener('remove', () => clearTimeout(timeoutId), { once: true });
+  // Corner notifications are disabled; keep callers compatible without UI or timers.
 }
 
 function escapeHTML(str) {
@@ -9195,9 +9181,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
     } catch (err) {
       consecutivePollErrors += 1;
       console.error('Chat poller error:', err);
-      if (targetArea) {
-        targetArea.innerHTML = `<div style="color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 4px;"><strong>任务状态确认失败（${consecutivePollErrors}/${MAX_VIDEO_POLL_ERRORS}）：</strong> ${escapeHTML(err.message)}</div>`;
-      }
+      console.warn(`视频状态查询暂不可用（${consecutivePollErrors}/${MAX_VIDEO_POLL_ERRORS}）`);
       if (consecutivePollErrors >= MAX_VIDEO_POLL_ERRORS) {
         clearInterval(poller);
         SessionSystem.unregisterPoller(taskId, poller);
@@ -9224,10 +9208,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         }
         if (progressTrack) progressTrack.dataset.status = 'reconciling';
         if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('reconciling', activeTask?.progress || 0, activeTask);
-        if (targetArea) {
-          targetArea.innerHTML = `<div style="color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 4px;"><strong>网络波动：</strong> ${escapeHTML(errMsg)}</div>`;
-        }
-        if (consecutivePollErrors === 3) showToast('网络不稳定，正在重新连接视频任务');
+
       }
     }
   }, 3000);

@@ -7362,12 +7362,12 @@ function renderCreationMediaThumbnail(item, className = 'thumb-media-img') {
   return `<img src="${source}" alt="" class="${className}" />`;
 }
 
-function renderChatRefMediaList() {
+function renderChatRefMediaList(options = {}) {
   if (!el.aiRefMediaBox || !el.aiRefMediaList) return;
 
   // 重新排序标签编号 (@图1, @图2...)
   state.chatRefMediaList.forEach((item, index) => {
-    item.tag = `@图${index + 1}`;
+    if (!options.preserveTags) item.tag = `@图${index + 1}`;
   });
 
   if (state.chatRefMediaList.length === 0) {
@@ -8781,6 +8781,61 @@ document.addEventListener('click', event => {
   void regenerateGenerationTask(button.dataset.regenerateTask, button);
 }, true);
 
+const promptReuseSnapshots = new Map();
+
+function messageReuseButton(text, refMediaList = []) {
+  if (!String(text || '').trim() && !refMediaList?.length) return '';
+  const id = `reuse-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  promptReuseSnapshots.set(id, { prompt: String(text || ''), refMediaList: clone(refMediaList || []) });
+  return `<button type="button" class="chat-copy-button chat-reuse-button" data-reuse-prompt="${id}" title="将原提示词和素材放回输入框，不自动生成" aria-label="复用提示词和素材">复用</button>`;
+}
+
+async function reusePromptMessage(id, button = null) {
+  if (button?.disabled) return false;
+  const sessionId = SessionSystem.getActive()?.id;
+  const conversationId = activeLocalConversation?.id;
+  if (button) { button.disabled = true; button.textContent = '恢复中'; }
+  try {
+    const saved = promptReuseSnapshots.get(id);
+    if (!saved) throw new Error('素材未保留，请重新上传');
+    const snapshot = clone(saved);
+    const refs = snapshot.refMediaList;
+    const byTag = new Map();
+    const input = { images: [], videos: [], audios: [] };
+    const keys = { image: 'images', video: 'videos', audio: 'audios' };
+    for (const item of refs) {
+      if (!item.tag || byTag.has(item.tag) || !keys[item.type]) throw new Error('原始素材标签不可用');
+      byTag.set(item.tag, item);
+      const reference = item.reference || item.url;
+      if (!reference) throw new Error(`${item.tag} 的素材已失效`);
+      input[keys[item.type]].push(reference);
+    }
+    for (const tag of snapshot.prompt.match(/@图\d+/g) || []) {
+      if (!byTag.has(tag)) throw new Error(`${tag} 素材未保留，请重新上传`);
+    }
+    await BackendClient.validateGenerationReferences(input);
+    for (const item of refs) {
+      item.url = await BackendClient.getReferencePreview(item.reference || item.url);
+      if (!safeMediaUrl(item.url, { allowDataImage: item.type === 'image' })) throw new Error(`${item.tag} 的素材已失效`);
+    }
+    if (SessionSystem.getActive()?.id !== sessionId || activeLocalConversation?.id !== conversationId) throw new Error('对话已切换，请重新复用');
+    state.chatRefMediaList = refs;
+    setChatPromptEditorValue(el.aiChatTextarea, '');
+    renderChatRefMediaList({ preserveTags: true });
+    setChatPromptEditorValue(el.aiChatTextarea, snapshot.prompt);
+    el.aiChatTextarea.focus();
+    el.aiChatTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+    syncCreationSubmitButtonState();
+    if (button) { button.textContent = '复用'; button.removeAttribute?.('title'); }
+    return true;
+  } catch (error) {
+    if (button) { button.textContent = error.message; button.title = error.message; }
+    return false;
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 function messageCopyButton(text, label = '复制文字') {
   if (!String(text || '').trim()) return '';
   return `<button type="button" class="chat-copy-button" data-copy-message="${encodeURIComponent(String(text))}" title="${label}" aria-label="${label}">复制</button>`;
@@ -8811,6 +8866,13 @@ async function copyChatMessageText(button) {
 }
 
 document.addEventListener('click', event => {
+  const reuseButton = event.target.closest('[data-reuse-prompt]');
+  if (reuseButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    void reusePromptMessage(reuseButton.dataset.reusePrompt, reuseButton);
+    return;
+  }
   const button = event.target.closest('[data-copy-message]');
   if (!button) return;
   event.preventDefault();
@@ -8853,7 +8915,7 @@ function appendAiUserBubble(text, refMediaList, options = {}) {
         <div class="chat-message-text">${renderTaskReferencePrompt(text, refMediaList || [])}</div>
         ${tagsHtml}
       </div>
-      ${messageCopyButton(text)}
+      <div class="chat-message-actions">${messageCopyButton(text)}${messageReuseButton(text, refMediaList)}</div>
     </div>
   `;
   el.aiChatStream.appendChild(row);

@@ -697,6 +697,9 @@ body.light-theme {
   opacity: .72;
   transition: opacity .15s ease, border-color .15s ease, color .15s ease;
 }
+.chat-message-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.chat-reuse-button { opacity: 1; color: #2563eb; border-color: #bfdbfe; }
+@media (max-width: 768px) { .chat-message-actions .chat-copy-button { min-height: 40px; padding: 7px 12px; } }
 .chat-copy-button:hover,
 .chat-copy-button:focus-visible { opacity: 1; color: #2563eb; border-color: #93b4ff; outline: none; }
 .ls-bubble .chat-copy-button { margin-top: 7px; }

@@ -16,7 +16,7 @@ test('video card status upgrades preserve the regeneration button',()=>{
   const track={...element(),querySelector:s=>s==='.progress-bar-inner'?fill:label,replaceChildren(){}};
   const card={id:'task-card-video-id',querySelector:s=>s==='.task-header'?header:s==='[data-video-progress-track]'?track:null};
   const ctx={document:{createElement:element},CSS:{escape:s=>s},escapeHTML:s=>s,shortenChatTaskId:s=>s,renderRegenerateTaskButton:id=>`<button data-regenerate-task="${id}">再次生成</button>`,renderChatVideoProgressLabel:()=>''};
-  vm.createContext(ctx);vm.runInContext(source('upgradeChatVideoTaskCard'),ctx);
+  vm.createContext(ctx);vm.runInContext(source('removeTaskWarningPanels'),ctx);vm.runInContext(source('upgradeChatVideoTaskCard'),ctx);
   ctx.upgradeChatVideoTaskCard(card,{taskId:'video-id',status:'completed',progress:100});
   assert.ok(header.innerHTML.includes('data-regenerate-task="video-id"'));
   ctx.upgradeChatVideoTaskCard(card,{taskId:'video-id',status:'running',progress:14});

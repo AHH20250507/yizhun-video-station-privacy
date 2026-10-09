@@ -24,6 +24,17 @@ test('conversation list consumes remaining sidebar height instead of a viewport 
   assert.match(panel,/flex:\s*1 1 0/);assert.match(panel,/max-height:\s*none/);
   assert.match(list,/flex:\s*1 1 0/);assert.match(list,/min-height:\s*0/);assert.match(list,/overflow-y:\s*auto/);
 });
+test('restored legacy yellow task notices are removed without touching media or real failures',()=>{
+ const node=(text,bg)=>({textContent:text,style:{backgroundColor:bg,background:bg},removed:false,remove(){this.removed=true;}});
+ const network=node('网络波动：本地任务不存在','#fffbeb');
+ const exhausted=node('任务状态确认失败：本地任务不存在','rgb(255, 251, 235)');
+ const media=node('@图1','');const failed=node('视频渲染中断：供应商失败','rgba(254, 226, 226, 0.6)');
+ const target={querySelectorAll:()=>[network,exhausted,media,failed]};
+ const card={querySelectorAll:()=>[target]};const ctx={};vm.createContext(ctx);vm.runInContext(source('removeTaskWarningPanels'),ctx);ctx.removeTaskWarningPanels(card);
+ assert.equal(network.removed,true);assert.equal(exhausted.removed,true);assert.equal(media.removed,false);assert.equal(failed.removed,false);
+ assert.ok(source('upgradeChatVideoTaskCard').includes('removeTaskWarningPanels(card)'));
+ assert.ok(source('refreshLiveConversationTaskCards').includes('removeTaskWarningPanels(card)'));
+});
 function pollHarness(){
   let tick,polls=0,stops=0;const target={innerHTML:'',replaceChildren(){this.innerHTML='';}};
   const fill={style:{}},track={dataset:{},setAttribute(){}},label={};
@@ -41,5 +52,6 @@ test('temporary polling errors remain silent while bounded recovery continues',a
   assert.equal(h.counts().polls,3);assert.equal(h.counts().stops,0);
   for(let i=3;i<8;i++)await h.tick();
   assert.equal(h.counts().stops,1);assert.equal(h.task.status,'needs_review');
-  assert.match(h.target.innerHTML,/任务状态确认失败/);
+  assert.equal(h.target.innerHTML,'');
+  assert.match(h.task.errorMsg,/任务状态确认失败/);
 });

@@ -8593,6 +8593,7 @@ function renderRegenerateTaskButton(taskId) {
 
 async function refreshLiveConversationTaskCards(stream) {
   for (const card of stream.querySelectorAll('[id^="task-card-"]')) {
+    removeTaskWarningPanels(card);
     const id = card.id.slice('task-card-'.length);
     const task = state.taskHistory.find(item => item.taskId === id) || state.activeTasks.find(item => item.taskId === id);
     if (!task || !['completed', 'failed', 'canceled', 'refunded'].includes(task.status)) continue;
@@ -9031,8 +9032,18 @@ function renderChatVideoProgressLabel(status, progress = 0, task = null) {
   return `<span class="chat-video-progress-label-inner"><i class="chat-video-progress-spinner" aria-hidden="true"></i>${statusText} ${normalizedProgress}% ${renderVideoEta(task, normalizedStatus)}</span>`;
 }
 
+function removeTaskWarningPanels(card) {
+  for (const target of card?.querySelectorAll?.('.chat-video-result-target, [id^="chat-target-"]') || []) {
+    for (const panel of target.querySelectorAll('[style]')) {
+      const background = `${panel.style.backgroundColor} ${panel.style.background}`;
+      if (/#fffbeb|rgb\(255,\s*251,\s*235\)/i.test(background)) panel.remove();
+    }
+  }
+}
+
 function upgradeChatVideoTaskCard(card, task = {}) {
   if (!card) return card;
+  removeTaskWarningPanels(card);
   const taskId = String(task.taskId || card.id?.replace(/^task-card-/, '') || '');
   const status = ['queued', 'in_progress', 'running', 'rendering', 'paused', 'reconciling', 'needs_review'].includes(task.status)
     ? 'in_progress'
@@ -9256,10 +9267,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         }
         if (progressTrack) progressTrack.dataset.status = 'needs_review';
         if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('needs_review', activeTask?.progress || 0, activeTask);
-        if (targetArea) {
-          targetArea.innerHTML = `<div style="color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;font-size:.8rem;"><strong>任务状态确认失败：</strong> ${escapeHTML(err.message)}。请检查 API 配置或网络后重新发起生成。</div>`;
-        }
-        showToast('任务状态确认失败，请检查 API 配置或网络', 'warning');
+        // Keep diagnostics in task state, not in a yellow notification panel.
       } else if (consecutivePollErrors >= 3) {
         const errMsg = `任务已提交，但当前网络不稳定：${err.message}`;
         const activeTask = state.activeTasks.find(item => item.taskId === taskId);

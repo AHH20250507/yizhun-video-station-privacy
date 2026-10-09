@@ -8664,9 +8664,15 @@ async function getTaskRegenerationSnapshot(task) {
 async function hydrateTaskReferencePrompt(card, task) {
   try {
     const snapshot = await getTaskRegenerationSnapshot(task);
-    if (!card?.isConnected || card.querySelector('.task-original-prompt')) return;
-    card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(snapshot.request.prompt, snapshot.refMediaList)}</div>`);
+    if (!card?.isConnected || card.querySelector('.task-original-prompt, .task-reference-gallery')) return;
+    const details = renderTaskReferenceDetails(snapshot.request.prompt, snapshot.refMediaList, snapshot.request.operation);
+    if (details) card.insertAdjacentHTML('beforeend', details);
   } catch { /* Older page-lifetime records may not have replay snapshots. */ }
+}
+
+function renderTaskReferenceDetails(prompt, refs = [], operation = 'image') {
+  if (operation === 'video') return refs.length ? renderTaskReferenceGallery(refs) : '';
+  return `<div class="task-original-prompt">${renderTaskReferencePrompt(prompt, refs)}</div>`;
 }
 
 const activeTaskRegenerations = new Set();
@@ -8716,7 +8722,8 @@ async function regenerateGenerationTask(taskId, button = null) {
       card = request.operation === 'image'
         ? createChatImageResultCard(box, newId, request.prompt, request.model, aspectRatio, request.input.n || request.count || 1)
         : createChatGenCard(box, newId, request.prompt, request.model, aspectRatio, request.duration, 'queued', 0);
-      card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(request.prompt, snapshot.refMediaList)}</div>`);
+      const details = renderTaskReferenceDetails(request.prompt, snapshot.refMediaList, request.operation);
+      if (details) card.insertAdjacentHTML('beforeend', details);
     }
     if (!angle) {
       newTask = SessionSystem.assignTask({ source: isCanvas ? 'canvas' : 'chat', mediaType: request.operation, taskId: newId, localConversationId: isCanvas ? null : localConversationId, prompt: request.prompt, model: request.model, count: request.input.n || request.count || 1, duration: request.duration, imageAspectRatio: aspectRatio, imageSize: request.input.size, options: { ...clone(original.options || {}), refMediaList: clone(snapshot.refMediaList) }, status: 'in_progress', progress: 5, sessionId, sessionType: isCanvas ? 'canvas' : 'creation', canvasNodeId: canvasNode?.id, createdAt: Date.now() }, isCanvas ? 'canvas' : 'creation');
@@ -8990,7 +8997,7 @@ function upgradeChatVideoTaskCard(card, task = {}) {
     card.prepend(header);
   }
   header.className = 'task-header chat-video-task-header';
-  header.innerHTML = `<span class="task-id-tag" title="完整任务 ID：${escapeHTML(taskId)}">ID: ${escapeHTML(shortenChatTaskId(taskId))}</span>`;
+  header.innerHTML = `<span class="task-id-tag" title="完整任务 ID：${escapeHTML(taskId)}">ID: ${escapeHTML(shortenChatTaskId(taskId))}</span>${renderRegenerateTaskButton(taskId)}`;
 
   let track = card.querySelector('[data-video-progress-track]') || card.querySelector('.progress-track');
   if (!track) {

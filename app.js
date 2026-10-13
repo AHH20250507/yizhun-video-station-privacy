@@ -7299,8 +7299,9 @@ function validateChatReferenceFile(file) {
   if (!file || !SUPPORTED_CHAT_REFERENCE_TYPES.some(prefix => String(file.type || '').startsWith(prefix))) {
     return '不支持的文件格式，仅支持图片、视频和音频';
   }
-  if (file.size > MAX_CHAT_REFERENCE_FILE_BYTES) {
-    return `文件过大：${file.name || '该文件'} 超过 50 MB`;
+  const maxBytes = /^(video|audio)\//.test(String(file.type || '')) ? 100 * 1024 * 1024 : MAX_CHAT_REFERENCE_FILE_BYTES;
+  if (file.size > maxBytes) {
+    return `文件过大：${file.name || '该文件'} 超过 ${maxBytes / (1024 * 1024)} MiB`;
   }
   return '';
 }
@@ -7312,16 +7313,17 @@ function validateChatReferenceFile(file) {
   let count = 0;
 
   for (const file of files) {
+    // Reject visibly at the upload control; corner notifications stay disabled.
     const validationError = validateChatReferenceFile(file);
     if (validationError) {
-      showToast(validationError, 'warning');
+      if (el.chatUploadMediaLabel) el.chatUploadMediaLabel.textContent = validationError;
       continue;
     }
     const isVideo = file.type.startsWith('video/');
     const isImage = file.type.startsWith('image/');
     const isAudio = file.type.startsWith('audio/');
     if (getChatGenerationMode() === 'image' && !isImage) {
-      showToast(`图片模式已忽略非图片文件：${file.name}`);
+      if (el.chatUploadMediaLabel) el.chatUploadMediaLabel.textContent = '请切换到视频模式上传视频或音频';
       continue;
     }
 
@@ -7350,6 +7352,7 @@ function validateChatReferenceFile(file) {
   if (el.chatMediaInput) el.chatMediaInput.value = '';
   renderChatRefMediaList();
   if (count > 0) {
+    if (el.chatUploadMediaLabel) el.chatUploadMediaLabel.textContent = getChatGenerationMode() === 'image' ? '上传参考图' : '上传参考媒体';
     showToast(`✅ 成功上传 ${count} 个参考媒体！点击标签或输入 @ 即可引用`);
   }
   return count;

@@ -20,9 +20,6 @@ function storedImageModels() {
   return parseImageModelList(localStorage.getItem('api_imageModels') || localStorage.getItem('api_imageModel') || '', DEFAULT_IMAGE_MODELS);
 }
 
-function isCustomDurationVideoModel(model) {
-  return String(model || '').endsWith('-per-second');
-}
 
 // 预设模板工作流数据
 const CANVAS_PRESET_TEMPLATES = [
@@ -3381,31 +3378,16 @@ function clampVideoDuration(value, min = 4, max = 30, fallback = 5) {
 }
 
 function syncChatDurationControl(model, requestedDuration) {
-  const isCustomDurationModel = isCustomDurationVideoModel(model);
   const durationSegment = document.getElementById('chatDurationSegment');
   const customControl = document.getElementById('chatCustomDurationControl');
   const customInput = document.getElementById('chatCustomDurationInput');
   const hiddenInput = document.getElementById('chatDurationSelect');
-  let duration = parseInt(requestedDuration, 10);
-
-  if (isCustomDurationModel) {
-    duration = clampVideoDuration(duration, 4, 30, 5);
-    if (durationSegment) durationSegment.classList.add('hidden');
-    if (customControl) customControl.classList.remove('hidden');
-    if (customInput) customInput.value = String(duration);
-    const customRange = document.getElementById('chatCustomDurationRange');
-    if (customRange) customRange.value = String(duration);
-  } else {
-    duration = [5, 10, 15].includes(duration) ? duration : 15;
-    if (durationSegment) {
-      durationSegment.classList.remove('hidden');
-      durationSegment.dataset.value = String(duration);
-      durationSegment.querySelectorAll('.segment-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.value === String(duration));
-      });
-    }
-    if (customControl) customControl.classList.add('hidden');
-  }
+  const duration = clampVideoDuration(requestedDuration, 4, 30, 5);
+  if (durationSegment) durationSegment.classList.add('hidden');
+  if (customControl) customControl.classList.remove('hidden');
+  if (customInput) customInput.value = String(duration);
+  const customRange = document.getElementById('chatCustomDurationRange');
+  if (customRange) customRange.value = String(duration);
   if (hiddenInput) hiddenInput.value = String(duration);
   return duration;
 }
@@ -5119,15 +5101,12 @@ function parseBaseDomain(inputUrl) {
 
 function syncApiConfigDurationInput(model, duration) {
   if (!el.cfgDefaultDuration) return;
-  const isCustom = isCustomDurationVideoModel(model);
-  el.cfgDefaultDuration.min = isCustom ? '4' : '5';
-  el.cfgDefaultDuration.max = isCustom ? '30' : '15';
-  el.cfgDefaultDuration.step = isCustom ? '1' : '5';
-  el.cfgDefaultDuration.value = String(isCustom
-    ? clampVideoDuration(duration, 4, 30, 15)
-    : ([5, 10, 15].includes(parseInt(duration, 10)) ? parseInt(duration, 10) : 15));
+  el.cfgDefaultDuration.min = '4';
+  el.cfgDefaultDuration.max = '30';
+  el.cfgDefaultDuration.step = '1';
+  el.cfgDefaultDuration.value = String(clampVideoDuration(duration, 4, 30, 15));
   const hint = document.getElementById('cfgDefaultDurationHint');
-  if (hint) hint.textContent = isCustom ? '按秒模型支持 4–30 秒任意整数' : '固定时长模型支持 5、10、15 秒';
+  if (hint) hint.textContent = '可输入 4–30 秒；实际可用时长以供应商模型为准';
 }
 
 function normalizedProviderMetadata(operation) {
@@ -5484,9 +5463,7 @@ async function saveApiConfig() {
   if (window.STANDALONE_MODE) return saveDynamicApiConfig();
   const model = el.cfgDefaultModel.value;
   const requestedDuration = parseInt(el.cfgDefaultDuration?.value || state.apiConfig.duration || 15, 10);
-  const duration = isCustomDurationVideoModel(model)
-    ? clampVideoDuration(requestedDuration, 4, 30, 15)
-    : ([5, 10, 15].includes(requestedDuration) ? requestedDuration : 15);
+  const duration = clampVideoDuration(requestedDuration, 4, 30, 15);
   const llmModelName = el.cfgLlmModelName?.value.trim() || 'gpt-5.6-sol';
   const primaryImageModels = parseImageModelList(el.cfgImageModel?.value, DEFAULT_PRIMARY_IMAGE_MODELS);
   const image2ImageModels = parseImageModelList(el.cfgImage2Models?.value, DEFAULT_IMAGE2_IMAGE_MODELS);
@@ -5728,9 +5705,7 @@ async function apiSubmitVideo(prompt, options = {}) {
   const mode = options.mode || 'creation';
   const model = options.model || state.apiConfig.model || DEFAULT_VIDEO_MODEL;
   const requestedDuration = parseInt(options.duration || state.apiConfig.duration || '15', 10);
-  const duration = isCustomDurationVideoModel(model)
-    ? clampVideoDuration(requestedDuration, 4, 30, 5)
-    : requestedDuration;
+  const duration = clampVideoDuration(requestedDuration, 4, 30, 5);
   const resolution = normalizeVideoResolution(options.resolution, '720p');
   const input = {
     duration,
@@ -7721,9 +7696,7 @@ async function handleAiChatSubmit() {
   const expandScript = el.chatExpandScriptToggle?.checked !== false;
   const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1';
   const imageCount = clampImageCount(el.chatImageCountInput?.value || state.chatImageCount || 1);
-  const duration = isCustomDurationVideoModel(model)
-    ? clampVideoDuration(el.chatDurationSelect.value, 4, 30, 5)
-    : parseInt(el.chatDurationSelect.value, 10);
+  const duration = clampVideoDuration(el.chatDurationSelect.value, 4, 30, 5);
   if (!text && refMediaList.length === 0) {
     showToast('请在底部输入框写入场景描述或拖入参考媒体');
     return;
@@ -14152,9 +14125,7 @@ async function runCanvasVideoGeneration(nodeId) {
   node.model = model;
   const aspectRatio = node.aspect || '16:9';
   const requestedDuration = parseInt(node.duration || 15, 10);
-  const duration = isCustomDurationVideoModel(model)
-    ? clampVideoDuration(requestedDuration, 4, 30, 5)
-    : requestedDuration;
+  const duration = clampVideoDuration(requestedDuration, 4, 30, 5);
   node.duration = duration;
   const options = {
     model,
@@ -16997,15 +16968,7 @@ function selectCanvasNodeModelEncoded(nodeId, operation, encodedModel, event) {
 window.selectCanvasNodeModelEncoded = selectCanvasNodeModelEncoded;
 
 function getCanvasVideoDurationSpec(model, rawValue) {
-  if (isCustomDurationVideoModel(model)) {
-    return { min: 4, max: 30, step: 1, value: clampVideoDuration(rawValue, 4, 30, 5) };
-  }
-  const parsed = parseInt(rawValue, 10);
-  const allowed = [5, 10, 15];
-  const value = Number.isFinite(parsed)
-    ? allowed.reduce((closest, candidate) => Math.abs(candidate - parsed) < Math.abs(closest - parsed) ? candidate : closest, allowed[0])
-    : 15;
-  return { min: 5, max: 15, step: 5, value };
+  return { min: 4, max: 30, step: 1, value: clampVideoDuration(rawValue, 4, 30, 5) };
 }
 
 function syncCanvasVideoDurationControl(nodeId, rawValue, sourceType, commit) {
@@ -17045,7 +17008,7 @@ function addCanvasVideoNode(e) {
     model: defaultModel,
     aspect: '16:9',
     duration: 15,
-    durationByModel: { [defaultModel]: isCustomDurationVideoModel(defaultModel) ? 5 : 15 },
+    durationByModel: { [defaultModel]: 15 },
     videoUrl: null,
     status: 'idle'
   });

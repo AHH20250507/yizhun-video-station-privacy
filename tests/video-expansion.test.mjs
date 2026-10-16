@@ -12,7 +12,7 @@ async function run(enabled, flipDuringSubmit = false) {
     isAiChatSubmitting: false, el: { aiChatTextarea: { value: '原脚本 @图2 和 @图1' }, chatModelSelect: { value: 'video-model' }, chatAspectSelect: { value: '16:9' }, chatDurationSelect: { value: '5' }, chatExpandScriptToggle: toggle },
     state: { chatRefMediaList: refs, apiConfig: {}, chatImageCount: 1 }, clone: x => structuredClone(x),
     getChatGenerationMode: () => 'video', getSelectedChatVideoResolution: () => '1080p', clampImageCount: x => x,
-    isCustomDurationVideoModel: () => false, syncCreationSubmitButtonState() {}, showToast() {},
+    clampVideoDuration: x => parseInt(x, 10), syncCreationSubmitButtonState() {}, showToast() {},
     SessionSystem: { getActive: () => ({ type: 'creation', id: 'session1' }), ensureActivePersisted: async () => { if (flipDuringSubmit) toggle.checked = !enabled; return { id: 'session1' }; } },
     appendAiUserBubble() {}, clearAllChatMediaRefs() { refs.length = 0; }, appendAiAssistantBubble(text) { calls.bubbles.push(text); return {}; },
     renderLlmConfirmCard(...args) { calls.confirm.push(args); }, submitVideoRenderFlow: async (...args) => calls.render.push(args),

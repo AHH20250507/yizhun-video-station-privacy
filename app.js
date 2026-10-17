@@ -8027,6 +8027,42 @@ async function reconcileChatImageTask(task, card = null) {
   }
 }
 
+function openGeneratedImagePreview(source, title = '生成图片') {
+  const safeSource = safeMediaUrl(source, { allowDataImage: true });
+  if (!safeSource) return false;
+  let dialog = document.getElementById('generatedImagePreview');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'generatedImagePreview';
+    dialog.className = 'generated-image-preview';
+    dialog.setAttribute('aria-label', '生成图片放大预览');
+    dialog.innerHTML = `<div class="generated-image-preview-toolbar"><strong>图片预览</strong><button type="button" aria-label="关闭图片预览" autofocus>×</button></div><div class="generated-image-preview-stage"><img alt="生成图片" draggable="false"></div>`;
+    dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog || event.target.classList.contains('generated-image-preview-stage')) dialog.close();
+    });
+    dialog.addEventListener('close', () => dialog.querySelector('img').removeAttribute('src'));
+    document.body.appendChild(dialog);
+  }
+  const image = dialog.querySelector('img');
+  image.src = safeSource;
+  image.alt = title || '生成图片';
+  dialog.querySelector('strong').textContent = title || '图片预览';
+  if (!dialog.open) dialog.showModal();
+  return true;
+}
+
+function initGeneratedImagePreview() {
+  document.addEventListener('dblclick', event => {
+    const image = event.target.closest('.chat-image-result-grid img.task-image-preview, .multi-angle-result-media img, .canvas-pure-image img');
+    if (!image) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openGeneratedImagePreview(image.currentSrc || image.getAttribute('src'), image.alt);
+  }, true);
+}
+initGeneratedImagePreview();
+
 async function renderChatImageCardResult(card, task, imageSources = []) {
   const badge = card?.querySelector(`#chat-image-badge-${task.taskId}`);
   const target = card?.querySelector(`#chat-image-target-${task.taskId}`);

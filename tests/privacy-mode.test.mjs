@@ -5,7 +5,7 @@ import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const read = name => readFileSync(join(root, name), 'utf8');
+const read = name => readFileSync(join(root, name), 'utf8').replace(/\r\n/g, '\n');
 const html = read('index.html');
 const app = read('app.js');
 const client = read('standalone-client.js');

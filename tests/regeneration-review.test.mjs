@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const app = fs.readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+const app = fs.readFileSync(new URL('../app.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 function fn(name) {
   const start = app.search(new RegExp('(?:async )?function '+name+'\\('));
   assert.ok(start >= 0, `missing function ${name}`);

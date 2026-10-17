@@ -7324,6 +7324,17 @@ body.space-panning-active * {
   cursor: grabbing;
 }
 
+.chat-image-result-grid img.task-image-preview,
+.multi-angle-result-media img { cursor: zoom-in; }
+.generated-image-preview { width: 96vw; height: 94dvh; max-width: 1600px; max-height: 94dvh; padding: 0; border: 0; border-radius: 14px; background: #10141d; color: #fff; overflow: hidden; }
+.generated-image-preview::backdrop { background: rgba(0, 0, 0, .82); }
+.generated-image-preview[open] { display: flex; flex-direction: column; }
+.generated-image-preview-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: 0 0 auto; padding: 10px 16px; }
+.generated-image-preview-toolbar strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.generated-image-preview-toolbar button { flex-shrink: 0; width: 44px; height: 44px; border: 1px solid #536070; border-radius: 10px; color: #fff; background: #263040; cursor: pointer; font-size: 26px; }
+.generated-image-preview-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 16px 16px; overflow: hidden; }
+.generated-image-preview-stage img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
+
 .canvas-image-preview-modal {
   position: fixed;
   inset: 0;

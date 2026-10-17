@@ -8041,7 +8041,7 @@ function openGeneratedImagePreview(source, title = '生成图片') {
     dialog.addEventListener('click', event => {
       if (event.target === dialog || event.target.classList.contains('generated-image-preview-stage')) dialog.close();
     });
-    dialog.addEventListener('close', () => dialog.querySelector('img').removeAttribute('src'));
+    dialog.addEventListener('close', () => { if (!dialog.open) dialog.querySelector('img').removeAttribute('src'); });
     document.body.appendChild(dialog);
   }
   const image = dialog.querySelector('img');

@@ -7827,6 +7827,11 @@ function renderChatImageBatchProgress(task, card = null) {
   `;
 }
 
+function cleanChatImageResponse(card) {
+  card?.querySelectorAll?.('.task-original-prompt, .task-reference-gallery').forEach(node => node.remove());
+  card?.closest?.('.ai-msg-content')?.querySelectorAll(':scope > .chat-message-bubble.chat-message-text').forEach(node => node.remove());
+}
+
 function createChatImageResultCard(container, taskId, promptText, model, aspectRatio, count = 1) {
   const card = document.createElement('div');
   card.className = 'chat-image-generation-card';
@@ -7846,6 +7851,7 @@ function createChatImageResultCard(container, taskId, promptText, model, aspectR
     <div class="chat-image-batch-progress" id="chat-image-target-${taskId}"></div>
   `;
   container.appendChild(card);
+  cleanChatImageResponse(card);
   renderChatImageBatchProgress({ taskId, count, status: 'queued', imageJobProgress: Array(count).fill(5) }, card);
   return card;
 }
@@ -8064,6 +8070,7 @@ function initGeneratedImagePreview() {
 initGeneratedImagePreview();
 
 async function renderChatImageCardResult(card, task, imageSources = []) {
+  cleanChatImageResponse(card);
   const badge = card?.querySelector(`#chat-image-badge-${task.taskId}`);
   const target = card?.querySelector(`#chat-image-target-${task.taskId}`);
   card?.querySelector(`[data-cancel-task="${CSS.escape(task.taskId)}"]`)?.remove();
@@ -8133,11 +8140,8 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     return;
   }
   const taskId = `image_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  const aiBox = appendAiAssistantBubble(normalizedCount > 1
-    ? `正在提交 ${normalizedCount} 个独立图片任务，每张图会分别显示进度。`
-    : '正在使用图片模型生成画面。');
+  const aiBox = appendAiAssistantBubble('');
   const card = createChatImageResultCard(aiBox, taskId, promptText, model, aspectRatio, normalizedCount);
-  card.insertAdjacentHTML('beforeend', `<div class="task-original-prompt">${renderTaskReferencePrompt(promptText, refMediaList)}</div>`);
   const task = SessionSystem.assignTask({
     source: 'chat',
     mediaType: 'image',
@@ -8606,6 +8610,7 @@ function renderRegenerateTaskButton(taskId) {
 async function refreshLiveConversationTaskCards(stream) {
   for (const card of stream.querySelectorAll('[id^="task-card-"]')) {
     removeTaskWarningPanels(card);
+    if (card.classList.contains('chat-image-generation-card')) cleanChatImageResponse(card);
     const id = card.id.slice('task-card-'.length);
     const task = state.taskHistory.find(item => item.taskId === id) || state.activeTasks.find(item => item.taskId === id);
     if (!task || !['completed', 'failed', 'canceled', 'refunded'].includes(task.status)) continue;
@@ -8671,7 +8676,7 @@ async function hydrateTaskReferencePrompt(card, task) {
 
 function renderTaskReferenceDetails(prompt, refs = [], operation = 'image') {
   if (operation === 'video') return refs.length ? renderTaskReferenceGallery(refs) : '';
-  return `<div class="task-original-prompt">${renderTaskReferencePrompt(prompt, refs)}</div>`;
+  return '';
 }
 
 const activeTaskRegenerations = new Set();
@@ -8717,7 +8722,7 @@ async function regenerateGenerationTask(taskId, button = null) {
       if (request.input.client_context) request.input.client_context = { ...request.input.client_context, session_id: sessionId, node_id: canvasNode.id };
     } else {
       appendAiUserBubble(request.prompt, snapshot.refMediaList);
-      const box = appendAiAssistantBubble('正在使用原提示词和原参考素材创建新任务。');
+      const box = appendAiAssistantBubble(request.operation === 'image' ? '' : '正在使用原提示词和原参考素材创建新任务。');
       card = request.operation === 'image'
         ? createChatImageResultCard(box, newId, request.prompt, request.model, aspectRatio, request.input.n || request.count || 1)
         : createChatGenCard(box, newId, request.prompt, request.model, aspectRatio, request.duration, 'queued', 0);

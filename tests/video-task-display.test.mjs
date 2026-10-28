@@ -36,8 +36,19 @@ test('video task shows only original reference gallery without prompt text',()=>
   assert.ok(!html.includes('PRIVATE VIDEO PROMPT'));
   assert.ok(!html.includes('task-original-prompt'));
 });
-test('image task retains its original prompt display',()=>{
-  assert.ok(context().renderTaskReferenceDetails('IMAGE PROMPT',[],'image').includes('PROMPT:IMAGE PROMPT'));
+test('image task does not repeat user prompt or references in the AI result',()=>{
+  assert.equal(context().renderTaskReferenceDetails('IMAGE PROMPT',[],'image'),'');
+  assert.equal(context().renderTaskReferenceDetails('IMAGE PROMPT @图1',[{tag:'@图1'}],'image'),'');
+});
+test('image response cleanup removes repeated prompt and prose but leaves user messages and result controls',()=>{
+  const removed=[];
+  const content={querySelectorAll:()=>[{remove:()=>removed.push('assistant-prose')}]};
+  const card={querySelectorAll:()=>[{remove:()=>removed.push('prompt')},{remove:()=>removed.push('references')}],closest:()=>content};
+  const ctx={};vm.createContext(ctx);vm.runInContext(source('cleanChatImageResponse'),ctx);ctx.cleanChatImageResponse(card);
+  assert.deepEqual(removed,['prompt','references','assistant-prose']);
+  assert.ok(source('createChatImageResultCard').includes('cleanChatImageResponse(card)'));
+  assert.ok(source('renderChatImageCardResult').includes('cleanChatImageResponse(card)'));
+  assert.ok(!source('submitChatImageGeneration').includes('task-original-prompt'));
 });
 test('initial video hydration and replay use the same media-aware display',async()=>{
   const ctx=context();let html='';

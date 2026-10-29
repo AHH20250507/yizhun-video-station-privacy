@@ -3425,7 +3425,7 @@ function getImageResolutionOptions(mode, model, aspectRatio) {
 
 function getImageQualityOptions(mode, model) {
   const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
-  const ranks = { low: 1, standard: 2, medium: 2, high: 3, hd: 3 };
+  const ranks = { low: 1, standard: 2, medium: 2, high: 3, hd: 3, xhigh: 4, max: 5 };
   return [...new Set((Array.isArray(metadata.qualities) ? metadata.qualities : []).filter(value => typeof value === 'string' && value.trim() && value.length <= 64))]
     .map(value => ({ value, rank: ranks[value.trim().toLowerCase()] ?? null }))
     .sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
@@ -3463,6 +3463,7 @@ function restoreChatImageSettings(model, aspectRatio, settings = {}) {
 
 function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1') {
   const result = { model, aspectRatio };
+  const metadata = getServerModels('creation', 'image').find(item => item.model === model)?.metadata || {};
   for (const field of ['resolution', 'quality']) {
     const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
     const sameModel = select?.dataset.model === model;
@@ -3475,6 +3476,19 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       select.innerHTML = '<option value="">模型默认 / 自动</option>' + options.map(option => `<option value="${escapeHTML(option.value)}">${escapeHTML(option.label || option.value)}</option>`).join('');
       select.dataset.model = model;
       select.value = selected?.value || '';
+      const preset = metadata[field === 'resolution' ? 'resolutionSource' : 'qualitySource'] === 'vendor-doc-preset';
+      const group = select.closest?.('.param-group');
+      let note = group?.querySelector('.image-capability-note');
+      if (preset && group && !note) {
+        note = document.createElement('small');
+        note.className = 'image-capability-note';
+        group.appendChild(note);
+      }
+      if (note) {
+        note.textContent = preset ? '文档预设·未实测' : '';
+        note.title = preset ? '依据 AI666 通用文档提供，不代表该模型的实测支持范围；生成失败时可改用自动。' : '';
+        note.hidden = !preset;
+      }
       select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
     }
     if (selected) {
@@ -14747,10 +14761,14 @@ function renderCanvasImageControls(node, isGenerating) {
   const selection = getCanvasImageSelection(node);
   const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
   const qualities = getImageQualityOptions('canvas', selection.model);
+  const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
+  const presetNote = metadata.resolutionSource === 'vendor-doc-preset' || metadata.qualitySource === 'vendor-doc-preset'
+    ? '<small class="image-capability-note" title="AI666 通用文档预设，非该模型实测能力；不支持时可选择自动">文档预设·未实测</small>' : '';
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
     <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select></label>
     <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select></label>
+    ${presetNote}
   </div>`;
 }
 

@@ -202,6 +202,7 @@ test('quality travels through real request and captured card output', async () =
   assert.match(source('renderCanvasImageControls'),/图片品质/);
 });
 test('creation resolution and quality roundtrip in page-memory settings',()=>{const c=context({resolutions:['1K','4K'],qualities:['low','high']});const nodes={chatImageResolutionSelect:{value:'1K',dataset:{model:'model',explicitAuto:'false'}},chatImageQualitySelect:{value:'low',dataset:{model:'model',explicitAuto:'false'}}};c.document.getElementById=id=>nodes[id];c.escapeHTML=String;for(const n of ['captureChatImageSettings','restoreChatImageSettings','syncChatImageResolutionControl'])vm.runInContext(source(n),c);const saved=c.captureChatImageSettings();nodes.chatImageResolutionSelect.value='4K';nodes.chatImageQualitySelect.value='high';c.restoreChatImageSettings('model','1:1',saved);assert.equal(nodes.chatImageResolutionSelect.value,'1K');assert.equal(nodes.chatImageQualitySelect.value,'low');});
+test('declared xhigh and max qualities rank above high without assuming undeclared values',()=>{const c=context({qualities:['high','max','xhigh','auto']});assert.equal(c.getImageGenerationSelection('creation','model','1:1').quality,'max');assert.equal(context({qualities:['high','xhigh']}).getImageGenerationSelection('creation','model','1:1').quality,'xhigh');});
 test('declared resolution tiers default numerically highest and preserve provider value', () => {
   const c = context({resolutions:['2K', '10K', '4K', '1K']});
   const selected = c.getImageGenerationSelection('creation', 'model', '16:9');

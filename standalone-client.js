@@ -972,6 +972,24 @@
     return { credits: 0, unitCredits: 0, multiplier: operation === 'video' ? Number(duration || 1) : Number(count || 1), unit: operation === 'video' ? 'second' : operation === 'image' ? 'image' : 'request' };
   }
 
+  function withDocumentedImagePresets(provider, model, metadata = {}) {
+    let hostname = '';
+    try { hostname = new URL(provider.baseUrl).hostname.toLowerCase(); } catch { return metadata; }
+    if (hostname !== 'ai666.live' || model !== 'gpt-image-2.5-sunburst') return metadata;
+    // AI666's generic image request docs list these fields, not a per-model capability guarantee.
+    // https://ai666.live/docs — presets are explicitly labeled and never stored as detected metadata.
+    const result = { ...metadata };
+    if (!metadata.resolutions?.length && !metadata.sizes?.length) {
+      result.resolutions = ['1K', '2K', '4K'];
+      result.resolutionSource = 'vendor-doc-preset';
+    }
+    if (!metadata.qualities?.length) {
+      result.qualities = ['low', 'medium', 'high'];
+      result.qualitySource = 'vendor-doc-preset';
+    }
+    return result;
+  }
+
   function modelRows() {
     const config = readConfig();
     const row = (mode, operation, model, displayName, providerName, isDefault = true, modelMetadata = {}) => ({
@@ -986,8 +1004,11 @@
       return provider.baseUrl && provider.apiKey ? uniqueModels(provider.models || []) : [];
     };
     const modelMetadataFor = (provider, model) => {
-      const profile = (provider.profiles || []).find(item => (item.models || []).includes(model));
-      return profile?.modelMetadata?.[model] || provider.modelMetadata?.[model] || {};
+      const profile = (provider.profiles || []).find(item => (item.models || []).includes(model))
+        || (provider.profiles || []).find(item => (item.models || []).includes(provider.model))
+        || provider.profiles?.[0];
+      const metadata = profile?.modelMetadata?.[model] || provider.modelMetadata?.[model] || {};
+      return provider === config.image ? withDocumentedImagePresets(profile || provider, model, metadata) : metadata;
     };
     const rowsFor = (modes, operation, providerName) => modes.flatMap(mode => configuredModels(config[providerName]).map(model =>
       row(mode, operation, model, model, providerName, model === config[providerName].model, modelMetadataFor(config[providerName], model))

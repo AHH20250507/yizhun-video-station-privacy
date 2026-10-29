@@ -3940,6 +3940,8 @@ function createChatInlineMediaRef(item) {
   ref.tabIndex = 0;
   ref.dataset.tag = item.tag || '';
   ref.dataset.mediaId = item.id || '';
+  const imageIndex = (state.chatRefMediaList || []).filter(media => media.type === 'image').findIndex(media => media.id === item.id);
+  ref.dataset.originalLabel = item.type === 'image' && imageIndex >= 0 ? `图片${imageIndex + 1}` : String(item.tag || '').replace(/^@图/, '图片');
   ref.setAttribute('aria-label', `${item.fileName || '参考图'}，悬停放大预览`);
   ref.title = '悬停放大预览';
 
@@ -3986,13 +3988,16 @@ function setChatPromptEditorValue(editor, value) {
   }
   const text = value == null ? '' : String(value);
   const fragment = document.createDocumentFragment();
+  const originalLabels = new Map([...editor.querySelectorAll('.chat-inline-media-ref')].map(ref => [ref.dataset.mediaId, ref.dataset.originalLabel || String(ref.dataset.tag || '').replace(/^@图/, '图片')]));
   const tagRegex = /@图\d+/g;
   let lastIndex = 0;
   let match;
   while ((match = tagRegex.exec(text))) {
     if (match.index > lastIndex) fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
     const item = getChatRefMediaByTag(match[0]);
-    fragment.appendChild(item ? createChatInlineMediaRef(item) : document.createTextNode(match[0]));
+    const chip = item ? createChatInlineMediaRef(item) : null;
+    if (chip && originalLabels.has(item.id)) chip.dataset.originalLabel = originalLabels.get(item.id);
+    fragment.appendChild(chip || document.createTextNode(match[0]));
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < text.length) fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
@@ -4004,11 +4009,13 @@ function refreshChatPromptEditorMediaRefs() {
   const editor = el.aiChatTextarea;
   if (!editor?.isContentEditable) return;
   editor.querySelectorAll('.chat-inline-media-ref').forEach(ref => {
+    const originalLabel = ref.dataset.originalLabel || String(ref.dataset.tag || '').replace(/^@图/, '图片');
+    ref.dataset.originalLabel = originalLabel;
     const item = ref.dataset.mediaId
       ? (state.chatRefMediaList || []).find(media => media.id === ref.dataset.mediaId)
       : getChatRefMediaByTag(ref.dataset.tag);
     if (!item) {
-      ref.replaceWith(document.createTextNode(ref.dataset.tag || ''));
+      ref.replaceWith(document.createTextNode(originalLabel));
       return;
     }
     ref.dataset.tag = item.tag || ref.dataset.tag || '';

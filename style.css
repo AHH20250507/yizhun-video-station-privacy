@@ -697,11 +697,13 @@ body.light-theme {
   opacity: .72;
   transition: opacity .15s ease, border-color .15s ease, color .15s ease;
 }
-.prompt-image-match-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-width: 0; }
-#btnMatchPromptImages { flex: 0 0 auto; white-space: nowrap; }
+.reference-header-actions { display: flex; align-items: center; flex: 0 0 auto; gap: 8px; margin-left: auto; }
+.reference-action-button { min-height: 32px; padding: 6px 10px; border: 1px solid #d7dde5; border-radius: 8px; background: #fff; color: #334155; font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.reference-action-button:hover { background: #f1f5f9; border-color: #94a3b8; }
+.reference-action-button.is-danger { color: #dc2626; }
 .prompt-image-match-status { font-size: 12px; line-height: 1.5; color: var(--text-muted); overflow-wrap: anywhere; }
 .prompt-image-match-status:empty { display: none; }
-@media (max-width: 768px) { #btnMatchPromptImages { min-height: 40px; } }
+@media (max-width: 768px) { .reference-action-button { min-height: 40px; } .ref-media-header { flex-wrap: wrap; gap: 8px; } }
 .chat-message-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .chat-reuse-button { opacity: 1; color: #2563eb; border-color: #bfdbfe; }
 @media (max-width: 768px) { .chat-message-actions .chat-copy-button { min-height: 40px; padding: 7px 12px; } }

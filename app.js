@@ -3897,9 +3897,11 @@ function matchPromptImageReferences(text, refs = []) {
   const images = refs.filter(item => item.type === 'image');
   const missing = new Set();
   let matched = 0;
-  const result = String(text || '').replace(/(?<![@\w])图片\s*([1-9]\d*)(?![\d.．])/g, (label, digits) => {
+  const result = String(text || '').replace(/@图\s*([1-9]\d*)(?![\d.．])|(?:@图片|(?<![@\w])图片)\s*([1-9]\d*)(?![\d.．])/g, (label, tagDigits, imageDigits) => {
+
+    const digits = tagDigits || imageDigits;
     const index = Number(digits);
-    const item = images[index - 1];
+    const item = tagDigits ? refs.find(ref => ref.tag === `@图${index}`) : images[index - 1];
     if (!item || !/^@图[1-9]\d*$/.test(item.tag || '') || !(item.reference || item.url)) {
       missing.add(index);
       return label;
@@ -4002,7 +4004,9 @@ function refreshChatPromptEditorMediaRefs() {
   const editor = el.aiChatTextarea;
   if (!editor?.isContentEditable) return;
   editor.querySelectorAll('.chat-inline-media-ref').forEach(ref => {
-    const item = (state.chatRefMediaList || []).find(media => media.id === ref.dataset.mediaId) || getChatRefMediaByTag(ref.dataset.tag);
+    const item = ref.dataset.mediaId
+      ? (state.chatRefMediaList || []).find(media => media.id === ref.dataset.mediaId)
+      : getChatRefMediaByTag(ref.dataset.tag);
     if (!item) {
       ref.replaceWith(document.createTextNode(ref.dataset.tag || ''));
       return;

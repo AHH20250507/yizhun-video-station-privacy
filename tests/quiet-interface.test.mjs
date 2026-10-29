@@ -42,8 +42,9 @@ function pollHarness(){
   const task={taskId:'video',backendTaskId:'backend',progress:92,status:'in_progress'};
   const ctx={document:{getElementById:()=>card},CSS:{escape:s=>s},Date,console:{error(){},warn(){}},state:{activeTasks:[task]},SessionSystem:{hasPoller:()=>false,isTaskCanceled:()=>false,registerPoller(){},unregisterPoller(){},trackTask:async()=>{}},setInterval:fn=>{tick=fn;return 1;},clearInterval:()=>stops++,apiPollVideo:async()=>{polls++;throw Error('本地任务不存在');},renderChatVideoProgressLabel:s=>s,escapeHTML:s=>s,showToast(){}};
   vm.createContext(ctx);vm.runInContext(source('startChatCardPoller'),ctx);ctx.startChatCardPoller('video',card,'original','mock');
-  return {tick,target,task,track,counts:()=>({polls,stops})};
+  return {tick,target,task,track,ctx,counts:()=>({polls,stops})};
 }
+test('slow video polling never overlaps and unlocks after rejection',async()=>{const h=pollHarness();let calls=0,reject;h.ctx.apiPollVideo=()=>{calls++;return new Promise((r,j)=>reject=j);};const pending=h.tick();const overlapping=h.tick();assert.equal(calls,1);reject(Error('temporary'));await Promise.all([pending,overlapping]);const next=h.tick();assert.equal(calls,2);reject(Error('temporary'));await next;});
 test('temporary polling errors remain silent while bounded recovery continues',async()=>{
   const h=pollHarness();
   for(let i=0;i<3;i++)await h.tick();

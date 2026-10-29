@@ -2231,7 +2231,7 @@ aside.sidebar.collapsed [data-tooltip]:hover::before {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #60a5fa 100%);
   background-size: 200% 100%;
-  animation: progressPulse 2s linear infinite;
+  animation: none;
   transition: width 0.4s ease;
   border-radius: 6px;
 }

@@ -343,6 +343,13 @@ function prepareLazyVideoMarkup(html) {
   return template.innerHTML;
 }
 
+function isRuntimeChatMutation(record) {
+  if (record.type === 'attributes' && record.target instanceof HTMLVideoElement
+    && ['src', 'preload', 'data-managed-video-active', 'data-managed-video-interaction-bound'].includes(record.attributeName)) return true;
+  const element = record.target?.nodeType === 3 ? record.target.parentElement : record.target;
+  return !!element?.closest?.('.chat-image-batch-progress, .chat-video-progress-track, [id^="chat-image-badge-"]');
+}
+
 function serializeManagedVideoHtml(root, fallback = '') {
   if (!root) return fallback;
   const clone = root.cloneNode(true);
@@ -2868,9 +2875,7 @@ const SessionSystem = (() => {
         records.forEach(record => record.addedNodes?.forEach(node => {
           if (node instanceof HTMLVideoElement || node instanceof HTMLElement) observeManagedVideos(node);
         }));
-        const runtimeOnly = records.length > 0 && records.every(record => record.type === 'attributes'
-          && record.target instanceof HTMLVideoElement
-          && ['src', 'preload', 'data-managed-video-active', 'data-managed-video-interaction-bound'].includes(record.attributeName));
+        const runtimeOnly = records.length > 0 && records.every(isRuntimeChatMutation);
         if (!runtimeOnly) scheduleSave();
       });
       mutationObserver.observe(el.aiChatStream, { childList: true, subtree: true, attributes: true, characterData: true });
@@ -3186,7 +3191,7 @@ function initElements() {
     btnChatImageCountUp: document.getElementById('btnChatImageCountUp'),
     chatDurationSelect: document.getElementById('chatDurationSelect'),
     chatCustomDurationInput: document.getElementById('chatCustomDurationInput'),
-    chatCustomDurationRange: document.getElementById('chatCustomDurationRange'),
+
     chatVideoModelGroup: document.getElementById('chatVideoModelGroup'),
     chatImageModelGroup: document.getElementById('chatImageModelGroup'),
     chatImageModelDisplay: document.getElementById('chatImageModelDisplay'),
@@ -3386,8 +3391,7 @@ function syncChatDurationControl(model, requestedDuration) {
   if (durationSegment) durationSegment.classList.add('hidden');
   if (customControl) customControl.classList.remove('hidden');
   if (customInput) customInput.value = String(duration);
-  const customRange = document.getElementById('chatCustomDurationRange');
-  if (customRange) customRange.value = String(duration);
+
   if (hiddenInput) hiddenInput.value = String(duration);
   return duration;
 }
@@ -3829,9 +3833,10 @@ function initAppleControls() {
   });
 
   const customDurationInput = document.getElementById('chatCustomDurationInput');
-  const customDurationRange = document.getElementById('chatCustomDurationRange');
+
   const applyCustomDuration = (source, shouldClamp = true) => {
-    const rawValue = source?.value;
+    const rawValue = sanitizeVideoDurationInput(source?.value);
+    if (source) source.value = rawValue;
     if (!shouldClamp && source === customDurationInput) {
       if (rawValue === '') return;
       const parsed = parseInt(rawValue, 10);
@@ -3839,7 +3844,7 @@ function initAppleControls() {
     }
     const value = clampVideoDuration(rawValue, 4, 30, 5);
     if (customDurationInput) customDurationInput.value = String(value);
-    if (customDurationRange) customDurationRange.value = String(value);
+
     const hiddenInput = document.getElementById('chatDurationSelect');
     if (hiddenInput) hiddenInput.value = String(value);
   };
@@ -3854,12 +3859,6 @@ function initAppleControls() {
     });
     customDurationInput.addEventListener('change', () => {
       applyCustomDuration(customDurationInput, true);
-      updateCreationPricePreview();
-    });
-  }
-  if (customDurationRange) {
-    customDurationRange.addEventListener('input', () => {
-      applyCustomDuration(customDurationRange, true);
       updateCreationPricePreview();
     });
   }
@@ -7858,9 +7857,7 @@ function renderChatImageBatchProgress(task, card = null) {
     ? `完成 ${completedCount}/${expectedCount}，异常 ${failedCount}`
     : `已完成 ${completedCount}/${expectedCount}`;
   const badge = targetCard?.querySelector(`#chat-image-badge-${task.taskId}`);
-  if (badge) badge.textContent = `生成中 · ${summary}`;
-  target.className = 'chat-image-batch-progress';
-  target.innerHTML = `
+  const markup = `
     <div class="chat-image-batch-summary">
       <span><strong>批量生成进度</strong><small>${summary}</small></span>
       <b>${overallProgress}%</b>
@@ -7887,6 +7884,11 @@ function renderChatImageBatchProgress(task, card = null) {
       }).join('')}
     </div>
   `;
+  if (target.__progressMarkup === markup) return;
+  target.__progressMarkup = markup;
+  if (badge && badge.textContent !== `生成中 · ${summary}`) badge.textContent = `生成中 · ${summary}`;
+  if (target.className !== 'chat-image-batch-progress') target.className = 'chat-image-batch-progress';
+  target.innerHTML = markup;
 }
 
 function cleanChatImageResponse(card) {
@@ -9234,8 +9236,10 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
   bindCurrentCard();
   const startTime = Date.now();
   let consecutivePollErrors = 0;
+  let pollInFlight = false;
 
   const poller = setInterval(async () => {
+    if (pollInFlight) return;
     // 会话重新打开后 DOM 卡片会重建；每轮按任务 ID 重新绑定当前可见卡片。
     bindCurrentCard();
     if (SessionSystem.isTaskCanceled(taskId)) {
@@ -9254,6 +9258,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
       return;
     }
     try {
+      pollInFlight = true;
       if (Date.now() - startTime > MAX_VIDEO_POLL_DURATION_MS) {
         throw new Error('视频状态查询已超过 45 分钟');
       }
@@ -9278,14 +9283,17 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
       updateTaskQueueUI();
       updateStatusIndicators();
 
-      if (progressInner) {
+      if (progressInner && progressInner.style.width !== `${Math.max(progress, 8)}%`) {
         progressInner.style.width = `${Math.max(progress, 8)}%`;
       }
       if (progressTrack) {
-        progressTrack.dataset.status = status;
-        progressTrack.setAttribute('aria-valuenow', String(progress));
+        if (progressTrack.dataset.status !== status) progressTrack.dataset.status = status;
+        if (progressTrack.getAttribute('aria-valuenow') !== String(progress)) progressTrack.setAttribute('aria-valuenow', String(progress));
       }
-      if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel(status, progress, taskInState || taskObj);
+      if (progressLabel) {
+        const markup = renderChatVideoProgressLabel(status, progress, taskInState || taskObj);
+        if (progressLabel.innerHTML !== markup) progressLabel.innerHTML = markup;
+      }
 
       if (status === 'completed') {
         clearInterval(poller);
@@ -9371,6 +9379,8 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
         if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('reconciling', activeTask?.progress || 0, activeTask);
 
       }
+    } finally {
+      pollInFlight = false;
     }
   }, 3000);
   SessionSystem.registerPoller(taskId, poller);
@@ -14721,7 +14731,7 @@ function renderCanvasVideoNodeComposer(node, inputControlHtml, isGenerating) {
         <button type="button" class="pill-opt ${node.aspect === '1:1' ? 'active' : ''}" onclick="onCanvasVideoNodeParamChange('${node.id}', 'aspect', '1:1')">1:1</button>
       </div></div>
       <div class="canvas-composer-setting-group"><span>时长</span>
-        <div class="canvas-video-duration-slider"><div class="canvas-video-duration-input-box" title="输入秒数；悬停显示滑杆"><input type="number" aria-label="视频时长秒数" min="${durationSpec.min}" max="${durationSpec.max}" step="${durationSpec.step}" value="${durationSpec.value}" oninput="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)" onblur="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)"><span>秒</span></div><div class="canvas-video-duration-popover"><input type="range" aria-label="视频时长滑杆" min="${durationSpec.min}" max="${durationSpec.max}" step="${durationSpec.step}" value="${durationSpec.value}" oninput="syncCanvasVideoDurationControl('${node.id}', this.value, 'range', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'range', true)"></div></div>
+        <div class="canvas-video-duration-slider"><div class="canvas-video-duration-input-box" title="输入 4–30 秒整数"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" aria-label="视频时长秒数" value="${durationSpec.value}" oninput="this.value=sanitizeVideoDurationInput(this.value); syncCanvasVideoDurationControl('${node.id}', this.value, 'number', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)" onblur="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)"><span>秒</span></div></div>
       </div>
     </div>
     <div class="canvas-composer-toolbar">
@@ -15059,13 +15069,11 @@ function renderCanvasNodesAndLines() {
               <div class="canvas-video-control-row">
                 <span class="canvas-video-control-label">时长</span>
                 <div class="canvas-video-duration-slider" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" onwheel="event.stopPropagation()">
-                  <div class="canvas-video-duration-input-box" title="输入秒数；悬停显示滑杆">
-                    <input type="number" min="${durationSpec.min}" max="${durationSpec.max}" step="${durationSpec.step}" value="${durationSpec.value}" aria-label="视频时长秒数" oninput="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)" onblur="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)">
+                  <div class="canvas-video-duration-input-box" title="输入 4–30 秒整数">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${durationSpec.value}" aria-label="视频时长秒数" oninput="this.value=sanitizeVideoDurationInput(this.value); syncCanvasVideoDurationControl('${node.id}', this.value, 'number', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)" onblur="syncCanvasVideoDurationControl('${node.id}', this.value, 'number', true)">
                     <span>秒</span>
                   </div>
-                  <div class="canvas-video-duration-popover">
-                    <input type="range" min="${durationSpec.min}" max="${durationSpec.max}" step="${durationSpec.step}" value="${durationSpec.value}" aria-label="视频时长滑杆" oninput="syncCanvasVideoDurationControl('${node.id}', this.value, 'range', false)" onchange="syncCanvasVideoDurationControl('${node.id}', this.value, 'range', true)">
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -17081,6 +17089,10 @@ function selectCanvasNodeModelEncoded(nodeId, operation, encodedModel, event) {
   selectCanvasNodeModel(nodeId, operation, decodeURIComponent(encodedModel), event);
 }
 window.selectCanvasNodeModelEncoded = selectCanvasNodeModelEncoded;
+
+function sanitizeVideoDurationInput(value) {
+  return String(value ?? '').replace(/[^0-9]/g, '');
+}
 
 function getCanvasVideoDurationSpec(model, rawValue) {
   return { min: 4, max: 30, step: 1, value: clampVideoDuration(rawValue, 4, 30, 5) };

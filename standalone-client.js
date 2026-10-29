@@ -465,6 +465,33 @@
     return data?.id || data?.task_id || data?.taskId || data?.data?.id || data?.data?.task_id || data?.data?.taskId || null;
   }
 
+  function compactImageOutput(data) {
+    if (!data || typeof data !== 'object') return data;
+    if (Array.isArray(data)) { data.forEach(compactImageOutput); return data; }
+    for (const key of ['b64_json', 'base64', 'image_base64', 'url', 'image_url', 'imageUrl', 'result_url', 'resultUrl']) {
+      const source = data[key];
+      if (typeof source !== 'string' || !source) continue;
+      const base64Field = ['b64_json', 'base64', 'image_base64'].includes(key);
+      if (!base64Field && !/^data:image\/[a-z0-9.+-]+;base64,/i.test(source)) continue;
+      const comma = /^data:/i.test(source) ? source.indexOf(',') : -1;
+      const mime = comma >= 0 ? source.slice(5, source.indexOf(';')) : 'image/png';
+      const encoded = (comma >= 0 ? source.slice(comma + 1) : source).replace(/[\t\n\f\r ]/g, '');
+      const parts = [];
+      // Decode bounded chunks, not a second full-size binary string.
+      for (let offset = 0; offset < encoded.length; offset += 65536) {
+        const binary = atob(encoded.slice(offset, offset + 65536));
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        parts.push(bytes);
+      }
+      const url = URL.createObjectURL(new Blob(parts, { type: mime }));
+      if (base64Field) { delete data[key]; data.url = url; }
+      else data[key] = url;
+    }
+    Object.values(data).forEach(value => { if (value && typeof value === 'object') compactImageOutput(value); });
+    return data;
+  }
+
   function imageSources(data) {
     const result = [];
     const visit = value => {
@@ -514,6 +541,7 @@
   }
 
   function imageJobFromOutput(output, index) {
+    compactImageOutput(output);
     const providerStatus = statusOf(output);
     const providerTaskId = providerTaskIdOf(output);
     if (isFailure(providerStatus)) {
@@ -607,6 +635,12 @@
         const media = await dbGet('media', value.slice('media://'.length));
         return ensureProviderMedia(media, provider);
       }
+      if (value.startsWith('blob:')) {
+        const response = await fetch(value);
+        if (!response.ok) throw new Error('本页参考素材已失效，请重新上传');
+        const blob = await response.blob();
+        return ensureProviderMedia({ blob, name: 'generated-reference' }, provider);
+      }
       return value;
     }
     if (typeof value !== 'object') return null;
@@ -617,7 +651,7 @@
       const media = await dbGet('media', value.mediaId || value.id);
       return ensureProviderMedia(media, provider);
     }
-    if (value.url || value.source) return value.url || value.source;
+    if (value.url || value.source) return referenceValue(value.url || value.source, provider);
     return null;
   }
 
@@ -768,7 +802,7 @@
       throwIfGenerationCanceled(task, signal);
       const providerStatus = statusOf(output);
       task.providerTaskId = providerTaskIdOf(output);
-      task.output = output;
+      task.output = operation === 'image' ? compactImageOutput(output) : output;
       if (isFailure(providerStatus)) {
         task.status = providerStatus.startsWith('cancel') ? 'canceled' : 'failed';
         task.errorMessage = output?.error?.message || output?.message || `供应商返回失败状态：${providerStatus}`;
@@ -849,7 +883,7 @@
         const output = await providerRequest(provider, pathTemplate.replaceAll('{id}', encodeURIComponent(task.providerTaskId)), { method: 'GET', signal, timeoutMs: 90000 });
         throwIfGenerationCanceled(task, signal);
         const providerStatus = statusOf(output);
-        task.output = output;
+        task.output = task.operation === 'image' ? compactImageOutput(output) : output;
         if (isFailure(providerStatus)) {
           task.status = providerStatus.startsWith('cancel') ? 'canceled' : 'failed';
           task.errorMessage = output?.error?.message || output?.message || '供应商生成失败';
@@ -961,14 +995,15 @@
     if (!file) throw new Error('请选择文件');
     onProgress?.(5);
     const id = uid();
-    const isSmallImage = String(file.type || '').startsWith('image/') && file.size <= 12 * 1024 * 1024;
-    const dataUrl = isSmallImage ? await blobToDataUrl(file) : '';
+    // Keep binary media once; preview/replay metadata must not embed multi-MB base64 strings.
+    const dataUrl = '';
     onProgress?.(70);
     const record = { id, name: file.name || 'reference-media', type: String(file.type || '').split('/')[0] || 'file', mimeType: file.type || 'application/octet-stream', sizeBytes: file.size || 0, blob: file, dataUrl, providerUrls: {}, reference: `media://${id}`, createdAt: Date.now() };
     await dbPut('media', record);
     liveMedia.set(id, file);
+    referencePreviewUrls.set(id, URL.createObjectURL(file));
     onProgress?.(100);
-    return { id, name: record.name, mimeType: record.mimeType, sizeBytes: record.sizeBytes, url: localMediaUrl(id) || dataUrl || URL.createObjectURL(file), reference: record.reference };
+    return { id, name: record.name, mimeType: record.mimeType, sizeBytes: record.sizeBytes, url: referencePreviewUrls.get(id), reference: record.reference };
   }
 
   async function cacheGenerationMedia(taskId) {
@@ -1169,9 +1204,8 @@
       const mediaId = ref.slice('media://'.length);
       const media = await dbGet('media', mediaId);
       if (!media) throw new Error('参考素材已失效，请重新上传');
-      if (media.dataUrl) return media.dataUrl;
       if (!referencePreviewUrls.has(mediaId) && media.blob) referencePreviewUrls.set(mediaId, URL.createObjectURL(media.blob));
-      return referencePreviewUrls.get(mediaId) || '';
+      return referencePreviewUrls.get(mediaId) || media.dataUrl || '';
     },
     validateGenerationReferences: async input => {
       for (const key of ['images', 'videos', 'audios']) {

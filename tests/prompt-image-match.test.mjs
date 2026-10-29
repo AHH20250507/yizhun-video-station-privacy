@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/\r\n/g,'\n');
+function fn(name){const start=app.indexOf('function '+name+'(');assert.ok(start>=0,`missing ${name}`);const rest=app.slice(start);return rest.slice(0,rest.indexOf('\n}')+2);}
+function context(){const c={};vm.createContext(c);vm.runInContext(fn('matchPromptImageReferences'),c);return c;}
+const refs=[{id:'a',tag:'@图1',type:'image',reference:'media://a'},{id:'b',tag:'@图2',type:'image',reference:'media://b'},{id:'c',tag:'@图3',type:'image',reference:'media://c'}];
+test('one-click matching rebuilds inline media without submitting and reports missing numbers',()=>{const c=context();const editor={value:'图片1 图片1 图片3',focus(){},dispatchEvent(){}};const status={textContent:''};let updates=0;c.el={aiChatTextarea:editor};c.state={chatRefMediaList:refs.slice(0,1)};c.document={getElementById:()=>status};c.getChatPromptEditorValue=e=>e.value;c.setChatPromptEditorValue=(e,v)=>{e.value=v;updates++;};c.Event=class{};vm.runInContext(fn('autoMatchPromptImages'),c);const r=c.autoMatchPromptImages();assert.equal(editor.value,'@图1 @图1 图片3');assert.equal(updates,1);assert.equal(r.matched,2);assert.match(status.textContent,/图片3/);assert.ok(app.includes("getElementById('btnMatchPromptImages')?.addEventListener('click', autoMatchPromptImages)"));});
+test('matches repeated out-of-order image labels to import order without changing other text',()=>{const c=context();const r=c.matchPromptImageReferences('按照图片3的风格，让图片1和图片1围绕图片2。\n其它文字不变',refs);assert.equal(r.text,'按照@图3的风格，让@图1和@图1围绕@图2。\n其它文字不变');assert.equal(r.matched,4);assert.equal(r.missing.length,0);});
+test('image numbering skips audio/video while retaining the actual media tags',()=>{const c=context();const mixed=[{type:'audio',tag:'@图1'},refs[0],{type:'video',tag:'@图3'},{...refs[1],tag:'@图4'}];const r=c.matchPromptImageReferences('图片2参考图片1，已有@图3不变',mixed);assert.equal(r.text,'@图4参考@图1，已有@图3不变');});
+test('missing numbered images stay literal and existing mentions never get rewritten',()=>{const c=context();const r=c.matchPromptImageReferences('图片1 图片10 图片3 @图1 @图片1 图片0',refs.slice(0,1));assert.equal(r.text,'@图1 图片10 图片3 @图1 @图片1 图片0');assert.deepEqual(Array.from(r.missing),[10,3]);assert.equal(r.matched,1);assert.equal(c.matchPromptImageReferences(r.text,refs.slice(0,1)).text,r.text);});

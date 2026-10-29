@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="240x290" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="alternate icon" type="image/png" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="apple-touch-icon" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
-  <link rel="stylesheet" href="style.css?v=202610_image_clean_reuse_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="stylesheet" href="style.css?v=202610_prompt_image_match_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
@@ -350,6 +350,10 @@
                 <span id="chatUploadMediaLabel" data-page-node-id="LYD9SgWTzWSup1o699YiqD">上传参考图/视频</span>
               </button>
               <input type="file" id="chatMediaInput" accept="image/*,video/*" multiple style="display: none;" data-page-node-id="BY9zD5dVn7DMvTSmHgSR7F">
+            </div>
+            <div class="prompt-image-match-tools">
+              <button id="btnMatchPromptImages" class="apple-btn-secondary" type="button" title="将图片1、图片2等文字按已导入图片顺序替换为对应素材引用">一键匹配图片</button>
+              <span id="promptImageMatchStatus" class="prompt-image-match-status" role="status" aria-live="polite"></span>
             </div>
 
             <!-- 消息发送表单 (相对定位锚定 @ 浮窗) -->
@@ -1649,9 +1653,9 @@
     </div>
   </div>
 
-  <script src="task-regeneration.js?v=202610_image_clean_reuse_a1"></script>
-  <script src="standalone-client.js?v=202610_image_clean_reuse_a1"></script>
-  <script src="app.js?v=202610_image_clean_reuse_a1"></script>
+  <script src="task-regeneration.js?v=202610_prompt_image_match_a1"></script>
+  <script src="standalone-client.js?v=202610_prompt_image_match_a1"></script>
+  <script src="app.js?v=202610_prompt_image_match_a1"></script>
 
   <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
   <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">

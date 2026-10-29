@@ -3893,6 +3893,39 @@ let chatInlineMediaPreview = null;
 let chatAtInsertionRange = null;
 let chatPromptLastSelectionRange = null;
 
+function matchPromptImageReferences(text, refs = []) {
+  const images = refs.filter(item => item.type === 'image');
+  const missing = new Set();
+  let matched = 0;
+  const result = String(text || '').replace(/(?<![@\w])图片\s*([1-9]\d*)(?![\d.．])/g, (label, digits) => {
+    const index = Number(digits);
+    const item = images[index - 1];
+    if (!item || !/^@图[1-9]\d*$/.test(item.tag || '') || !(item.reference || item.url)) {
+      missing.add(index);
+      return label;
+    }
+    matched += 1;
+    return item.tag;
+  });
+  return { text: result, matched, missing: [...missing] };
+}
+
+function autoMatchPromptImages() {
+  const editor = el.aiChatTextarea;
+  if (!editor) return null;
+  const result = matchPromptImageReferences(getChatPromptEditorValue(editor), state.chatRefMediaList || []);
+  if (result.matched) {
+    setChatPromptEditorValue(editor, result.text);
+    editor.focus();
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const status = document.getElementById('promptImageMatchStatus');
+  if (status) status.textContent = result.missing.length
+    ? `未匹配：${result.missing.map(index => `图片${index}`).join('、')}，请先导入对应图片`
+    : (result.matched ? `已嵌入 ${result.matched} 处图片引用` : '没有待匹配的“图片+编号”文字');
+  return result;
+}
+
 function getChatRefMediaByTag(tag) {
   return (state.chatRefMediaList || []).find(item => item.tag === tag) || null;
 }
@@ -4430,6 +4463,7 @@ function bindEvents() {
 
   // 参考媒体上传与拖拽支持
   el.btnUploadChatMedia.addEventListener('click', () => el.chatMediaInput.click());
+  document.getElementById('btnMatchPromptImages')?.addEventListener('click', autoMatchPromptImages);
   el.chatMediaInput.addEventListener('change', handleChatMediaSelect);
   if (el.btnClearAllChatMedia) el.btnClearAllChatMedia.addEventListener('click', clearAllChatMediaRefs);
   if (el.aiChatTextarea) el.aiChatTextarea.addEventListener('input', handleChatTextareaInput);

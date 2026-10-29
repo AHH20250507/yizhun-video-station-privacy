@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="240x290" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="alternate icon" type="image/png" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="apple-touch-icon" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
-  <link rel="stylesheet" href="style.css?v=202610_original_image_labels_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="stylesheet" href="style.css?v=202610_clear_and_reuse_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
@@ -349,10 +349,13 @@
                 <input type="hidden" id="chatDurationSelect" value="5" data-page-node-id="dgHaJLxIthKq729HP0BvQ7">
               </div>
 
+              <div class="chat-composer-media-actions">
               <button id="btnUploadChatMedia" class="apple-btn-secondary" type="button" title="支持选择多张参考图或视频" data-page-node-id="RqB4f0kH4cSIL7Gd0M0uBl">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" data-page-node-id="LKnfEuFftaofMMWBkb8rvi"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" data-page-node-id="HODMdC6q4LRqKUX4FSroCv"></rect><circle cx="8.5" cy="8.5" r="1.5" data-page-node-id="sO8ybmhsCX2LpBM0cmad53"></circle><polyline points="21 15 16 10 5 21" data-page-node-id="RPWyXAUQDbkp5kBivsanrx"></polyline></svg>
                 <span id="chatUploadMediaLabel" data-page-node-id="LYD9SgWTzWSup1o699YiqD">上传参考图/视频</span>
               </button>
+              <button id="btnClearChatContent" class="apple-btn-secondary" type="button" title="清除当前提示词和所有参考素材，不删除对话与生成结果">清除所有内容</button>
+              </div>
               <input type="file" id="chatMediaInput" accept="image/*,video/*" multiple style="display: none;" data-page-node-id="BY9zD5dVn7DMvTSmHgSR7F">
             </div>
 
@@ -1654,9 +1657,9 @@
     </div>
   </div>
 
-  <script src="task-regeneration.js?v=202610_original_image_labels_a1"></script>
-  <script src="standalone-client.js?v=202610_original_image_labels_a1"></script>
-  <script src="app.js?v=202610_original_image_labels_a1"></script>
+  <script src="task-regeneration.js?v=202610_clear_and_reuse_a1"></script>
+  <script src="standalone-client.js?v=202610_clear_and_reuse_a1"></script>
+  <script src="app.js?v=202610_clear_and_reuse_a1"></script>
 
   <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
   <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">

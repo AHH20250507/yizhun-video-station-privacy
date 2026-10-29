@@ -698,6 +698,10 @@ body.light-theme {
   transition: opacity .15s ease, border-color .15s ease, color .15s ease;
 }
 .reference-header-actions { display: flex; align-items: center; flex: 0 0 auto; gap: 8px; margin-left: auto; }
+.chat-composer-media-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.chat-composer-media-actions > button { flex: 0 0 auto; white-space: nowrap; }
+#btnClearChatContent { color: #dc2626; }
+@media (max-width: 768px) { .chat-composer-media-actions > button { min-height: 40px; } }
 .reference-action-button { min-height: 32px; padding: 6px 10px; border: 1px solid #d7dde5; border-radius: 8px; background: #fff; color: #334155; font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .reference-action-button:hover { background: #f1f5f9; border-color: #94a3b8; }
 .reference-action-button.is-danger { color: #dc2626; }

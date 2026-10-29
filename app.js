@@ -3892,6 +3892,7 @@ function setCustomDropdownValue(dropdownEl, value) {
 let chatInlineMediaPreview = null;
 let chatAtInsertionRange = null;
 let chatPromptLastSelectionRange = null;
+let composerClearRevision = 0;
 
 function matchPromptImageReferences(text, refs = []) {
   const images = refs.filter(item => item.type === 'image');
@@ -4475,6 +4476,7 @@ function bindEvents() {
   // 参考媒体上传与拖拽支持
   el.btnUploadChatMedia.addEventListener('click', () => el.chatMediaInput.click());
   document.getElementById('btnMatchPromptImages')?.addEventListener('click', autoMatchPromptImages);
+  document.getElementById('btnClearChatContent')?.addEventListener('click', clearChatComposerContent);
   el.chatMediaInput.addEventListener('change', handleChatMediaSelect);
   if (el.btnClearAllChatMedia) el.btnClearAllChatMedia.addEventListener('click', clearAllChatMediaRefs);
   if (el.aiChatTextarea) el.aiChatTextarea.addEventListener('input', handleChatTextareaInput);
@@ -7329,10 +7331,12 @@ function validateChatReferenceFile(file) {
   async function handleChatMediaSelect(e) {
   const files = Array.from(e.target.files || []);
   if (files.length === 0) return 0;
+  const clearRevision = composerClearRevision;
 
   let count = 0;
 
   for (const file of files) {
+    if (clearRevision !== composerClearRevision) break;
     // Reject visibly at the upload control; corner notifications stay disabled.
     const validationError = validateChatReferenceFile(file);
     if (validationError) {
@@ -7349,6 +7353,7 @@ function validateChatReferenceFile(file) {
 
     try {
       const res = await apiUploadMedia(file);
+      if (clearRevision !== composerClearRevision) break;
       const tagNum = state.chatRefMediaList.length + 1;
       const mediaItem = {
         id: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -7436,6 +7441,18 @@ function removeChatMediaRef(id) {
 function clearAllChatMediaRefs() {
   state.chatRefMediaList = [];
   renderChatRefMediaList();
+}
+
+function clearChatComposerContent() {
+  composerClearRevision += 1;
+  setChatPromptEditorValue(el.aiChatTextarea, '');
+  clearAllChatMediaRefs();
+  if (el.chatMediaInput) el.chatMediaInput.value = '';
+  const status = document.getElementById('promptImageMatchStatus');
+  if (status) status.textContent = '';
+  el.aiChatTextarea?.dispatchEvent(new Event('input', { bubbles: true }));
+  syncCreationSubmitButtonState();
+  el.aiChatTextarea?.focus();
 }
 
 let activeTextareaForAt = null;
@@ -8850,19 +8867,23 @@ function messageReuseButton(text, refMediaList = []) {
   if (!String(text || '').trim() && !refMediaList?.length) return '';
   const id = `reuse-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   promptReuseSnapshots.set(id, { prompt: String(text || ''), refMediaList: clone(refMediaList || []) });
-  return `<button type="button" class="chat-copy-button chat-reuse-button" data-reuse-prompt="${id}" title="将原提示词和素材放回输入框，不自动生成" aria-label="复用提示词和素材">复用</button>`;
+  return `<button type="button" class="chat-copy-button chat-reuse-button" data-reuse-prompt="${id}" data-reuse-text="${encodeURIComponent(String(text || ''))}" title="将原提示词和可用素材放回输入框，不自动生成" aria-label="复用提示词和素材">复用</button>`;
 }
 
 async function reusePromptMessage(id, button = null) {
   if (button?.disabled) return false;
   const sessionId = SessionSystem.getActive()?.id;
   const conversationId = activeLocalConversation?.id;
+  const clearRevision = composerClearRevision;
   if (button) { button.disabled = true; button.textContent = '恢复中'; }
   try {
-    const saved = promptReuseSnapshots.get(id);
-    if (!saved) throw new Error('素材未保留，请重新上传');
+    const saved = promptReuseSnapshots.get(id) || (button?.dataset?.reuseText !== undefined
+      ? { prompt: decodeURIComponent(button.dataset.reuseText), refMediaList: [] } : null);
+    if (!saved) throw new Error('原提示词不可用');
     const snapshot = clone(saved);
-    const refs = snapshot.refMediaList;
+    let refs = snapshot.refMediaList || [];
+    let textOnly = false;
+    try {
     const byTag = new Map();
     const input = { images: [], videos: [], audios: [] };
     const keys = { image: 'images', video: 'videos', audio: 'audios' };
@@ -8881,7 +8902,12 @@ async function reusePromptMessage(id, button = null) {
       item.url = await BackendClient.getReferencePreview(item.reference || item.url);
       if (!safeMediaUrl(item.url, { allowDataImage: item.type === 'image' })) throw new Error(`${item.tag} 的素材已失效`);
     }
+    } catch {
+      refs = [];
+      textOnly = true;
+    }
     if (SessionSystem.getActive()?.id !== sessionId || activeLocalConversation?.id !== conversationId) throw new Error('对话已切换，请重新复用');
+    if (clearRevision !== composerClearRevision) throw new Error('输入内容已清除，请重新点击复用');
     state.chatRefMediaList = refs;
     setChatPromptEditorValue(el.aiChatTextarea, '');
     renderChatRefMediaList({ preserveTags: true });
@@ -8889,7 +8915,10 @@ async function reusePromptMessage(id, button = null) {
     el.aiChatTextarea.focus();
     el.aiChatTextarea.dispatchEvent(new Event('input', { bubbles: true }));
     syncCreationSubmitButtonState();
-    if (button) { button.textContent = '复用'; button.removeAttribute?.('title'); }
+    if (button) {
+      button.textContent = textOnly ? '已复用文字' : '复用';
+      button.title = textOnly ? '素材未保留，已回填提示词；请重新上传素材后再生成' : '复用提示词和素材';
+    }
     return true;
   } catch (error) {
     if (button) { button.textContent = error.message; button.title = error.message; }

@@ -157,7 +157,10 @@
     const source = Array.isArray(values) ? values : (values == null ? [] : [values]);
     return [...new Set(source.flatMap(value => {
       if (typeof value === 'string' || typeof value === 'number') return String(value).split(/[,，]/);
-      if (value && typeof value === 'object') return [value.value, value.id, value.name, value.label].filter(Boolean);
+      if (value && typeof value === 'object') {
+        const dimensions = Number.isInteger(value.width) && Number.isInteger(value.height) && value.width > 0 && value.height > 0 ? `${value.width}x${value.height}` : '';
+        return [value.value, value.id, value.name, value.label, dimensions].filter(Boolean);
+      }
       return [];
     }).map(value => String(value || '').trim()).filter(value => value && value.length <= 64))];
   }
@@ -176,14 +179,20 @@
       ...(normalizeResolutionValues(item.metadata?.supported_resolutions)),
       ...(normalizeResolutionValues(item.metadata?.supportedResolutions))
     ]);
-    return { resolutions };
+    const sizeKeys = ['sizes', 'supported_sizes', 'supportedSizes', 'image_sizes', 'imageSizes', 'image_size', 'imageSize'];
+    const sizes = normalizeResolutionValues([item, item.capabilities, item.metadata, item.metadata?.capabilities]
+      .flatMap(scope => sizeKeys.flatMap(key => normalizeResolutionValues(scope?.[key]))));
+    const qualityKeys = ['qualities', 'supported_qualities', 'supportedQualities', 'quality'];
+    const qualities = normalizeResolutionValues([item, item.capabilities, item.metadata, item.metadata?.capabilities]
+      .flatMap(scope => qualityKeys.flatMap(key => normalizeResolutionValues(scope?.[key]))));
+    return { resolutions, sizes, qualities };
   }
 
   function normalizeModelMetadata(metadata = {}) {
     if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return {};
     return Object.fromEntries(Object.entries(metadata).map(([model, value]) => [
       String(model || '').trim(),
-      { resolutions: normalizeResolutionValues(value?.resolutions || value?.supported_resolutions || value?.supportedResolutions) }
+      { resolutions: normalizeResolutionValues(value?.resolutions || value?.supported_resolutions || value?.supportedResolutions), sizes: extractDiscoveredModelMetadata(value).sizes || [], qualities: extractDiscoveredModelMetadata(value).qualities || [] }
     ]).filter(([model]) => model));
   }
 

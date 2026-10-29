@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="240x290" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="alternate icon" type="image/png" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="apple-touch-icon" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
-  <link rel="stylesheet" href="style.css?v=202610_binary_media_memory_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="stylesheet" href="style.css?v=202610_image_options_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
@@ -289,7 +289,7 @@
               </div>
 
               <div class="param-group hidden" id="chatImageAspectGroup" data-page-node-id="G0BA2eGCzHQllaYUhUQFR8">
-                <label class="apple-param-label" data-page-node-id="lvsf73bvr4qWGtaeznkQQ5">图片尺寸</label>
+                <label class="apple-param-label" data-page-node-id="lvsf73bvr4qWGtaeznkQQ5">比例</label>
                 <div class="apple-segment-control" id="chatImageAspectSegment" data-value="1:1" data-page-node-id="hDUDTUDU8zoSg0tqWvVndb">
                   <button type="button" class="segment-btn" data-value="16:9" data-page-node-id="UGBxTosqkTxsHMMP9tWVi1">16:9</button>
                   <button type="button" class="segment-btn" data-value="9:16" data-page-node-id="cKRl6tE2Bcl0Ou9KIGg2vt">9:16</button>
@@ -297,6 +297,18 @@
                   <button type="button" class="segment-btn" data-value="4:3" data-page-node-id="ktup8kje2J7skztpG8rEOf">4:3</button>
                   <input type="hidden" id="chatImageAspectSelect" value="1:1" data-page-node-id="RFSLdQlxZqrCLMdjBbKxNv">
                 </div>
+              </div>
+
+              <div class="param-group hidden" id="chatImageResolutionGroup">
+                <label class="apple-param-label" for="chatImageResolutionSelect">分辨率</label>
+                <select class="image-resolution-select" id="chatImageResolutionSelect" aria-label="图片分辨率">
+                  <option value="">模型默认 / 自动</option>
+                </select>
+              </div>
+
+              <div class="param-group hidden" id="chatImageQualityGroup">
+                <label class="apple-param-label" for="chatImageQualitySelect">品质</label>
+                <select class="image-resolution-select" id="chatImageQualitySelect" aria-label="图片品质"><option value="">模型默认 / 自动</option></select>
               </div>
 
               <div class="param-group hidden" id="chatImageCountGroup" data-page-node-id="Fa2Tt4v5f9rehokWJgrwaH">
@@ -1655,9 +1667,9 @@
     </div>
   </div>
 
-  <script src="task-regeneration.js?v=202610_binary_media_memory_a1"></script>
-  <script src="standalone-client.js?v=202610_binary_media_memory_a1"></script>
-  <script src="app.js?v=202610_binary_media_memory_a1"></script>
+  <script src="task-regeneration.js?v=202610_image_options_a1"></script>
+  <script src="standalone-client.js?v=202610_image_options_a1"></script>
+  <script src="app.js?v=202610_image_options_a1"></script>
 
   <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
   <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">

@@ -1,3 +1,27 @@
+.image-resolution-select,
+.canvas-image-controls select {
+  min-height: 40px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color, #dbe2ea);
+  border-radius: 10px;
+  background: var(--bg-card, #fff);
+  color: var(--text-main, #1e293b);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.image-resolution-select { width: 160px; }
+.canvas-image-controls { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; max-width: 100%; }
+.canvas-image-controls label { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; color: var(--text-muted); }
+.canvas-image-controls select { max-width: 150px; }
+@media (max-width: 480px) {
+  #chatImageResolutionGroup { min-width: 0; max-width: 100%; }
+  .image-resolution-select { width: 140px; }
+  .canvas-image-controls { flex-basis: 100%; }
+}
+
 .page-view.admin-page { display: block; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; background: #f8fafc; }
 .admin-page-shell { box-sizing: border-box; max-width: 1400px; min-height: 100%; margin: 0 auto; padding: 24px 24px 48px; }
 .admin-page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }

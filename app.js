@@ -1098,6 +1098,7 @@ const SessionSystem = (() => {
       mode: 'video',
       model: document.getElementById('chatModelSelect')?.value || state.apiConfig.model,
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
+      imageSettings: captureChatImageSettings(),
       videoAspect: document.getElementById('chatAspectSelect')?.value || '16:9',
       videoResolution: document.getElementById('chatResolutionSelect') ? getSelectedChatVideoResolution() : '720p',
       videoExpandScript: document.getElementById('chatExpandScriptToggle')?.checked !== false,
@@ -1206,6 +1207,7 @@ const SessionSystem = (() => {
       mode: getChatGenerationMode(),
       model: el.chatModelSelect?.value || state.apiConfig.model,
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
+      imageSettings: captureChatImageSettings(),
       videoAspect: el.chatAspectSelect?.value || '16:9',
       videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
       videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
@@ -1299,7 +1301,7 @@ const SessionSystem = (() => {
     const imageSources = extractImageSourcesFromOutput(backendTask.output || {});
     const status = backendTask.status || previous?.status || 'in_progress';
     const isTerminal = ['completed', 'refunded', 'failed', 'canceled'].includes(status);
-    const aspectRatio = backendTask.input?.metadata?.aspect_ratio || previous?.options?.aspectRatio || '1:1';
+    const aspectRatio = backendTask.input?.aspect_ratio || backendTask.input?.metadata?.aspect_ratio || previous?.options?.aspectRatio || '1:1';
     const count = Number(backendTask.input?.n || previous?.count || 1);
     return {
       ...(previous ? clone(previous) : {}),
@@ -1312,8 +1314,9 @@ const SessionSystem = (() => {
       prompt: backendTask.prompt || previous?.prompt || '',
       model: backendTask.model || previous?.model || state.apiConfig.imageModel || 'gpt-image-2',
       imageSize: backendTask.input?.size || previous?.imageSize || '',
+      imageResolution: backendTask.input?.resolution || previous?.imageResolution || '',
       count,
-      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || '', count },
+      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || previous?.options?.size || '', resolution: backendTask.input?.resolution || previous?.options?.resolution || '', quality: backendTask.input?.quality || previous?.options?.quality || '', count },
       status,
       progress: status === 'completed' ? 100 : (isTerminal ? 100 : Math.min(92, Math.max(Number(previous?.progress || 5), Number(backendTask.progress || backendTask.output?.progress || 0)))),
       reservedCredits: Number(backendTask.reservedCredits || previous?.reservedCredits || 0),
@@ -1675,6 +1678,7 @@ const SessionSystem = (() => {
     syncChatResolutionControl(model, next.videoResolution || '720p');
     if (el.chatExpandScriptToggle) el.chatExpandScriptToggle.checked = next.videoExpandScript !== false;
     setSegmentValue(el.chatImageAspectSelect, next.imageAspect || '1:1');
+    restoreChatImageSettings(state.apiConfig.imageModel, next.imageAspect || '1:1', next.imageSettings);
     syncChatImageCount(next.imageCount || 1, { persist: false });
     syncChatDurationControl(model, next.duration || 5);
     updateCreationPricePreview();
@@ -3400,8 +3404,86 @@ function getChatGenerationMode() {
   return el.chatGenerationMode?.value === 'image' ? 'image' : 'video';
 }
 
-function getChatImageSize(aspectRatio) {
-  return CHAT_IMAGE_SIZE_BY_ASPECT[aspectRatio] || CHAT_IMAGE_SIZE_BY_ASPECT['1:1'];
+function getImageResolutionOptions(mode, model, aspectRatio) {
+  const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
+  const values = [...new Set([metadata.resolutions, metadata.sizes].flatMap(list => Array.isArray(list) ? list : [])
+    .filter(value => typeof value === 'string' && value.trim() && value.length <= 64))];
+  const [aspectWidth, aspectHeight] = String(aspectRatio || '1:1').split(':').map(Number);
+  return values.flatMap(value => {
+    const pixels = value.match(/^(\d+)\s*[x×]\s*(\d+)$/i);
+    if (pixels) {
+      const width = Number(pixels[1]);
+      const height = Number(pixels[2]);
+      // Allow integer-rounded dimensions, never substitute another orientation/ratio.
+      if (!width || !height || Math.abs(width / height - aspectWidth / aspectHeight) > 0.01) return [];
+      return [{ value, label: value, size: value, rank: width * height }];
+    }
+    const tier = value.match(/^(\d+(?:\.\d+)?)k$/i);
+    return [{ value, label: value, resolution: value, rank: tier ? Number(tier[1]) ** 2 * 1_000_000 : null }];
+  }).sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
+}
+
+function getImageQualityOptions(mode, model) {
+  const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
+  const ranks = { low: 1, standard: 2, medium: 2, high: 3, hd: 3 };
+  return [...new Set((Array.isArray(metadata.qualities) ? metadata.qualities : []).filter(value => typeof value === 'string' && value.trim() && value.length <= 64))]
+    .map(value => ({ value, rank: ranks[value.trim().toLowerCase()] ?? null }))
+    .sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
+}
+
+function getImageGenerationSelection(mode, model, aspectRatio, requested = '', requestedQuality) {
+  const options = getImageResolutionOptions(mode, model, aspectRatio);
+  const selected = options.find(option => option.value === requested) || options.find(option => option.rank !== null);
+  const qualities = getImageQualityOptions(mode, model);
+  const quality = requestedQuality === '' ? undefined : (qualities.find(option => option.value === requestedQuality) || qualities.find(option => option.rank !== null))?.value;
+  return { model, aspectRatio, ...(selected?.size ? { size: selected.size } : {}), ...(selected?.resolution ? { resolution: selected.resolution } : {}), ...(quality ? { quality } : {}) };
+}
+
+function captureChatImageSettings() {
+  const settings = {};
+  for (const field of ['resolution', 'quality']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+    if (select) settings[field] = { value: select.value, explicitAuto: select.dataset.explicitAuto === 'true' };
+  }
+  return settings;
+}
+
+function restoreChatImageSettings(model, aspectRatio, settings = {}) {
+  // Build this model's options before assigning a saved value to a native select.
+  syncChatImageResolutionControl(model, aspectRatio);
+  for (const field of ['resolution', 'quality']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+    if (!select) continue;
+    select.dataset.model = settings[field] ? model : '';
+    select.dataset.explicitAuto = settings[field]?.explicitAuto ? 'true' : 'false';
+    select.value = settings[field]?.value || '';
+  }
+  return syncChatImageResolutionControl(model, aspectRatio);
+}
+
+function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1') {
+  const result = { model, aspectRatio };
+  for (const field of ['resolution', 'quality']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+    const sameModel = select?.dataset.model === model;
+    const requested = sameModel ? select.value : undefined;
+    const options = field === 'resolution' ? getImageResolutionOptions('creation', model, aspectRatio) : getImageQualityOptions('creation', model);
+    const explicitAuto = sameModel && requested === '' && select.dataset.explicitAuto === 'true';
+    const selected = explicitAuto ? undefined : (options.find(option => option.value === requested) || options.find(option => option.rank !== null));
+    if (select) {
+      if (!sameModel) select.dataset.explicitAuto = 'false';
+      select.innerHTML = '<option value="">模型默认 / 自动</option>' + options.map(option => `<option value="${escapeHTML(option.value)}">${escapeHTML(option.label || option.value)}</option>`).join('');
+      select.dataset.model = model;
+      select.value = selected?.value || '';
+      select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
+    }
+    if (selected) {
+      if (field === 'quality') result.quality = selected.value;
+      else if (selected.size) result.size = selected.size;
+      else result.resolution = selected.resolution;
+    }
+  }
+  return result;
 }
 
 function clampImageCount(value, fallback = 1) {
@@ -3574,6 +3656,7 @@ function renderChatImageModel() {
   const dropdown = document.getElementById('chatImageModelDropdown');
   const menu = dropdown?.querySelector('.pill-menu');
   const hiddenInput = document.getElementById('chatImageModelSelect');
+  syncChatImageResolutionControl(preferred);
   if (preferred && state.apiConfig) {
     state.apiConfig.imageModel = preferred;
     localStorage.setItem('api_imageModel', preferred);
@@ -3594,6 +3677,7 @@ function renderChatImageModel() {
       if (hiddenInput) hiddenInput.value = model;
       menu.querySelectorAll('.pill-option').forEach(item => item.classList.toggle('active', item === option));
       state.apiConfig.imageModel = model;
+      syncChatImageResolutionControl(model);
       localStorage.setItem('api_imageModel', model);
       BackendClient.saveConfig?.({ image: { model } });
       dropdown.classList.remove('open');
@@ -3710,6 +3794,8 @@ function syncChatGenerationMode(mode, options = {}) {
   el.chatDurationGroup?.classList.toggle('hidden', isImageMode);
   el.chatImageModelGroup?.classList.toggle('hidden', !isImageMode);
   el.chatImageAspectGroup?.classList.toggle('hidden', !isImageMode);
+  document.getElementById('chatImageResolutionGroup')?.classList.toggle('hidden', !isImageMode);
+  document.getElementById('chatImageQualityGroup')?.classList.toggle('hidden', !isImageMode);
   el.chatImageCountGroup?.classList.toggle('hidden', !isImageMode);
 
   renderChatImageModel();
@@ -3764,6 +3850,7 @@ function initAppleControls() {
         } else if (segment.id === 'chatImageAspectSegment') {
           state.chatImageAspect = val;
           localStorage.setItem('chat_image_aspect', val);
+          syncChatImageResolutionControl(state.apiConfig.imageModel, val);
           updateCreationPricePreview();
         }
       });
@@ -6473,7 +6560,7 @@ function renderHistoryListUI() {
             <div class="apple-meta-pills">
               <span class="apple-meta-pill">${isImage ? '图片' : '视频'} · ${t.model || 'c1'}</span>
               ${isImage
-                ? `<span class="apple-meta-pill">${t.options?.aspectRatio || '1:1'} · ${t.imageSize || t.options?.size || ''}</span>`
+                ? `<span class="apple-meta-pill">${escapeHTML(t.options?.aspectRatio || '1:1')} · ${escapeHTML(t.imageSize || t.options?.size || t.imageResolution || t.options?.resolution || '模型默认 / 自动')}</span>`
                 : `<span class="apple-meta-pill">${t.duration || 5}s</span>${t.options && t.options.aspectRatio ? `<span class="apple-meta-pill">${t.options.aspectRatio}</span>` : ''}`}
             </div>
 
@@ -6687,7 +6774,7 @@ async function jumpToTaskInChat(taskId, promptText) {
     const aiBox = appendAiAssistantBubble(statusTip);
 
     if (isImageTask) {
-      chatCard = createChatImageResultCard(aiBox, taskId, promptText, historyTask.model || 'gpt-image-2', historyTask.options?.aspectRatio || '1:1', historyTask.count || historyTask.options?.count || 1);
+      chatCard = createChatImageResultCard(aiBox, taskId, promptText, historyTask.model || 'gpt-image-2', historyTask.options?.aspectRatio || '1:1', historyTask.count || historyTask.options?.count || 1, historyTask.options || { size: historyTask.imageSize, resolution: historyTask.imageResolution });
       if (taskStatus === 'completed' && (historyTask.imageResultIds?.length || historyTask.imageUrls?.length || historyTask.imageResultId || historyTask.imageUrl)) {
         const imageSources = await loadTaskImageSources(historyTask);
         await renderChatImageCardResult(chatCard, historyTask, imageSources);
@@ -7728,6 +7815,7 @@ function captureCreationSubmissionData() {
     mode: getChatGenerationMode(),
     model: el.chatModelSelect?.value || state.apiConfig.model,
     imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
+      imageSettings: captureChatImageSettings(),
     videoAspect: el.chatAspectSelect?.value || '16:9',
     videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
     videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
@@ -7752,6 +7840,9 @@ async function handleAiChatSubmit() {
   const resolution = getSelectedChatVideoResolution();
   const expandScript = el.chatExpandScriptToggle?.checked !== false;
   const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1';
+  const imageSelection = generationMode === 'image'
+    ? syncChatImageResolutionControl(getPreferredServerModel('creation', 'image', state.apiConfig.imageModel), imageAspectRatio)
+    : null;
   const imageCount = clampImageCount(el.chatImageCountInput?.value || state.chatImageCount || 1);
   const duration = clampVideoDuration(el.chatDurationSelect.value, 4, 30, 5);
   if (!text && refMediaList.length === 0) {
@@ -7782,7 +7873,7 @@ async function handleAiChatSubmit() {
       appendAiUserBubble(text, imageRefs);
       el.aiChatTextarea.value = '';
       clearAllChatMediaRefs();
-      void submitChatImageGeneration(promptText, imageRefs, imageAspectRatio, originSessionId, imageCount)
+      void submitChatImageGeneration(promptText, imageRefs, imageAspectRatio, originSessionId, imageCount, imageSelection)
         .catch(error => console.error('Chat image generation failed:', error))
         .finally(syncCreationSubmitButtonState);
       return;
@@ -7892,7 +7983,7 @@ function cleanChatImageResponse(card) {
   card?.closest?.('.ai-msg-content')?.querySelectorAll(':scope > .chat-message-bubble.chat-message-text').forEach(node => node.remove());
 }
 
-function createChatImageResultCard(container, taskId, promptText, model, aspectRatio, count = 1) {
+function createChatImageResultCard(container, taskId, promptText, model, aspectRatio, count = 1, imageSelection = {}) {
   const card = document.createElement('div');
   card.className = 'chat-image-generation-card';
   card.id = `task-card-${taskId}`;
@@ -7906,7 +7997,7 @@ function createChatImageResultCard(container, taskId, promptText, model, aspectR
       </span>
     </div>
     <div style="font-size: 0.775rem; color: var(--text-muted); margin: 8px 0;">
-      模型: <code>${escapeHTML(model)}</code> | 图片尺寸: ${escapeHTML(aspectRatio)} (${getChatImageSize(aspectRatio)}) | 数量: ${count} 张
+      模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 分辨率: ${escapeHTML(imageSelection.size || imageSelection.resolution || '模型默认 / 自动')} | 品质: ${escapeHTML(imageSelection.quality || '模型默认 / 自动')} | 数量: ${count} 张
     </div>
     <div class="chat-image-batch-progress" id="chat-image-target-${taskId}"></div>
   `;
@@ -8191,9 +8282,8 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
   });
 }
 
-async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, originSessionId = null, count = 1) {
-  const model = getPreferredServerModel('creation', 'image', state.apiConfig.imageModel);
-  const size = getChatImageSize(aspectRatio);
+async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, originSessionId = null, count = 1, imageSelection = syncChatImageResolutionControl(state.apiConfig.imageModel, aspectRatio)) {
+  const { model, size, resolution, quality } = imageSelection;
   const normalizedCount = clampImageCount(count);
   if (!model) {
     showToast('暂无可用图片模型，请联系管理员启用模型', 'error');
@@ -8201,7 +8291,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
   }
   const taskId = `image_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const aiBox = appendAiAssistantBubble('');
-  const card = createChatImageResultCard(aiBox, taskId, promptText, model, aspectRatio, normalizedCount);
+  const card = createChatImageResultCard(aiBox, taskId, promptText, model, aspectRatio, normalizedCount, imageSelection);
   const task = SessionSystem.assignTask({
     source: 'chat',
     mediaType: 'image',
@@ -8209,9 +8299,10 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     prompt: promptText,
     model,
     imageSize: size,
+    imageResolution: resolution,
     status: 'in_progress',
     progress: 10,
-    options: { generationMode: 'image', model, aspectRatio, size, count: normalizedCount, refMediaList: clone(refMediaList) },
+    options: { generationMode: 'image', model, aspectRatio, size, resolution, quality, count: normalizedCount, refMediaList: clone(refMediaList) },
     count: normalizedCount,
     providerJobs: window.STANDALONE_MODE && normalizedCount > 1
       ? Array.from({ length: normalizedCount }, (_, index) => ({ index, status: index < 3 ? 'running' : 'queued', output: {}, errorMessage: null }))
@@ -8241,6 +8332,9 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     };
     const generated = await apiGenerateCanvasImage(promptText, imageSources, {
       size,
+      resolution,
+      quality,
+      aspectRatio,
       mode: 'creation',
       model,
       regenerationRefs: refMediaList,
@@ -8784,7 +8878,7 @@ async function regenerateGenerationTask(taskId, button = null) {
       appendAiUserBubble(request.prompt, snapshot.refMediaList);
       const box = appendAiAssistantBubble(request.operation === 'image' ? '' : '正在使用原提示词和原参考素材创建新任务。');
       card = request.operation === 'image'
-        ? createChatImageResultCard(box, newId, request.prompt, request.model, aspectRatio, request.input.n || request.count || 1)
+        ? createChatImageResultCard(box, newId, request.prompt, request.model, aspectRatio, request.input.n || request.count || 1, request.input)
         : createChatGenCard(box, newId, request.prompt, request.model, aspectRatio, request.duration, 'queued', 0);
       const details = renderTaskReferenceDetails(request.prompt, snapshot.refMediaList, request.operation);
       if (details) card.insertAdjacentHTML('beforeend', details);
@@ -13661,7 +13755,7 @@ async function parseImageApiResponse(response) {
 async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
   const mode = imageOptions.mode || 'creation';
   const model = getPreferredServerModel(mode, 'image', imageOptions.model || state.apiConfig.imageModel);
-  const size = imageOptions.size || (mode === 'canvas' ? '1024x1024' : undefined);
+  const size = imageOptions.size;
   if (!model) throw new Error(`${mode === 'canvas' ? '画布' : '创作'}模式暂无可用图片模型，请联系管理员启用模型`);
   const created = await BackendClient.createGeneration({
     mode,
@@ -13669,7 +13763,10 @@ async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
     model,
     prompt: prompt || '基于所有参考图片生成一张风格与主体一致的新图片',
     input: {
-      size,
+      ...(size ? { size } : {}),
+      ...(imageOptions.resolution ? { resolution: imageOptions.resolution } : {}),
+      ...(imageOptions.quality ? { quality: imageOptions.quality } : {}),
+      ...(imageOptions.aspectRatio ? { aspect_ratio: imageOptions.aspectRatio } : {}),
       images: imageSources || [],
       n: mode === 'creation' ? clampImageCount(imageOptions.count || 1) : 1,
       ...(mode === 'canvas' ? {
@@ -13829,6 +13926,7 @@ function startCanvasImageProgress(task, nodeId) {
 async function runCanvasImageGeneration(nodeId) {
   const node = canvasState.nodes.find(item => item.id === nodeId && item.type === 'asset');
   if (!node || ['submitting', 'generating'].includes(node.status)) return;
+  const imageSelection = getCanvasImageSelection(node);
   node.status = 'submitting';
   node.progress = 5;
   node.errorMsg = '';
@@ -13865,7 +13963,7 @@ async function runCanvasImageGeneration(nodeId) {
     return;
   }
 
-  const imageModel = getPreferredServerModel('canvas', 'image', node.model || state.apiConfig.imageModel);
+  const imageModel = imageSelection.model;
   if (!imageModel) {
     node.status = 'failed';
     node.progress = 0;
@@ -13884,6 +13982,9 @@ async function runCanvasImageGeneration(nodeId) {
     taskId,
     prompt: inputs.prompt,
     model: imageModel,
+    imageSize: imageSelection.size,
+    imageResolution: imageSelection.resolution,
+    options: { ...imageSelection },
     status: 'in_progress',
     progress: 10,
     createdAt: Date.now(),
@@ -13906,6 +14007,7 @@ async function runCanvasImageGeneration(nodeId) {
   const stopProgress = startCanvasImageProgress(task, nodeId);
   try {
     const generated = await apiGenerateCanvasImage(inputs.prompt, inputs.images, {
+      ...imageSelection,
       mode: 'canvas',
       model: imageModel,
       signal: controller.signal,
@@ -14624,6 +14726,52 @@ function renderCanvasTextNodeComposer(node, inputControlHtml) {
   </div>`;
 }
 
+function getCanvasImageSelection(node) {
+  const model = getPreferredServerModel('canvas', 'image', node.model || state.apiConfig.imageModel);
+  const aspectRatio = node.imageAspectRatio || '1:1';
+  const sameModel = node.imageResolutionModel === model;
+  if (!sameModel) node.imageResolutionAuto = false;
+  const selection = getImageGenerationSelection('canvas', model, aspectRatio, sameModel ? node.imageResolution : '', sameModel && node.imageQualityAuto ? '' : (sameModel ? node.imageQuality : undefined));
+  if (sameModel && node.imageResolution === '' && node.imageResolutionAuto === true) {
+    delete selection.size;
+    delete selection.resolution;
+  }
+  node.imageResolutionModel = model;
+  node.imageResolution = selection.size || selection.resolution || '';
+  node.imageQuality = selection.quality || '';
+  if (!sameModel) node.imageQualityAuto = false;
+  return selection;
+}
+
+function renderCanvasImageControls(node, isGenerating) {
+  const selection = getCanvasImageSelection(node);
+  const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
+  const qualities = getImageQualityOptions('canvas', selection.model);
+  return `<div class="canvas-image-controls">
+    <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
+    <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select></label>
+    <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select></label>
+  </div>`;
+}
+
+function updateCanvasImageControl(nodeId, field, value) {
+  const node = canvasState.nodes.find(item => item.id === nodeId && item.type === 'asset');
+  if (!node || ['submitting', 'generating'].includes(node.status)) return;
+  if (field === 'aspectRatio' && ['1:1', '16:9', '9:16', '4:3'].includes(value)) node.imageAspectRatio = value;
+  if (field === 'resolution') {
+    node.imageResolution = value;
+    node.imageResolutionAuto = value === '';
+  }
+  if (field === 'quality') {
+    node.imageQuality = value;
+    node.imageQualityAuto = value === '';
+  }
+  getCanvasImageSelection(node);
+  saveCanvasState();
+  renderCanvasNodesAndLines();
+}
+window.updateCanvasImageControl = updateCanvasImageControl;
+
 function renderCanvasAssetNodeComposer(node, inputControlHtml, isGenerating) {
   return `<div class="canvas-node-composer canvas-media-node-composer" data-node-id="${node.id}" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" onwheel="event.stopPropagation()">
     ${renderCanvasSelectedInputChips(node)}
@@ -14631,6 +14779,7 @@ function renderCanvasAssetNodeComposer(node, inputControlHtml, isGenerating) {
     <div class="canvas-composer-toolbar">
       <div class="canvas-composer-tools">
         ${renderCanvasNodeModelPicker(node, 'image')}
+        ${renderCanvasImageControls(node, isGenerating)}
         ${inputControlHtml}
         <button type="button" class="canvas-composer-tool" onclick="triggerCanvasNodeUpload('${node.id}')" ${isGenerating ? 'disabled' : ''}>⬆ 上传</button>
       </div>

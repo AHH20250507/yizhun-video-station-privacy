@@ -5834,10 +5834,6 @@ function parseVideoTaskResponse(info, startTime = Date.now()) {
 
   if (normalizedStatus === 'completed') {
     progress = 100;
-  } else if (!['failed', 'refunded', 'canceled'].includes(normalizedStatus)) {
-    const elapsedSec = (Date.now() - startTime) / 1000;
-    const estimatedProgress = Math.min(92, Math.round(8 + (elapsedSec / 45) * 84));
-    progress = Math.max(progress, estimatedProgress);
   }
 
   let errorMsg = (info.error && (info.error.message || info.error)) || info.message || (typeof info.error === 'string' ? info.error : null);
@@ -9064,65 +9060,12 @@ function shortenChatTaskId(taskId) {
   return `${value.slice(0, 8)}…${value.slice(-5)}`;
 }
 
-function getMedianNumber(values = []) {
-  const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
-  if (!sorted.length) return null;
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
-}
-
-function estimateVideoTotalSeconds(task = {}) {
-  const model = String(task.model || '');
-  const duration = Math.max(1, Number(task.duration || task.options?.duration || 5));
-  const completedSamples = (state.taskHistory || [])
-    .filter(item => item.status === 'completed' && (item.mediaType === 'video' || item.operation === 'video' || item.videoUrl))
-    .map(item => ({
-      model: String(item.model || ''),
-      duration: Math.max(1, Number(item.duration || item.options?.duration || 5)),
-      seconds: (Number(item.updatedAt || 0) - Number(item.createdAt || 0)) / 1000
-    }))
-    // 排除历史迁移产生的瞬时记录，以及超过一小时的异常任务。
-    .filter(item => Number.isFinite(item.seconds) && item.seconds >= 30 && item.seconds <= 3600);
-  const exactSamples = completedSamples
-    .filter(item => item.model === model && item.duration === duration)
-    .map(item => item.seconds);
-  const modelSamples = completedSamples
-    .filter(item => item.model === model)
-    .map(item => item.seconds);
-  const historicalMedian = getMedianNumber(exactSamples.length >= 2 ? exactSamples : modelSamples);
-  // 当前视频模型的真实历史通常约 9～10 分钟；样本不足时按成片时长保守递增。
-  return Math.round(historicalMedian || Math.min(20 * 60, 480 + duration * 15));
-}
-
-function renderVideoEta(task = {}, status = 'in_progress') {
-  if (!task?.createdAt || !['queued', 'in_progress', 'running', 'rendering', 'paused', 'reconciling', 'needs_review'].includes(String(status))) return '';
-  const elapsedSeconds = Math.max(0, (Date.now() - Number(task.createdAt)) / 1000);
-  const remainingSeconds = estimateVideoTotalSeconds(task) - elapsedSeconds;
-  if (remainingSeconds <= 0) return '<span class="chat-video-eta">· 已超过预计时间，仍在处理</span>';
-  if (remainingSeconds < 60) return '<span class="chat-video-eta">· 预计还需不到 1 分钟</span>';
-  const minutes = Math.max(1, Math.round(remainingSeconds / 60));
-  return `<span class="chat-video-eta">· 预计还需约 ${minutes} 分钟</span>`;
-}
-
 function renderChatVideoProgressLabel(status, progress = 0, task = null) {
   const normalizedStatus = String(status || 'queued').toLowerCase();
-  const normalizedProgress = normalizedStatus === 'completed'
-    ? 100
-    : Math.max(0, Math.min(100, Math.round(Number(progress) || 0)));
-  if (normalizedStatus === 'completed') {
-    return '<span class="chat-video-progress-label-inner is-completed">生成完成 100%</span>';
-  }
-  if (['failed', 'refunded', 'canceled'].includes(normalizedStatus)) {
-    return '<span class="chat-video-progress-label-inner is-failed">生成失败</span>';
-  }
-  const statusText = normalizedStatus === 'queued'
-    ? '排队中'
-    : normalizedStatus === 'reconciling'
-      ? '正在重新连接'
-      : normalizedStatus === 'needs_review'
-        ? '等待供应商状态确认'
-        : '生成中';
-  return `<span class="chat-video-progress-label-inner"><i class="chat-video-progress-spinner" aria-hidden="true"></i>${statusText} ${normalizedProgress}% ${renderVideoEta(task, normalizedStatus)}</span>`;
+  if (normalizedStatus === 'completed') return '<span class="chat-video-progress-label-inner is-completed">生成完成</span>';
+  if (['canceled', 'cancelled'].includes(normalizedStatus)) return '<span class="chat-video-progress-label-inner is-failed">已取消</span>';
+  if (['failed', 'refunded'].includes(normalizedStatus)) return '<span class="chat-video-progress-label-inner is-failed">生成失败</span>';
+  return '<span class="chat-video-progress-label-inner">生成中</span>';
 }
 
 function removeTaskWarningPanels(card) {
@@ -9158,20 +9101,12 @@ function upgradeChatVideoTaskCard(card, task = {}) {
     if (resultTarget) resultTarget.before(track);
     else card.appendChild(track);
   }
-  track.className = 'progress-track chat-video-progress-track';
+  track.className = 'chat-video-progress-track chat-video-status';
   track.dataset.videoProgressTrack = '';
   track.dataset.status = status;
-  track.setAttribute('role', 'progressbar');
-  track.setAttribute('aria-label', '视频生成进度');
-  track.setAttribute('aria-valuemin', '0');
-  track.setAttribute('aria-valuemax', '100');
-  track.setAttribute('aria-valuenow', String(progress));
-
-  let fill = track.querySelector('.progress-bar-inner');
-  if (!fill) fill = document.createElement('div');
-  fill.className = 'progress-bar-inner';
-  fill.id = `chat-progress-${taskId}`;
-  fill.style.width = `${status === 'completed' ? 100 : Math.max(progress, 8)}%`;
+  track.setAttribute('role', 'status');
+  track.setAttribute('aria-label', '视频生成状态');
+  ['aria-valuemin', 'aria-valuemax', 'aria-valuenow'].forEach(name => track.removeAttribute?.(name));
 
   let label = track.querySelector('[data-video-progress-label]');
   if (!label) label = document.createElement('div');
@@ -9179,7 +9114,7 @@ function upgradeChatVideoTaskCard(card, task = {}) {
   label.dataset.videoProgressLabel = '';
   label.setAttribute('aria-live', 'polite');
   label.innerHTML = renderChatVideoProgressLabel(status, progress, task);
-  track.replaceChildren(fill, label);
+  track.replaceChildren(label);
 
   const target = card.querySelector(`[id$="target-${CSS.escape(taskId)}"]`);
   if (target) {
@@ -9194,7 +9129,7 @@ function createChatGenCard(container, taskId, promptText, model, aspectRatio, du
   card.className = 'task-item-card';
   card.id = `task-card-${taskId}`;
   card.style.cssText = 'width: 380px; max-width: 100%; margin-top: 4px; background: #ffffff;';
-  const progressValue = initialStatus === 'completed' ? 100 : Math.max(Number(initialProgress) || 0, 8);
+
   const fullTaskId = String(taskId || '');
 
   card.innerHTML = `
@@ -9205,8 +9140,7 @@ function createChatGenCard(container, taskId, promptText, model, aspectRatio, du
     <div style="font-size: 0.775rem; color: var(--text-muted);">
       ⚙️ 模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 时长: ${duration}s
     </div>
-    <div class="progress-track chat-video-progress-track" data-video-progress-track data-status="${escapeHTML(initialStatus)}" role="progressbar" aria-label="视频生成进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressValue}">
-      <div class="progress-bar-inner" id="chat-progress-${taskId}" style="width: ${progressValue}%;"></div>
+    <div class="chat-video-progress-track chat-video-status" data-video-progress-track data-status="${escapeHTML(initialStatus)}" role="status" aria-label="视频生成状态">
       <div class="chat-video-progress-label" data-video-progress-label aria-live="polite">${renderChatVideoProgressLabel(initialStatus, initialProgress, billingTask)}</div>
     </div>
     <div id="chat-target-${taskId}" class="chat-video-result-target"></div>
@@ -9220,7 +9154,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
   const MAX_VIDEO_POLL_ERRORS = 8;
   const MAX_VIDEO_POLL_DURATION_MS = 45 * 60 * 1000;
   let currentCardEl = cardEl;
-  let progressInner = null;
+
   let progressTrack = null;
   let progressLabel = null;
   let targetArea = null;
@@ -9228,7 +9162,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
     const liveCard = document.getElementById(`task-card-${taskId}`);
     if (liveCard) currentCardEl = liveCard;
     if (!currentCardEl) return;
-    progressInner = currentCardEl.querySelector(`#chat-progress-${CSS.escape(taskId)}`);
+
     progressTrack = currentCardEl.querySelector('[data-video-progress-track]');
     progressLabel = currentCardEl.querySelector('[data-video-progress-label]');
     targetArea = currentCardEl.querySelector(`#chat-target-${CSS.escape(taskId)}`);
@@ -9283,12 +9217,8 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
       updateTaskQueueUI();
       updateStatusIndicators();
 
-      if (progressInner && progressInner.style.width !== `${Math.max(progress, 8)}%`) {
-        progressInner.style.width = `${Math.max(progress, 8)}%`;
-      }
       if (progressTrack) {
         if (progressTrack.dataset.status !== status) progressTrack.dataset.status = status;
-        if (progressTrack.getAttribute('aria-valuenow') !== String(progress)) progressTrack.setAttribute('aria-valuenow', String(progress));
       }
       if (progressLabel) {
         const markup = renderChatVideoProgressLabel(status, progress, taskInState || taskObj);
@@ -9365,7 +9295,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
           void SessionSystem.trackTask(activeTask).catch(error => console.warn('视频待确认状态保存失败:', error));
         }
         if (progressTrack) progressTrack.dataset.status = 'needs_review';
-        if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('needs_review', activeTask?.progress || 0, activeTask);
+        if (progressLabel && progressLabel.innerHTML !== renderChatVideoProgressLabel('needs_review')) progressLabel.innerHTML = renderChatVideoProgressLabel('needs_review');
         // Keep diagnostics in task state, not in a yellow notification panel.
       } else if (consecutivePollErrors >= 3) {
         const errMsg = `任务已提交，但当前网络不稳定：${err.message}`;
@@ -9376,7 +9306,7 @@ function startChatCardPoller(taskId, cardEl, promptText, model) {
           void SessionSystem.trackTask(activeTask).catch(error => console.warn('视频恢复状态保存失败:', error));
         }
         if (progressTrack) progressTrack.dataset.status = 'reconciling';
-        if (progressLabel) progressLabel.innerHTML = renderChatVideoProgressLabel('reconciling', activeTask?.progress || 0, activeTask);
+        if (progressLabel && progressLabel.innerHTML !== renderChatVideoProgressLabel('reconciling')) progressLabel.innerHTML = renderChatVideoProgressLabel('reconciling');
 
       }
     } finally {

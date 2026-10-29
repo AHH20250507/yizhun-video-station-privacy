@@ -2253,6 +2253,10 @@ aside.sidebar.collapsed [data-tooltip]:hover::before {
   border-radius: 999px;
 }
 
+.chat-video-status { position: relative; min-height: 28px; height: auto; padding: 4px 0; }
+.chat-video-status .chat-video-progress-label { position: static; justify-content: flex-start; }
+.chat-video-status .chat-video-progress-label-inner { background: transparent; padding: 0; box-shadow: none; }
+
 .chat-video-progress-track .progress-bar-inner {
   position: absolute;
   inset: 0 auto 0 0;

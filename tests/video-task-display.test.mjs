@@ -9,6 +9,7 @@ function source(name) {
   const rest=app.slice(start); const end=rest.slice(1).search(/\n(?:async )?function /);
   return end < 0 ? rest : rest.slice(0,end+1);
 }
+test('video pending states show static 生成中 without fabricated progress, time or animation',()=>{const c={renderVideoEta:()=> '预计7分钟'};vm.createContext(c);vm.runInContext(source('renderChatVideoProgressLabel'),c);for(const s of ['queued','running','in_progress','reconciling','needs_review']){const html=c.renderChatVideoProgressLabel(s,92,{createdAt:1});assert.equal(html.replace(/<[^>]+>/g,''),'生成中');assert.doesNotMatch(html,/%|预计|spinner/);}assert.match(c.renderChatVideoProgressLabel('completed'),/生成完成/);assert.match(c.renderChatVideoProgressLabel('failed'),/生成失败/);assert.match(c.renderChatVideoProgressLabel('canceled'),/已取消/);assert.ok(!source('createChatGenCard').includes('progress-bar-inner'));assert.ok(!source('parseVideoTaskResponse').includes('estimatedProgress'));});
 test('video card status upgrades preserve the regeneration button',()=>{
   const header={};
   const element=()=>({style:{},dataset:{},setAttribute(){}});

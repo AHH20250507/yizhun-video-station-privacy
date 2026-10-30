@@ -21,16 +21,16 @@ async function run(enabled, flipDuringSubmit = false) {
   vm.createContext(ctx); vm.runInContext(submit, ctx); await ctx.handleAiChatSubmit();
   return calls;
 }
-test('video parameters expose an accessible enabled-by-default script expansion switch', () => {
+test('video parameters expose an accessible disabled-by-default script expansion switch', () => {
   const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /id="chatExpandScriptToggle"[^>]*role="switch"[^>]*checked/);
+  assert.doesNotMatch(html.match(/<input[^>]*id="chatExpandScriptToggle"[^>]*>/)[0], /\bchecked\b/);
   assert.ok(app.includes("chatExpandScriptGroup?.classList.toggle('hidden', isImageMode)"));
   assert.ok(app.includes("chatExpandScriptToggle: document.getElementById('chatExpandScriptToggle')"));
 });
 
 test('script expansion choice follows in-memory creation sessions without new persistent storage', () => {
   assert.equal((app.match(/videoExpandScript: /g) || []).length, 3);
-  assert.ok(app.includes('el.chatExpandScriptToggle.checked = next.videoExpandScript !== false'));
+  assert.ok(app.includes('el.chatExpandScriptToggle.checked = next.videoExpandScript === true'));
   assert.ok(app.includes("el.chatExpandScriptToggle?.addEventListener('change'"));
 });
 

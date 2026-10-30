@@ -184,7 +184,7 @@ const state = {
   latestFinishedStatus: localStorage.getItem('api_latest_status') || 'none',
   chatRefMediaList: [],
   chatGenerationMode: localStorage.getItem('chat_generation_mode') === 'image' ? 'image' : 'video',
-  chatImageAspect: localStorage.getItem('chat_image_aspect') || '1:1',
+  chatImageAspect: localStorage.getItem('chat_image_aspect') || '16:9',
   chatImageCount: Math.min(10, Math.max(1, parseInt(localStorage.getItem('chat_image_count') || '1', 10) || 1)),
   imageResultCache: new Map(),
   isBatchSelectingHistory: false,
@@ -928,6 +928,24 @@ function startNewLocalConversation() {
   localStorage.setItem(LOCAL_CONVERSATION_ACTIVE_KEY, activeLocalConversation.id);
   renderLocalConversationMessages(activeLocalConversation);
   renderLocalConversationHistory();
+  const aspect = document.getElementById('chatImageAspectSelect');
+  if (aspect) {
+    aspect.value = '16:9';
+    aspect.dispatchEvent?.(new Event('change', { bubbles: true }));
+  }
+  state.chatImageAspect = '16:9';
+  const aspectSegment = document.getElementById('chatImageAspectSegment');
+  if (aspectSegment) {
+    aspectSegment.dataset.value = '16:9';
+    aspectSegment.querySelectorAll('.segment-btn').forEach(button => button.classList.toggle('active', button.dataset.value === '16:9'));
+  }
+  const expand = document.getElementById('chatExpandScriptToggle');
+  if (expand) expand.checked = false;
+  for (const id of ['chatImageResolutionSelect', 'chatImageQualitySelect']) {
+    const select = document.getElementById(id);
+    if (select) select.dataset.model = '';
+  }
+  syncChatImageResolutionControl(state.apiConfig.imageModel, '16:9');
   switchView('videoGen');
 }
 
@@ -1098,11 +1116,11 @@ const SessionSystem = (() => {
       mode: 'video',
       model: document.getElementById('chatModelSelect')?.value || state.apiConfig.model,
       imageModel: document.getElementById('chatImageModelSelect')?.value || state.apiConfig.imageModel,
-      imageSettings: captureChatImageSettings(),
+      imageSettings: {},
       videoAspect: document.getElementById('chatAspectSelect')?.value || '16:9',
       videoResolution: document.getElementById('chatResolutionSelect') ? getSelectedChatVideoResolution() : '720p',
-      videoExpandScript: document.getElementById('chatExpandScriptToggle')?.checked !== false,
-      imageAspect: document.getElementById('chatImageAspectSelect')?.value || '1:1',
+      videoExpandScript: false,
+      imageAspect: '16:9',
       imageCount: document.getElementById('chatImageCountInput')?.value || '1',
       duration: document.getElementById('chatDurationSelect')?.value || '5',
       tasks: []
@@ -1210,8 +1228,8 @@ const SessionSystem = (() => {
       imageSettings: captureChatImageSettings(),
       videoAspect: el.chatAspectSelect?.value || '16:9',
       videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
-      videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
-      imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
+      videoExpandScript: el.chatExpandScriptToggle?.checked === true,
+      imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '16:9',
       imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
       duration: el.chatDurationSelect?.value || '5',
       tasks: getTasksForSession(activeSession?.id)
@@ -1676,9 +1694,9 @@ const SessionSystem = (() => {
     }
     setSegmentValue(el.chatAspectSelect, next.videoAspect || '16:9');
     syncChatResolutionControl(model, next.videoResolution || '720p');
-    if (el.chatExpandScriptToggle) el.chatExpandScriptToggle.checked = next.videoExpandScript !== false;
-    setSegmentValue(el.chatImageAspectSelect, next.imageAspect || '1:1');
-    restoreChatImageSettings(state.apiConfig.imageModel, next.imageAspect || '1:1', next.imageSettings);
+    if (el.chatExpandScriptToggle) el.chatExpandScriptToggle.checked = next.videoExpandScript === true;
+    setSegmentValue(el.chatImageAspectSelect, next.imageAspect || '16:9');
+    restoreChatImageSettings(state.apiConfig.imageModel, next.imageAspect || '16:9', next.imageSettings);
     syncChatImageCount(next.imageCount || 1, { persist: false });
     syncChatDurationControl(model, next.duration || 5);
     updateCreationPricePreview();
@@ -3426,16 +3444,20 @@ function getImageResolutionOptions(mode, model, aspectRatio) {
 function getImageQualityOptions(mode, model) {
   const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
   const ranks = { low: 1, standard: 2, medium: 2, high: 3, hd: 3, xhigh: 4, max: 5 };
-  return [...new Set((Array.isArray(metadata.qualities) ? metadata.qualities : []).filter(value => typeof value === 'string' && value.trim() && value.length <= 64))]
-    .map(value => ({ value, rank: ranks[value.trim().toLowerCase()] ?? null }))
+  const preferHigh = /(?:^|[-_\s])(?:gemini|nano[-_\s]*banana)(?:$|[-_\s])/i.test(String(model));
+  const values = (Array.isArray(metadata.qualities) ? metadata.qualities : []).filter(value => typeof value === 'string' && value.trim() && value.length <= 64);
+  const suppliedHigh = values.some(value => value.trim().toLowerCase() === 'high');
+  if (preferHigh && !suppliedHigh) values.push('high');
+  return [...new Set(values)]
+    .map(value => ({ value, rank: ranks[value.trim().toLowerCase()] ?? null, default: preferHigh && value.trim().toLowerCase() === 'high', userDefault: preferHigh && !suppliedHigh && value === 'high' }))
     .sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
 }
 
 function getImageGenerationSelection(mode, model, aspectRatio, requested = '', requestedQuality) {
   const options = getImageResolutionOptions(mode, model, aspectRatio);
-  const selected = options.find(option => option.value === requested) || options.find(option => option.rank !== null);
+  const selected = options.find(option => option.value === requested);
   const qualities = getImageQualityOptions(mode, model);
-  const quality = requestedQuality === '' ? undefined : (qualities.find(option => option.value === requestedQuality) || qualities.find(option => option.rank !== null))?.value;
+  const quality = (requestedQuality === undefined ? qualities.find(option => option.default) : qualities.find(option => option.value === requestedQuality))?.value;
   return { model, aspectRatio, ...(selected?.size ? { size: selected.size } : {}), ...(selected?.resolution ? { resolution: selected.resolution } : {}), ...(quality ? { quality } : {}) };
 }
 
@@ -3468,7 +3490,7 @@ function getImageCapabilityDescription(metadata, field, unknown) {
   return unknown ? '能力未知，使用供应商默认' : '供应商返回的模型参数';
 }
 
-function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1') {
+function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '16:9') {
   const result = { model, aspectRatio };
   const metadata = getServerModels('creation', 'image').find(item => item.model === model)?.metadata || {};
   for (const field of ['resolution', 'quality']) {
@@ -3477,7 +3499,7 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
     const requested = sameModel ? select.value : undefined;
     const options = field === 'resolution' ? getImageResolutionOptions('creation', model, aspectRatio) : getImageQualityOptions('creation', model);
     const explicitAuto = sameModel && requested === '' && select.dataset.explicitAuto === 'true';
-    const selected = explicitAuto ? undefined : (options.find(option => option.value === requested) || options.find(option => option.rank !== null));
+    const selected = explicitAuto ? undefined : (options.find(option => option.value === requested) || (!sameModel && field === 'quality' ? options.find(option => option.default) : undefined));
     if (select) {
       if (!sameModel) select.dataset.explicitAuto = 'false';
       select.innerHTML = '<option value="">模型默认 / 自动</option>' + options.map(option => `<option value="${escapeHTML(option.value)}">${escapeHTML(option.label || option.value)}</option>`).join('');
@@ -3494,7 +3516,7 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       }
       if (note) {
         note.textContent = '!';
-        note.title = getImageCapabilityDescription(metadata, field, unknown) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.title = (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
         note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }
@@ -5745,7 +5767,7 @@ function applyApiConfigToChatUI() {
   const normalizedDuration = syncChatDurationControl(savedModel, savedDuration);
   if (state.apiConfig) state.apiConfig.duration = normalizedDuration;
 
-  const savedImageAspect = CHAT_IMAGE_SIZE_BY_ASPECT[state.chatImageAspect] ? state.chatImageAspect : '1:1';
+  const savedImageAspect = CHAT_IMAGE_SIZE_BY_ASPECT[state.chatImageAspect] ? state.chatImageAspect : '16:9';
   state.chatImageAspect = savedImageAspect;
   const imageAspectSegment = document.getElementById('chatImageAspectSegment');
   if (imageAspectSegment) {
@@ -7841,8 +7863,8 @@ function captureCreationSubmissionData() {
       imageSettings: captureChatImageSettings(),
     videoAspect: el.chatAspectSelect?.value || '16:9',
     videoResolution: el.chatResolutionSelect ? getSelectedChatVideoResolution() : '720p',
-    videoExpandScript: el.chatExpandScriptToggle?.checked !== false,
-    imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1',
+    videoExpandScript: el.chatExpandScriptToggle?.checked === true,
+    imageAspect: el.chatImageAspectSelect?.value || state.chatImageAspect || '16:9',
     imageCount: el.chatImageCountInput?.value || state.chatImageCount || '1',
     duration: el.chatDurationSelect?.value || '5',
     tasks: []
@@ -7861,8 +7883,8 @@ async function handleAiChatSubmit() {
   const model = el.chatModelSelect.value;
   const videoAspectRatio = el.chatAspectSelect.value;
   const resolution = getSelectedChatVideoResolution();
-  const expandScript = el.chatExpandScriptToggle?.checked !== false;
-  const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1';
+  const expandScript = el.chatExpandScriptToggle?.checked === true;
+  const imageAspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '16:9';
   const imageSelection = generationMode === 'image'
     ? syncChatImageResolutionControl(getPreferredServerModel('creation', 'image', state.apiConfig.imageModel), imageAspectRatio)
     : null;
@@ -14751,7 +14773,7 @@ function renderCanvasTextNodeComposer(node, inputControlHtml) {
 
 function getCanvasImageSelection(node) {
   const model = getPreferredServerModel('canvas', 'image', node.model || state.apiConfig.imageModel);
-  const aspectRatio = node.imageAspectRatio || '1:1';
+  const aspectRatio = node.imageAspectRatio || '16:9';
   const sameModel = node.imageResolutionModel === model;
   if (!sameModel) node.imageResolutionAuto = false;
   const selection = getImageGenerationSelection('canvas', model, aspectRatio, sameModel ? node.imageResolution : '', sameModel && node.imageQualityAuto ? '' : (sameModel ? node.imageQuality : undefined));
@@ -14772,7 +14794,7 @@ function renderCanvasImageControls(node, isGenerating) {
   const qualities = getImageQualityOptions('canvas', selection.model);
   const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
   const hint = (field, unknown) => {
-    const description = escapeHTML(getImageCapabilityDescription(metadata, field, unknown) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : ''));
+    const description = escapeHTML((field === 'quality' && qualities.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : ''));
     return `<button type="button" class="image-capability-note" title="${description}" aria-label="${description}">!</button>`;
   };
   return `<div class="canvas-image-controls">

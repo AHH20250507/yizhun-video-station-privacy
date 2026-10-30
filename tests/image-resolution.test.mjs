@@ -10,21 +10,21 @@ function context(metadata = {}, mode = 'creation') {
   for (const name of ['getServerModels', 'getPreferredServerModel', 'getImageCapabilityDescription', 'getImageResolutionOptions', 'getImageQualityOptions', 'getImageGenerationSelection']) vm.runInContext(source(name), c);
   return c;
 }
-test('explicit pixel sizes use largest area only within the current aspect ratio', () => {
+test('explicit pixel sizes honor explicit sizes only within the current aspect ratio', () => {
   const c = context({sizes:['8192x8192', '1920x1080', '3840x2160', '1080x1920']});
-  assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9').size, '3840x2160');
-  assert.equal(c.getImageGenerationSelection('creation', 'model', '9:16').size, '1080x1920');
+  assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9', '3840x2160').size, '3840x2160');
+  assert.equal(c.getImageGenerationSelection('creation', 'model', '9:16', '1080x1920').size, '1080x1920');
   assert.equal(c.getImageGenerationSelection('creation', 'model', '4:3').size, undefined);
-  assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9', '8192x8192').size, '3840x2160');
+  assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9', '8192x8192').size, undefined);
 });
 test('unknown capability labels are selectable but not claimed as highest; missing metadata sends auto', () => {
   const c = context({sizes:['ultra', 'HD']});
   assert.equal(c.getImageGenerationSelection('creation', 'model', '1:1').resolution, undefined);
   assert.equal(c.getImageGenerationSelection('creation', 'model', '1:1', 'ultra').resolution, 'ultra');
   assert.equal(context().getImageGenerationSelection('creation', 'model', '16:9').size, undefined);
-  assert.equal(context({sizes:['1K','4K','2K']}).getImageGenerationSelection('creation', 'model', '16:9').resolution, '4K');
+  assert.equal(context({sizes:['1K','4K','2K']}).getImageGenerationSelection('creation', 'model', '16:9').resolution, undefined);
 });
-test('creation model switch defaults highest but rerender and mode toggles preserve a manual lower tier', () => {
+test('creation model switch defaults automatic but rerender and mode toggles preserve a manual lower tier', () => {
   const c = context({resolutions:['1K','4K']});
   c.state.serverModels.push({mode:'creation', operation:'image', model:'other', metadata:{resolutions:['2K','8K']}});
   const select = {value:'',dataset:{},innerHTML:''};
@@ -32,12 +32,12 @@ test('creation model switch defaults highest but rerender and mode toggles prese
   c.escapeHTML = String;
   vm.runInContext(source('syncChatImageResolutionControl'), c);
   c.syncChatImageResolutionControl('model', '1:1');
-  assert.equal(select.value, '4K');
+  assert.equal(select.value, '');
   select.value = '1K';
   c.syncChatImageResolutionControl('model', '1:1');
   assert.equal(select.value, '1K');
   c.syncChatImageResolutionControl('other', '1:1');
-  assert.equal(select.value, '8K');
+  assert.equal(select.value, '');
 });
 test('image request sends captured tier and aspect without fabricated pixel sizes', async () => {
   const c = context({resolutions:['1K','4K']}, 'canvas');
@@ -76,13 +76,13 @@ test('canvas render keeps manual tier, resets on model switch and separates aspe
   for(const n of ['getCanvasImageSelection','renderCanvasImageControls']) vm.runInContext(source(n),c);
   const node={id:'node',model:'model'};
   c.renderCanvasImageControls(node,false);
-  assert.equal(node.imageResolution,'4K');
+  assert.equal(node.imageResolution,'');
   node.imageResolution='1K';
   c.renderCanvasImageControls(node,false);
   assert.equal(node.imageResolution,'1K');
   node.model='other';
   assert.match(c.renderCanvasImageControls(node,false),/图片比例/);
-  assert.equal(node.imageResolution,'8K');
+  assert.equal(node.imageResolution,'');
   const run=source('runCanvasImageGeneration');
   assert.ok(run.indexOf('const imageSelection =') < run.indexOf('await '));
   assert.match(run,/apiGenerateCanvasImage\([\s\S]*\.\.\.imageSelection/);
@@ -99,7 +99,7 @@ test('restored cards and exact regeneration display original resolution, never c
   assert.match(source('jumpToTaskInChat'), /createChatImageResultCard\([^\n]+historyTask\.options/);
   assert.match(source('regenerateGenerationTask'), /createChatImageResultCard\([^\n]+request\.input\)/);
 });
-test('capabilities arriving after initial empty catalog select highest while explicit auto remains auto', () => {
+test('capabilities arriving after initial empty catalog remain automatic while explicit auto remains auto', () => {
   const c=context();
   const select={value:'',dataset:{},innerHTML:''};
   c.document.getElementById=id=>id==='chatImageResolutionSelect'?select:null;
@@ -108,7 +108,7 @@ test('capabilities arriving after initial empty catalog select highest while exp
   c.syncChatImageResolutionControl('model','1:1');
   c.state.serverModels[0].metadata={resolutions:['1K','4K']};
   c.syncChatImageResolutionControl('model','1:1');
-  assert.equal(select.value,'4K');
+  assert.equal(select.value,'');
   select.value='';
   select.onchange();
   assert.equal(c.syncChatImageResolutionControl('model','1:1').resolution,undefined);
@@ -125,14 +125,14 @@ test('canvas change handler applies low tier and preserves it across redraws wit
   c.updateCanvasImageControl('node','aspectRatio','16:9');
   assert.equal(c.getCanvasImageSelection(node).resolution,'1K');
 });
-test('canvas capabilities arriving after empty metadata select highest until user explicitly chooses auto', () => {
+test('canvas capabilities arriving after empty metadata remain automatic until user explicitly chooses auto', () => {
   const c=context({},'canvas');
   const node={id:'node',type:'asset',model:'model'};
   Object.assign(c,{canvasState:{nodes:[node]},saveCanvasState:()=>{},renderCanvasNodesAndLines:()=>{}});
   for(const n of ['getCanvasImageSelection','updateCanvasImageControl'])vm.runInContext(source(n),c);
   c.getCanvasImageSelection(node);
   c.state.serverModels[0].metadata={resolutions:['1K','4K']};
-  assert.equal(c.getCanvasImageSelection(node).resolution,'4K');
+  assert.equal(c.getCanvasImageSelection(node).resolution,undefined);
   c.updateCanvasImageControl('node','resolution','');
   assert.equal(c.getCanvasImageSelection(node).resolution,undefined);
 });
@@ -149,22 +149,22 @@ test('image quality uses only declared semantic tiers and preserves original sup
   const c=context({resolutions:['1K','4K'],qualities:['low','STANDARD','HD','medium']});
   vm.runInContext(source('getImageQualityOptions'),c);
   const highest=c.getImageGenerationSelection('creation','model','16:9');
-  assert.equal(highest.quality,'HD');
-  assert.equal(highest.resolution,'4K');
+  assert.equal(highest.quality,undefined);
+  assert.equal(highest.resolution,undefined);
   const custom=c.getImageGenerationSelection('creation','model','16:9','1K','STANDARD');
   assert.equal(custom.quality,'STANDARD');
   assert.equal(custom.resolution,'1K');
   assert.equal(context({qualities:['ultra','cinematic']}).getImageGenerationSelection('creation','model','1:1').quality,undefined);
   assert.equal(context().getImageGenerationSelection('creation','model','1:1').quality,undefined);
 });
-test('creation quality select defaults highest and manual quality survives resolution edits and rerender', () => {
+test('creation quality select defaults automatic and manual quality survives resolution edits and rerender', () => {
   const c=context({resolutions:['1K','4K'],qualities:['low','high']});
   const resolution={value:'',dataset:{},innerHTML:''}, quality={value:'',dataset:{},innerHTML:''};
   c.document.getElementById=id=>({chatImageResolutionSelect:resolution,chatImageQualitySelect:quality})[id];
   c.escapeHTML=String;
   vm.runInContext(source('syncChatImageResolutionControl'),c);
-  assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,'high');
-  assert.equal(quality.value,'high');
+  assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,undefined);
+  assert.equal(quality.value,'');
   quality.value='low';
   resolution.value='1K';
   assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,'low');
@@ -177,7 +177,7 @@ test('canvas quality is independent of resolution auto and lower selections surv
   const node={id:'node',type:'asset',model:'model'};
   Object.assign(c,{canvasState:{nodes:[node]},saveCanvasState:()=>{},renderCanvasNodesAndLines:()=>{}});
   for(const n of ['getCanvasImageSelection','updateCanvasImageControl'])vm.runInContext(source(n),c);
-  assert.equal(c.getCanvasImageSelection(node).quality,'high');
+  assert.equal(c.getCanvasImageSelection(node).quality,undefined);
   c.updateCanvasImageControl('node','quality','low');
   c.updateCanvasImageControl('node','resolution','');
   const selected=c.getCanvasImageSelection(node);
@@ -202,12 +202,12 @@ test('quality travels through real request and captured card output', async () =
   assert.match(source('renderCanvasImageControls'),/图片品质/);
 });
 test('creation resolution and quality roundtrip in page-memory settings',()=>{const c=context({resolutions:['1K','4K'],qualities:['low','high']});const nodes={chatImageResolutionSelect:{value:'1K',dataset:{model:'model',explicitAuto:'false'}},chatImageQualitySelect:{value:'low',dataset:{model:'model',explicitAuto:'false'}}};c.document.getElementById=id=>nodes[id];c.escapeHTML=String;for(const n of ['captureChatImageSettings','restoreChatImageSettings','syncChatImageResolutionControl'])vm.runInContext(source(n),c);const saved=c.captureChatImageSettings();nodes.chatImageResolutionSelect.value='4K';nodes.chatImageQualitySelect.value='high';c.restoreChatImageSettings('model','1:1',saved);assert.equal(nodes.chatImageResolutionSelect.value,'1K');assert.equal(nodes.chatImageQualitySelect.value,'low');});
-test('declared xhigh and max qualities rank above high without assuming undeclared values',()=>{const c=context({qualities:['high','max','xhigh','auto']});assert.equal(c.getImageGenerationSelection('creation','model','1:1').quality,'max');assert.equal(context({qualities:['high','xhigh']}).getImageGenerationSelection('creation','model','1:1').quality,'xhigh');});
+test('declared xhigh and max qualities rank above high without assuming undeclared values',()=>{const c=context({qualities:['high','max','xhigh','auto']});assert.equal(c.getImageGenerationSelection('creation','model','1:1','','max').quality,'max');assert.equal(context({qualities:['high','xhigh']}).getImageGenerationSelection('creation','model','1:1','','xhigh').quality,'xhigh');});
 test('official provenance is labeled distinctly from supplier capability and no-quality controls',()=>{const c=context();vm.runInContext(source('getImageCapabilityDescription'),c);assert.match(c.getImageCapabilityDescription({resolutionSource:'official-spec'},'resolution',false),/官方规格/);assert.match(c.getImageCapabilityDescription({qualitySource:'official-no-quality'},'quality',true),/不提供独立品质/);assert.match(c.getImageCapabilityDescription({},'quality',true),/能力未知/);assert.match(c.getImageCapabilityDescription({},'quality',false),/供应商/);});
-test('declared resolution tiers default numerically highest and preserve provider value', () => {
+test('declared resolution tiers remain ordered but default automatic and preserve provider value', () => {
   const c = context({resolutions:['2K', '10K', '4K', '1K']});
   const selected = c.getImageGenerationSelection('creation', 'model', '16:9');
-  assert.equal(selected.resolution, '10K');
+  assert.equal(selected.resolution, undefined);
   assert.equal(selected.aspectRatio, '16:9');
   assert.equal(selected.size, undefined);
   assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9', '2K').resolution, '2K');

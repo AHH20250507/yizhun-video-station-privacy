@@ -3461,6 +3461,13 @@ function restoreChatImageSettings(model, aspectRatio, settings = {}) {
   return syncChatImageResolutionControl(model, aspectRatio);
 }
 
+function getImageCapabilityDescription(metadata, field, unknown) {
+  const source = metadata[field === 'resolution' ? 'resolutionSource' : 'qualitySource'];
+  if (source === 'official-no-quality') return '官方不提供独立品质参数';
+  if (source === 'official-spec') return '官方规格·转发兼容以供应商为准' + (field === 'resolution' && metadata.resolutionExperimentalAbove ? '；超2560×1440属官方实验规格' : '');
+  return unknown ? '能力未知，使用供应商默认' : '供应商返回的模型参数';
+}
+
 function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '1:1') {
   const result = { model, aspectRatio };
   const metadata = getServerModels('creation', 'image').find(item => item.model === model)?.metadata || {};
@@ -3485,8 +3492,8 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
         group.appendChild(note);
       }
       if (note) {
-        note.textContent = unknown ? '能力未知，使用供应商默认' : '供应商返回的模型参数';
-        note.title = unknown ? '该模型未返回此参数范围，不能确认最高档；未添加猜测选项。' : '按当前模型返回的参数范围显示；未进行付费生成实测。';
+        note.textContent = getImageCapabilityDescription(metadata, field, unknown);
+        note.title = metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] || (unknown ? '该模型未返回此参数范围，不能确认最高档。' : '当前供应商返回的参数范围。');
         note.hidden = false;
       }
       select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
@@ -14762,7 +14769,7 @@ function renderCanvasImageControls(node, isGenerating) {
   const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
   const qualities = getImageQualityOptions('canvas', selection.model);
   const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
-  const presetNote = '<small class="image-capability-note">' + (!options.length || !qualities.length ? '部分能力未知，使用供应商默认' : '供应商返回的模型参数') + '</small>';
+  const presetNote = `<small class="image-capability-note">${escapeHTML(getImageCapabilityDescription(metadata, 'resolution', !options.length))}；${escapeHTML(getImageCapabilityDescription(metadata, 'quality', !qualities.length))}</small>`;
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
     <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select></label>

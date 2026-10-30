@@ -7,7 +7,7 @@ function source(name) { const start = app.search(new RegExp('(?:async )?function
 function context(metadata = {}, mode = 'creation') {
   const c = { state: { serverModels: [{mode, operation: 'image', model: 'model', metadata}], apiConfig: {imageModel:'model'} }, el: {}, document: {getElementById:()=>null} };
   vm.createContext(c);
-  for (const name of ['getServerModels', 'getPreferredServerModel', 'getImageResolutionOptions', 'getImageQualityOptions', 'getImageGenerationSelection']) vm.runInContext(source(name), c);
+  for (const name of ['getServerModels', 'getPreferredServerModel', 'getImageCapabilityDescription', 'getImageResolutionOptions', 'getImageQualityOptions', 'getImageGenerationSelection']) vm.runInContext(source(name), c);
   return c;
 }
 test('explicit pixel sizes use largest area only within the current aspect ratio', () => {
@@ -203,6 +203,7 @@ test('quality travels through real request and captured card output', async () =
 });
 test('creation resolution and quality roundtrip in page-memory settings',()=>{const c=context({resolutions:['1K','4K'],qualities:['low','high']});const nodes={chatImageResolutionSelect:{value:'1K',dataset:{model:'model',explicitAuto:'false'}},chatImageQualitySelect:{value:'low',dataset:{model:'model',explicitAuto:'false'}}};c.document.getElementById=id=>nodes[id];c.escapeHTML=String;for(const n of ['captureChatImageSettings','restoreChatImageSettings','syncChatImageResolutionControl'])vm.runInContext(source(n),c);const saved=c.captureChatImageSettings();nodes.chatImageResolutionSelect.value='4K';nodes.chatImageQualitySelect.value='high';c.restoreChatImageSettings('model','1:1',saved);assert.equal(nodes.chatImageResolutionSelect.value,'1K');assert.equal(nodes.chatImageQualitySelect.value,'low');});
 test('declared xhigh and max qualities rank above high without assuming undeclared values',()=>{const c=context({qualities:['high','max','xhigh','auto']});assert.equal(c.getImageGenerationSelection('creation','model','1:1').quality,'max');assert.equal(context({qualities:['high','xhigh']}).getImageGenerationSelection('creation','model','1:1').quality,'xhigh');});
+test('official provenance is labeled distinctly from supplier capability and no-quality controls',()=>{const c=context();vm.runInContext(source('getImageCapabilityDescription'),c);assert.match(c.getImageCapabilityDescription({resolutionSource:'official-spec'},'resolution',false),/官方规格/);assert.match(c.getImageCapabilityDescription({qualitySource:'official-no-quality'},'quality',true),/不提供独立品质/);assert.match(c.getImageCapabilityDescription({},'quality',true),/能力未知/);assert.match(c.getImageCapabilityDescription({},'quality',false),/供应商/);});
 test('declared resolution tiers default numerically highest and preserve provider value', () => {
   const c = context({resolutions:['2K', '10K', '4K', '1K']});
   const selected = c.getImageGenerationSelection('creation', 'model', '16:9');

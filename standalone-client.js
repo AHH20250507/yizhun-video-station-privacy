@@ -976,6 +976,36 @@
   }
 
 
+  function withOfficialImageSpecifications(model, metadata = {}) {
+    // Exact official IDs only. No stripping prefixes or guessing intermediary aliases.
+    const openai2 = model === 'gpt-image-2';
+    const openai25 = ['gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(model);
+    const googlePro = ['gemini-3-pro-image', 'gemini-3-pro-image-preview'].includes(model);
+    const googleFlash = ['gemini-3.1-flash-image', 'gemini-3.1-flash-image-preview'].includes(model);
+    const google21 = model === 'gemini-nano-banana-2.1';
+    if (!openai2 && !openai25 && !googlePro && !googleFlash && !google21) return metadata;
+    const result = { ...metadata };
+    const source = openai2 || openai25
+      ? 'https://developers.openai.com/api/docs/guides/image-generation#size-and-quality-options'
+      : 'https://ai.google.dev/gemini-api/docs/image-generation#generate-4k-images';
+    if (!metadata.sizes?.length && !metadata.resolutions?.length) {
+      if (openai2 || openai25) {
+        // Useful exact-ratio choices plus largest valid 16px-aligned size for each UI ratio.
+        // Official limits: edges <=3840, area 655360..8294400, aspect <=3:1.
+        result.sizes = ['1024x1024', '2048x2048', '2880x2880', '1536x864', '2048x1152', '3840x2160', '864x1536', '1152x2048', '2160x3840', '1024x768', '2048x1536', '3264x2448'];
+      } else result.resolutions = googleFlash ? ['512px', '1K', '2K', '4K'] : ['1K', '2K', '4K'];
+      result.resolutionSource = 'official-spec';
+      if (openai2 || openai25) result.resolutionExperimentalAbove = '2560x1440';
+      result.resolutionSourceUrl = source;
+    }
+    if (!metadata.qualities?.length) {
+      result.qualities = openai25 ? ['low', 'medium', 'high', 'xhigh', 'max'] : openai2 ? ['low', 'medium', 'high'] : [];
+      result.qualitySource = openai2 || openai25 ? 'official-spec' : 'official-no-quality';
+      result.qualitySourceUrl = source;
+    }
+    return result;
+  }
+
   function modelRows() {
     const config = readConfig();
     const row = (mode, operation, model, displayName, providerName, isDefault = true, modelMetadata = {}) => ({
@@ -994,7 +1024,7 @@
         || (provider.profiles || []).find(item => (item.models || []).includes(provider.model))
         || provider.profiles?.[0];
       const metadata = profile?.modelMetadata?.[model] || provider.modelMetadata?.[model] || {};
-      return metadata;
+      return provider === config.image ? withOfficialImageSpecifications(model, metadata) : metadata;
     };
     const rowsFor = (modes, operation, providerName) => modes.flatMap(mode => configuredModels(config[providerName]).map(model =>
       row(mode, operation, model, model, providerName, model === config[providerName].model, modelMetadataFor(config[providerName], model))

@@ -10571,6 +10571,7 @@ document.addEventListener('DOMContentLoaded', bindLibraryUi);
 /* ========================================================================== */
 const multiAngleState = {
   initialized: false,
+  selectedModel: '',
   source: '',
   sourceName: '',
   sourceImage: null,
@@ -10597,7 +10598,7 @@ const MULTI_ANGLE_SIZE_BY_ASPECT = {
 };
 
 function getMultiAngleModel() {
-  return getPreferredServerModel('multi-angle', 'image', state.apiConfig?.imageModel);
+  return getPreferredServerModel('multi-angle', 'image', multiAngleState.selectedModel || state.apiConfig?.imageModel);
 }
 
 function renderMultiAngleModel() {
@@ -10605,9 +10606,20 @@ function renderMultiAngleModel() {
   if (!target) return;
   const models = getServerModels('multi-angle', 'image');
   const model = getMultiAngleModel();
-  const item = models.find(entry => entry.model === model);
-  target.textContent = model ? getModelDisplayName(item) : '暂无可用模型';
-  target.title = model || '请联系管理员启用多角度图片模型';
+  multiAngleState.selectedModel = model;
+  target.innerHTML = models.length
+    ? models.map(item => `<option value="${escapeHTML(item.model)}">${escapeHTML(getModelDisplayName(item))}</option>`).join('')
+    : '<option value="">暂无可用模型</option>';
+  target.value = model;
+  target.disabled = !models.length;
+  target.title = model || '请在 API 设置中接入图片模型';
+  target.onchange = () => {
+    if (!getServerModels('multi-angle', 'image').some(item => item.model === target.value)) return;
+    multiAngleState.selectedModel = target.value;
+    target.title = target.value;
+    updateMultiAngleGenerateState();
+    void updateMultiAnglePricePreview();
+  };
   updateMultiAngleGenerateState();
   void updateMultiAnglePricePreview();
 }
@@ -11155,11 +11167,11 @@ function renderMultiAngleResults() {
   void hydrateStoredImageElements(grid);
 }
 
-async function runMultiAnglePose(pose, result) {
-  const model = getMultiAngleModel();
-  const aspect = document.getElementById('multiAngleAspect')?.value || '1:1';
+async function runMultiAnglePose(pose, result, submission = {}) {
+  const model = submission.model || getMultiAngleModel();
+  const aspect = submission.aspect || document.getElementById('multiAngleAspect')?.value || '1:1';
   const prompt = buildMultiAnglePrompt(pose);
-  const source = multiAngleState.source;
+  const source = submission.source || multiAngleState.source;
   const regenerationRefs = [{ tag: '@图1', type: 'image', reference: source, url: source, fileName: '原始参考图' }];
   result.prompt = prompt;
   const requestId = `multi_angle_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -11207,7 +11219,9 @@ async function runMultiAnglePose(pose, result) {
 async function generateMultiAngleImages() {
   if (multiAngleState.generating) return;
   if (!multiAngleState.source) return showToast('请先上传原始图片', 'warning');
-  if (!getMultiAngleModel()) return showToast('暂无可用的多角度图片模型，请联系管理员', 'error');
+  const model = getMultiAngleModel();
+  if (!model) return showToast('暂无可用的多角度图片模型，请在 API 设置中接入', 'error');
+  const submission = { model, aspect: document.getElementById('multiAngleAspect')?.value || '1:1', source: multiAngleState.source };
   const poses = getMultiAngleGenerationPoses();
   multiAngleState.generating = true;
   updateMultiAngleGenerateState();
@@ -11226,7 +11240,7 @@ async function generateMultiAngleImages() {
   const worker = async () => {
     while (cursor < pending.length) {
       const index = cursor++;
-      await runMultiAnglePose(poses[index], pending[index]);
+      await runMultiAnglePose(poses[index], pending[index], submission);
     }
   };
   await Promise.all(Array.from({ length: Math.min(2, pending.length) }, worker));

@@ -506,9 +506,8 @@
 .multi-angle-setting-row select:focus { border-color: #7892e7; box-shadow: 0 0 0 3px rgba(76,111,255,.09); }
 .multi-angle-setting-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 9px; }
 .multi-angle-setting-row label { min-width: 0; display: flex; flex-direction: column; gap: 5px; color: #697388; font-size: 10px; }
-.multi-angle-setting-row select,
-.multi-angle-model-display { height: 33px; padding: 0 9px; }
-.multi-angle-model-display { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; border-radius: 9px; background: #f1f4f9; color: #40516d; font-size: 10px; }
+.multi-angle-setting-row select { height: 40px; min-height: 40px; padding: 0 9px; }
+#multiAngleModel { min-width: 0; max-width: 100%; text-overflow: ellipsis; }
 
 .multi-angle-generate-btn {
   width: 100%;

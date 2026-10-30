@@ -3476,18 +3476,18 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       select.innerHTML = '<option value="">模型默认 / 自动</option>' + options.map(option => `<option value="${escapeHTML(option.value)}">${escapeHTML(option.label || option.value)}</option>`).join('');
       select.dataset.model = model;
       select.value = selected?.value || '';
-      const preset = metadata[field === 'resolution' ? 'resolutionSource' : 'qualitySource'] === 'vendor-doc-preset';
+      const unknown = options.length === 0;
       const group = select.closest?.('.param-group');
       let note = group?.querySelector('.image-capability-note');
-      if (preset && group && !note) {
+      if (group && !note) {
         note = document.createElement('small');
         note.className = 'image-capability-note';
         group.appendChild(note);
       }
       if (note) {
-        note.textContent = preset ? '文档预设·未实测' : '';
-        note.title = preset ? '依据 AI666 通用文档提供，不代表该模型的实测支持范围；生成失败时可改用自动。' : '';
-        note.hidden = !preset;
+        note.textContent = unknown ? '能力未知，使用供应商默认' : '供应商返回的模型参数';
+        note.title = unknown ? '该模型未返回此参数范围，不能确认最高档；未添加猜测选项。' : '按当前模型返回的参数范围显示；未进行付费生成实测。';
+        note.hidden = false;
       }
       select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
     }
@@ -14762,8 +14762,7 @@ function renderCanvasImageControls(node, isGenerating) {
   const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
   const qualities = getImageQualityOptions('canvas', selection.model);
   const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
-  const presetNote = metadata.resolutionSource === 'vendor-doc-preset' || metadata.qualitySource === 'vendor-doc-preset'
-    ? '<small class="image-capability-note" title="AI666 通用文档预设，非该模型实测能力；不支持时可选择自动">文档预设·未实测</small>' : '';
+  const presetNote = '<small class="image-capability-note">' + (!options.length || !qualities.length ? '部分能力未知，使用供应商默认' : '供应商返回的模型参数') + '</small>';
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
     <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select></label>

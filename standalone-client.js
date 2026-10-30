@@ -167,7 +167,10 @@
 
   function extractDiscoveredModelMetadata(item) {
     if (!item || typeof item !== 'object') return { resolutions: [] };
+    const schemas = [item.input_schema, item.inputSchema, item.parameters, item.metadata?.input_schema, item.capabilities?.input_schema];
+    const enumValues = key => schemas.flatMap(schema => normalizeResolutionValues(schema?.properties?.[key]?.enum));
     const resolutions = normalizeResolutionValues([
+      ...enumValues('resolution'),
       ...(normalizeResolutionValues(item.resolutions)),
       ...(normalizeResolutionValues(item.supported_resolutions)),
       ...(normalizeResolutionValues(item.supportedResolutions)),
@@ -180,11 +183,11 @@
       ...(normalizeResolutionValues(item.metadata?.supportedResolutions))
     ]);
     const sizeKeys = ['sizes', 'supported_sizes', 'supportedSizes', 'image_sizes', 'imageSizes', 'image_size', 'imageSize'];
-    const sizes = normalizeResolutionValues([item, item.capabilities, item.metadata, item.metadata?.capabilities]
-      .flatMap(scope => sizeKeys.flatMap(key => normalizeResolutionValues(scope?.[key]))));
+    const sizes = normalizeResolutionValues([...enumValues('size'), ...[item, item.capabilities, item.metadata, item.metadata?.capabilities]
+      .flatMap(scope => sizeKeys.flatMap(key => normalizeResolutionValues(scope?.[key])))]);
     const qualityKeys = ['qualities', 'supported_qualities', 'supportedQualities', 'quality'];
-    const qualities = normalizeResolutionValues([item, item.capabilities, item.metadata, item.metadata?.capabilities]
-      .flatMap(scope => qualityKeys.flatMap(key => normalizeResolutionValues(scope?.[key]))));
+    const qualities = normalizeResolutionValues([...enumValues('quality'), ...[item, item.capabilities, item.metadata, item.metadata?.capabilities]
+      .flatMap(scope => qualityKeys.flatMap(key => normalizeResolutionValues(scope?.[key])))]);
     return { resolutions, sizes, qualities };
   }
 
@@ -972,23 +975,6 @@
     return { credits: 0, unitCredits: 0, multiplier: operation === 'video' ? Number(duration || 1) : Number(count || 1), unit: operation === 'video' ? 'second' : operation === 'image' ? 'image' : 'request' };
   }
 
-  function withDocumentedImagePresets(provider, model, metadata = {}) {
-    let hostname = '';
-    try { hostname = new URL(provider.baseUrl).hostname.toLowerCase(); } catch { return metadata; }
-    if (hostname !== 'ai666.live' || model !== 'gpt-image-2.5-sunburst') return metadata;
-    // AI666's generic image request docs list these fields, not a per-model capability guarantee.
-    // https://ai666.live/docs — presets are explicitly labeled and never stored as detected metadata.
-    const result = { ...metadata };
-    if (!metadata.resolutions?.length && !metadata.sizes?.length) {
-      result.resolutions = ['1K', '2K', '4K'];
-      result.resolutionSource = 'vendor-doc-preset';
-    }
-    if (!metadata.qualities?.length) {
-      result.qualities = ['low', 'medium', 'high'];
-      result.qualitySource = 'vendor-doc-preset';
-    }
-    return result;
-  }
 
   function modelRows() {
     const config = readConfig();
@@ -1008,7 +994,7 @@
         || (provider.profiles || []).find(item => (item.models || []).includes(provider.model))
         || provider.profiles?.[0];
       const metadata = profile?.modelMetadata?.[model] || provider.modelMetadata?.[model] || {};
-      return provider === config.image ? withDocumentedImagePresets(profile || provider, model, metadata) : metadata;
+      return metadata;
     };
     const rowsFor = (modes, operation, providerName) => modes.flatMap(mode => configuredModels(config[providerName]).map(model =>
       row(mode, operation, model, model, providerName, model === config[providerName].model, modelMetadataFor(config[providerName], model))

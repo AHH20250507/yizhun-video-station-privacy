@@ -3487,13 +3487,15 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       const group = select.closest?.('.param-group');
       let note = group?.querySelector('.image-capability-note');
       if (group && !note) {
-        note = document.createElement('small');
+        note = document.createElement('button');
+        note.type = 'button';
         note.className = 'image-capability-note';
         group.appendChild(note);
       }
       if (note) {
-        note.textContent = getImageCapabilityDescription(metadata, field, unknown);
-        note.title = metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] || (unknown ? '该模型未返回此参数范围，不能确认最高档。' : '当前供应商返回的参数范围。');
+        note.textContent = '!';
+        note.title = getImageCapabilityDescription(metadata, field, unknown) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }
       select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
@@ -14769,12 +14771,14 @@ function renderCanvasImageControls(node, isGenerating) {
   const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
   const qualities = getImageQualityOptions('canvas', selection.model);
   const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
-  const presetNote = `<small class="image-capability-note">${escapeHTML(getImageCapabilityDescription(metadata, 'resolution', !options.length))}；${escapeHTML(getImageCapabilityDescription(metadata, 'quality', !qualities.length))}</small>`;
+  const hint = (field, unknown) => {
+    const description = escapeHTML(getImageCapabilityDescription(metadata, field, unknown) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : ''));
+    return `<button type="button" class="image-capability-note" title="${description}" aria-label="${description}">!</button>`;
+  };
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
-    <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select></label>
-    <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select></label>
-    ${presetNote}
+    <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
+    <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select>${hint('quality', !qualities.length)}</label>
   </div>`;
 }
 

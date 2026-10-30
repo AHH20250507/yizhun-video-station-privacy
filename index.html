@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="240x290" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="alternate icon" type="image/png" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
   <link rel="apple-touch-icon" href="assets/bear_head_icon_favicon.png?v=20260922_icon_b1">
-  <link rel="stylesheet" href="style.css?v=202610_multi_angle_models_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
+  <link rel="stylesheet" href="style.css?v=202610_multi_angle_count_resize_a1" data-page-node-id="vFPAu8LOXyrQ2FOCB82zUI">
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="Xfia0tnv9YtZFdUkpJZ6vF">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="WP5yeuZWbHTQwzCRjwHOZa">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" data-page-node-id="wZ5nOnch8EviNWF4OX1xMi">
@@ -651,8 +651,9 @@
             <div class="multi-angle-control-section compact" data-page-node-id="GesqfztgtPqDupbLGzSjHI">
               <label class="multi-angle-field" data-page-node-id="FNzQ8DA9dlE7dn8F9z5Wnm"><span data-page-node-id="tFvLooAWx6cxthbCHxVfGp">补充提示词</span><textarea id="multiAnglePrompt" rows="2" maxlength="1000" placeholder="可选：补充背景、光线或构图要求，不需要重复填写角度"></textarea></label>
               <div class="multi-angle-setting-row" data-page-node-id="DvfhrFkcwIGmKgneJI8tBJ">
-                <label data-page-node-id="5wqw7vZHa0j3ChWe3uYT2R"><span data-page-node-id="CL5Aoo9dlgGko8mfrQ8KsT">图片比例</span><select id="multiAngleAspect" data-page-node-id="MKENjqmULUn2isBBF9A5uC"><option value="1:1" data-page-node-id="IqrYkA5XOBJY0Aa1z11niQ">1:1</option><option value="16:9" data-page-node-id="nEG4JYBhBvGFfD2lpiEWbI">16:9</option><option value="9:16" data-page-node-id="mkJDXtlkCmzbdYDWtZQKrB">9:16</option><option value="4:3" data-page-node-id="uNA7lxOnolosPqgALZIafr">4:3</option></select></label>
+                <label data-page-node-id="5wqw7vZHa0j3ChWe3uYT2R"><span data-page-node-id="CL5Aoo9dlgGko8mfrQ8KsT">图片比例</span><select id="multiAngleAspect" data-page-node-id="MKENjqmULUn2isBBF9A5uC"><option value="1:1" data-page-node-id="IqrYkA5XOBJY0Aa1z11niQ">1:1</option><option value="16:9" selected data-page-node-id="nEG4JYBhBvGFfD2lpiEWbI">16:9</option><option value="9:16" data-page-node-id="mkJDXtlkCmzbdYDWtZQKrB">9:16</option><option value="4:3" data-page-node-id="uNA7lxOnolosPqgALZIafr">4:3</option></select></label>
                 <label data-page-node-id="ntVgq46k92v8uvX1PD1bXM"><span data-page-node-id="8G4jjMdPmRUQwIWl30pcrp">图片模型</span><select id="multiAngleModel" aria-label="图片模型" data-page-node-id="OMCF5G8Zt1zvtq5wlTggsJ"><option value="">读取中...</option></select></label>
+                <label for="multiAngleCount"><span>每个角度生成张数</span><input type="number" id="multiAngleCount" min="1" max="10" value="1" step="1" inputmode="numeric" aria-label="每个角度生成张数" title="每个角度生成 1–10 张；生成按钮显示合计张数"></label>
               </div>
             </div>
 
@@ -1667,9 +1668,9 @@
     </div>
   </div>
 
-  <script src="task-regeneration.js?v=202610_multi_angle_models_a1"></script>
-  <script src="standalone-client.js?v=202610_multi_angle_models_a1"></script>
-  <script src="app.js?v=202610_multi_angle_models_a1"></script>
+  <script src="task-regeneration.js?v=202610_multi_angle_count_resize_a1"></script>
+  <script src="standalone-client.js?v=202610_multi_angle_count_resize_a1"></script>
+  <script src="app.js?v=202610_multi_angle_count_resize_a1"></script>
 
   <!-- 弹窗：📚 从提示词库选择模板导入到画布节点 -->
   <div id="modalCanvasPromptPicker" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')" data-page-node-id="SwSSqwTwyRUuoRdeSVN5Pf">

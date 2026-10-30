@@ -10590,12 +10590,6 @@ const multiAngleState = {
 let multiAngleReconcilePromise = null;
 let multiAngleReconcileTimer = null;
 
-const MULTI_ANGLE_SIZE_BY_ASPECT = {
-  '1:1': '1024x1024',
-  '16:9': '1792x1024',
-  '9:16': '1024x1792',
-  '4:3': '1536x1024'
-};
 
 function getMultiAngleModel() {
   return getPreferredServerModel('multi-angle', 'image', multiAngleState.selectedModel || state.apiConfig?.imageModel);
@@ -10680,6 +10674,18 @@ function createMultiAngleFallbackScene() {
   multiAngleState.fallback = true;
   multiAngleState.scene = null;
   drawMultiAngleFallback();
+}
+
+function observeMultiAngleViewport() {
+  const viewport = document.getElementById('multiAngleViewport');
+  if (!viewport || multiAngleState.viewportObserver) return;
+  const resize = () => {
+    if (multiAngleState.scene?.resize) multiAngleState.scene.resize();
+    else drawMultiAngleFallback();
+  };
+  multiAngleState.viewportObserver = new ResizeObserver(resize);
+  multiAngleState.viewportObserver.observe(viewport);
+  window.addEventListener('resize', resize);
 }
 
 function drawMultiAngleFallback() {
@@ -10833,7 +10839,6 @@ async function createMultiAngleThreeScene() {
     };
     multiAngleState.fallback = false;
     multiAngleState.scene = { THREE, renderer, scene, camera: overviewCamera, cameraGroup, aimLine, subject, setImage, update, resize };
-    new ResizeObserver(resize).observe(viewport);
     resize();
     if (multiAngleState.sourceImage) setImage(multiAngleState.sourceImage);
     update();
@@ -10935,14 +10940,15 @@ function buildMultiAnglePrompt(pose) {
 
 function getMultiAngleGenerationPoses() {
   const batch = document.getElementById('multiAngleBatchMode')?.checked;
-  if (batch && multiAngleState.batchAngles.size) return [...multiAngleState.batchAngles.values()];
-  return [{
+  const count = clampImageCount(document.getElementById('multiAngleCount')?.value);
+  const poses = batch && multiAngleState.batchAngles.size ? [...multiAngleState.batchAngles.values()] : [{
     key: `custom_${multiAngleState.azimuth}_${multiAngleState.elevation}_${multiAngleState.distance}`,
     label: multiAngleDirectionLabel(multiAngleState.azimuth, multiAngleState.elevation),
     azimuth: multiAngleState.azimuth,
     elevation: multiAngleState.elevation,
     distance: multiAngleState.distance
   }];
+  return poses.flatMap(pose => Array.from({ length: count }, () => ({ ...pose })));
 }
 
 function updateMultiAngleGenerateState() {
@@ -10951,7 +10957,7 @@ function updateMultiAngleGenerateState() {
   button.disabled = multiAngleState.generating || !multiAngleState.source || !getMultiAngleModel();
   const label = button.querySelector('span');
   const count = getMultiAngleGenerationPoses().length;
-  if (label) label.textContent = multiAngleState.generating ? '正在生成...' : (count > 1 ? `批量生成 ${count} 个角度` : '生成对应角度');
+  if (label) label.textContent = multiAngleState.generating ? '正在生成...' : `生成 ${count} 张图片`;
 }
 
 async function updateMultiAnglePricePreview() {
@@ -11169,7 +11175,7 @@ function renderMultiAngleResults() {
 
 async function runMultiAnglePose(pose, result, submission = {}) {
   const model = submission.model || getMultiAngleModel();
-  const aspect = submission.aspect || document.getElementById('multiAngleAspect')?.value || '1:1';
+  const aspect = submission.aspect || document.getElementById('multiAngleAspect')?.value || '16:9';
   const prompt = buildMultiAnglePrompt(pose);
   const source = submission.source || multiAngleState.source;
   const regenerationRefs = [{ tag: '@图1', type: 'image', reference: source, url: source, fileName: '原始参考图' }];
@@ -11181,7 +11187,7 @@ async function runMultiAnglePose(pose, result, submission = {}) {
       operation: 'image',
       model,
       prompt,
-      input: { size: MULTI_ANGLE_SIZE_BY_ASPECT[aspect] || '1024x1024', images: [source], n: 1 },
+      input: { aspect_ratio: aspect, images: [source], n: 1 },
       regenerationRefs,
       count: 1,
       requestId
@@ -11221,7 +11227,7 @@ async function generateMultiAngleImages() {
   if (!multiAngleState.source) return showToast('请先上传原始图片', 'warning');
   const model = getMultiAngleModel();
   if (!model) return showToast('暂无可用的多角度图片模型，请在 API 设置中接入', 'error');
-  const submission = { model, aspect: document.getElementById('multiAngleAspect')?.value || '1:1', source: multiAngleState.source };
+  const submission = { model, aspect: document.getElementById('multiAngleAspect')?.value || '16:9', source: multiAngleState.source };
   const poses = getMultiAngleGenerationPoses();
   multiAngleState.generating = true;
   updateMultiAngleGenerateState();
@@ -11235,7 +11241,7 @@ async function generateMultiAngleImages() {
   multiAngleState.results.unshift(...pending);
   renderMultiAngleResults();
   document.querySelector('.multi-angle-results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showToast(`已提交 ${poses.length} 个角度`);
+  showToast(`已提交 ${poses.length} 张图片`);
   let cursor = 0;
   const worker = async () => {
     while (cursor < pending.length) {
@@ -11247,7 +11253,7 @@ async function generateMultiAngleImages() {
   multiAngleState.generating = false;
   updateMultiAngleGenerateState();
   const completed = pending.filter(item => item.status === 'completed').length;
-  showToast(completed === pending.length ? `已完成 ${completed} 个角度` : `完成 ${completed}/${pending.length}，部分任务生成失败`, completed ? 'success' : 'error');
+  showToast(completed === pending.length ? `已完成 ${completed} 张图片` : `完成 ${completed}/${pending.length}，部分任务生成失败`, completed ? 'success' : 'error');
 }
 
 async function handleMultiAngleResultAction(event) {
@@ -11396,6 +11402,12 @@ function initMultiAngleCreator() {
     updateMultiAngleGenerateState();
   });
   document.getElementById('multiAngleAspect')?.addEventListener('change', updateMultiAnglePricePreview);
+  const countInput = document.getElementById('multiAngleCount');
+  countInput?.addEventListener('input', updateMultiAngleGenerateState);
+  countInput?.addEventListener('change', () => {
+    countInput.value = String(clampImageCount(countInput.value));
+    updateMultiAngleGenerateState();
+  });
   document.getElementById('btnMultiAngleGenerate')?.addEventListener('click', generateMultiAngleImages);
   document.getElementById('multiAngleResults')?.addEventListener('click', handleMultiAngleResultAction);
   document.getElementById('btnMultiAngleClearResults')?.addEventListener('click', () => {
@@ -11412,11 +11424,8 @@ function initMultiAngleCreator() {
   loadMultiAngleResults();
   syncMultiAngleControls({ price: false });
   renderMultiAngleModel();
+  observeMultiAngleViewport();
   void createMultiAngleThreeScene();
-  window.addEventListener('resize', () => {
-    multiAngleState.scene?.resize?.();
-    drawMultiAngleFallback();
-  });
 }
 
 window.initMultiAngleCreator = initMultiAngleCreator;

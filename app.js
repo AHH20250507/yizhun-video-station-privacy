@@ -4029,10 +4029,16 @@ function matchPromptImageReferences(text, refs = []) {
   const images = refs.filter(item => item.type === 'image');
   const missing = new Set();
   let matched = 0;
-  const result = String(text || '').replace(/@图\s*([1-9]\d*)(?![\d.．])|(?:@图片|(?<![@\w])图片)\s*([1-9]\d*)(?![\d.．])/g, (label, tagDigits, imageDigits) => {
-
+  const result = String(text || '').replace(/@图\s*([1-9]\d*)(?![\d.．])|(?:@图片|(?<![@\w])图片|@图|(?<![@\w截])图)\s*([1-9]\d*(?![\d.．])|[一二两三四五六七八九十]+(?![\d.．零〇一二两三四五六七八九十百千万亿]))/g, (label, tagDigits, imageDigits) => {
     const digits = tagDigits || imageDigits;
-    const index = Number(digits);
+    const chineseDigits = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+    let index;
+    if (/^[1-9]\d*$/.test(digits)) index = Number(digits);
+    else if (/^[一二两三四五六七八九]$/.test(digits)) index = chineseDigits[digits];
+    else if (/^[一二三四五六七八九]?十[一二三四五六七八九]?$/.test(digits)) {
+      const [tens, units] = digits.split('十');
+      index = (chineseDigits[tens] || 1) * 10 + (chineseDigits[units] || 0);
+    } else return label;
     const item = tagDigits ? refs.find(ref => ref.tag === `@图${index}`) : images[index - 1];
     if (!item || !/^@图[1-9]\d*$/.test(item.tag || '') || !(item.reference || item.url)) {
       missing.add(index);
@@ -4056,7 +4062,7 @@ function autoMatchPromptImages() {
   const status = document.getElementById('promptImageMatchStatus');
   if (status) status.textContent = result.missing.length
     ? `未匹配：${result.missing.map(index => `图片${index}`).join('、')}，请先导入对应图片`
-    : (result.matched ? `已嵌入 ${result.matched} 处图片引用` : '没有待匹配的“图片+编号”文字');
+    : (result.matched ? `已嵌入 ${result.matched} 处图片引用` : '没有待匹配的“图片/图+数字或中文编号”文字');
   return result;
 }
 

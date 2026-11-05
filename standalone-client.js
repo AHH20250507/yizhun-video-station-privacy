@@ -167,7 +167,7 @@
 
   function extractDiscoveredModelMetadata(item) {
     if (!item || typeof item !== 'object') return { resolutions: [] };
-    const schemas = [item.input_schema, item.inputSchema, item.parameters, item.metadata?.input_schema, item.capabilities?.input_schema];
+    const schemas = [item.input_schema, item.inputSchema, item.schema, item.parameters, item.metadata?.input_schema, item.capabilities?.input_schema];
     const enumValues = key => schemas.flatMap(schema => normalizeResolutionValues(schema?.properties?.[key]?.enum));
     const resolutions = normalizeResolutionValues([
       ...enumValues('resolution'),
@@ -188,14 +188,20 @@
     const qualityKeys = ['qualities', 'supported_qualities', 'supportedQualities', 'quality'];
     const qualities = normalizeResolutionValues([...enumValues('quality'), ...[item, item.capabilities, item.metadata, item.metadata?.capabilities]
       .flatMap(scope => qualityKeys.flatMap(key => normalizeResolutionValues(scope?.[key])))]);
-    return { resolutions, sizes, qualities };
+    const formatKeys = ['outputFormats', 'output_formats', 'supported_output_formats', 'formats'];
+    const outputFormats = [...new Set(normalizeResolutionValues([
+      ...enumValues('output_format'),
+      ...[item, item.capabilities, item.metadata, item.metadata?.capabilities]
+        .flatMap(scope => formatKeys.flatMap(key => normalizeResolutionValues(scope?.[key])))
+    ]).map(value => value.toLowerCase()).filter(value => ['png', 'jpeg', 'webp', 'gif'].includes(value)))];
+    return { resolutions, sizes, qualities, outputFormats };
   }
 
   function normalizeModelMetadata(metadata = {}) {
     if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return {};
     return Object.fromEntries(Object.entries(metadata).map(([model, value]) => [
       String(model || '').trim(),
-      { resolutions: normalizeResolutionValues(value?.resolutions || value?.supported_resolutions || value?.supportedResolutions), sizes: extractDiscoveredModelMetadata(value).sizes || [], qualities: extractDiscoveredModelMetadata(value).qualities || [] }
+      { resolutions: normalizeResolutionValues(value?.resolutions || value?.supported_resolutions || value?.supportedResolutions), sizes: extractDiscoveredModelMetadata(value).sizes || [], qualities: extractDiscoveredModelMetadata(value).qualities || [], outputFormats: extractDiscoveredModelMetadata(value).outputFormats || [] }
     ]).filter(([model]) => model));
   }
 
@@ -486,7 +492,7 @@
       const base64Field = ['b64_json', 'base64', 'image_base64'].includes(key);
       if (!base64Field && !/^data:image\/[a-z0-9.+-]+;base64,/i.test(source)) continue;
       const comma = /^data:/i.test(source) ? source.indexOf(',') : -1;
-      const mime = comma >= 0 ? source.slice(5, source.indexOf(';')) : 'image/png';
+      let mime = comma >= 0 ? source.slice(5, source.indexOf(';')) : 'image/png';
       const encoded = (comma >= 0 ? source.slice(comma + 1) : source).replace(/[\t\n\f\r ]/g, '');
       const parts = [];
       // Decode bounded chunks, not a second full-size binary string.
@@ -496,6 +502,15 @@
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         parts.push(bytes);
       }
+      const header = parts[0];
+      // Only known raster signatures override a declared MIME; keep the original bytes and all frames.
+      if (header?.length >= 6 && header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46
+        && header[3] === 0x38 && [0x37, 0x39].includes(header[4]) && header[5] === 0x61) mime = 'image/gif';
+      else if (header?.length >= 3 && header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff) mime = 'image/jpeg';
+      else if (header?.length >= 8 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+        .every((byte, index) => header[index] === byte)) mime = 'image/png';
+      else if (header?.length >= 12 && [0x52, 0x49, 0x46, 0x46].every((byte, index) => header[index] === byte)
+        && [0x57, 0x45, 0x42, 0x50].every((byte, index) => header[index + 8] === byte)) mime = 'image/webp';
       const url = URL.createObjectURL(new Blob(parts, { type: mime }));
       if (base64Field) { delete data[key]; data.url = url; }
       else data[key] = url;
@@ -743,6 +758,15 @@
     try {
       throwIfGenerationCanceled(task, signal);
       const provider = configuredProvider(operation, model);
+      if (operation === 'image' && Object.prototype.hasOwnProperty.call(input, 'output_format')) {
+        if (!['png', 'jpeg', 'webp', 'gif'].includes(input.output_format)) {
+          throw new Error('output_format 仅支持 png、jpeg、webp、gif');
+        }
+        const createPath = new URL(joinUrl(provider.baseUrl, provider.createPath)).pathname;
+        if (input.output_format === 'gif' && /\/images\/edits\/?$/i.test(createPath)) {
+          throw new Error('GIF 输出不支持 /images/edits，请使用图片生成接口；参考素材未被丢弃');
+        }
+      }
       if (['image', 'video'].includes(operation)) window.TaskRegeneration.validate(regenerationSnapshots.get(task.id));
       const prepared = await prepareProviderInput(input, provider);
       throwIfGenerationCanceled(task, signal);

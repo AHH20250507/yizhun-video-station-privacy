@@ -941,7 +941,7 @@ function startNewLocalConversation() {
   }
   const expand = document.getElementById('chatExpandScriptToggle');
   if (expand) expand.checked = false;
-  for (const id of ['chatImageResolutionSelect', 'chatImageQualitySelect']) {
+  for (const id of ['chatImageResolutionSelect', 'chatImageQualitySelect', 'chatImageFormatSelect']) {
     const select = document.getElementById(id);
     if (select) select.dataset.model = '';
   }
@@ -1334,7 +1334,7 @@ const SessionSystem = (() => {
       imageSize: backendTask.input?.size || previous?.imageSize || '',
       imageResolution: backendTask.input?.resolution || previous?.imageResolution || '',
       count,
-      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || previous?.options?.size || '', resolution: backendTask.input?.resolution || previous?.options?.resolution || '', quality: backendTask.input?.quality || previous?.options?.quality || '', count },
+      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || previous?.options?.size || '', resolution: backendTask.input?.resolution || previous?.options?.resolution || '', quality: backendTask.input?.quality || previous?.options?.quality || '', output_format: backendTask.input?.output_format || previous?.options?.output_format || '', count },
       status,
       progress: status === 'completed' ? 100 : (isTerminal ? 100 : Math.min(92, Math.max(Number(previous?.progress || 5), Number(backendTask.progress || backendTask.output?.progress || 0)))),
       reservedCredits: Number(backendTask.reservedCredits || previous?.reservedCredits || 0),
@@ -3461,10 +3461,18 @@ function getImageGenerationSelection(mode, model, aspectRatio, requested = '', r
   return { model, aspectRatio, ...(selected?.size ? { size: selected.size } : {}), ...(selected?.resolution ? { resolution: selected.resolution } : {}), ...(quality ? { quality } : {}) };
 }
 
+function getImageFormatOptions(mode, model) {
+  const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
+  const officialGif = ['gpt-image-2.6-flare', 'gpt-image-2.6-sunburst'].includes(model);
+  const officialRaster = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(model);
+  const values = metadata.outputFormats?.length ? metadata.outputFormats : officialGif ? ['png', 'jpeg', 'webp', 'gif'] : officialRaster ? ['png', 'jpeg', 'webp'] : [];
+  return [...new Set(values)].filter(value => ['png', 'jpeg', 'webp', 'gif'].includes(value)).map(value => ({ value, label: value === 'gif' ? 'GIF 动图' : value.toUpperCase() }));
+}
+
 function captureChatImageSettings() {
   const settings = {};
-  for (const field of ['resolution', 'quality']) {
-    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+  for (const field of ['resolution', 'quality', 'format']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
     if (select) settings[field] = { value: select.value, explicitAuto: select.dataset.explicitAuto === 'true' };
   }
   return settings;
@@ -3473,8 +3481,8 @@ function captureChatImageSettings() {
 function restoreChatImageSettings(model, aspectRatio, settings = {}) {
   // Build this model's options before assigning a saved value to a native select.
   syncChatImageResolutionControl(model, aspectRatio);
-  for (const field of ['resolution', 'quality']) {
-    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+  for (const field of ['resolution', 'quality', 'format']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
     if (!select) continue;
     select.dataset.model = settings[field] ? model : '';
     select.dataset.explicitAuto = settings[field]?.explicitAuto ? 'true' : 'false';
@@ -3493,11 +3501,12 @@ function getImageCapabilityDescription(metadata, field, unknown) {
 function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectSelect?.value || state.chatImageAspect || '16:9') {
   const result = { model, aspectRatio };
   const metadata = getServerModels('creation', 'image').find(item => item.model === model)?.metadata || {};
-  for (const field of ['resolution', 'quality']) {
-    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : 'chatImageQualitySelect');
+  for (const field of ['resolution', 'quality', 'format']) {
+    const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
+    if (field === 'format' && !select) continue;
     const sameModel = select?.dataset.model === model;
     const requested = sameModel ? select.value : undefined;
-    const options = field === 'resolution' ? getImageResolutionOptions('creation', model, aspectRatio) : getImageQualityOptions('creation', model);
+    const options = field === 'resolution' ? getImageResolutionOptions('creation', model, aspectRatio) : field === 'quality' ? getImageQualityOptions('creation', model) : getImageFormatOptions('creation', model);
     const explicitAuto = sameModel && requested === '' && select.dataset.explicitAuto === 'true';
     const selected = explicitAuto ? undefined : (options.find(option => option.value === requested) || (!sameModel && field === 'quality' ? options.find(option => option.default) : undefined));
     if (select) {
@@ -3516,17 +3525,27 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       }
       if (note) {
         note.textContent = '!';
-        note.title = (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.title = field === 'format' ? '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧尺寸使用自动，帧数和速度使用供应商默认。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
         note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }
-      select.onchange = () => { select.dataset.explicitAuto = select.value === '' ? 'true' : 'false'; };
+      select.onchange = () => {
+        select.dataset.explicitAuto = select.value === '' ? 'true' : 'false';
+        if (field === 'format') syncChatImageResolutionControl(model, aspectRatio);
+      };
     }
     if (selected) {
-      if (field === 'quality') result.quality = selected.value;
+      if (field === 'format') result.output_format = selected.value;
+      else if (field === 'quality') result.quality = selected.value;
       else if (selected.size) result.size = selected.size;
       else result.resolution = selected.resolution;
     }
+  }
+  if (result.output_format === 'gif') { delete result.size; delete result.resolution; }
+  const resolutionSelect = document.getElementById('chatImageResolutionSelect');
+  if (resolutionSelect) {
+    resolutionSelect.disabled = result.output_format === 'gif';
+    if (result.output_format === 'gif') resolutionSelect.value = '';
   }
   return result;
 }
@@ -3841,6 +3860,7 @@ function syncChatGenerationMode(mode, options = {}) {
   el.chatImageAspectGroup?.classList.toggle('hidden', !isImageMode);
   document.getElementById('chatImageResolutionGroup')?.classList.toggle('hidden', !isImageMode);
   document.getElementById('chatImageQualityGroup')?.classList.toggle('hidden', !isImageMode);
+  document.getElementById('chatImageFormatGroup')?.classList.toggle('hidden', !isImageMode);
   el.chatImageCountGroup?.classList.toggle('hidden', !isImageMode);
 
   renderChatImageModel();
@@ -8334,7 +8354,7 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
 }
 
 async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, originSessionId = null, count = 1, imageSelection = syncChatImageResolutionControl(state.apiConfig.imageModel, aspectRatio)) {
-  const { model, size, resolution, quality } = imageSelection;
+  const { model, size, resolution, quality, output_format } = imageSelection;
   const normalizedCount = clampImageCount(count);
   if (!model) {
     showToast('暂无可用图片模型，请联系管理员启用模型', 'error');
@@ -8353,7 +8373,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     imageResolution: resolution,
     status: 'in_progress',
     progress: 10,
-    options: { generationMode: 'image', model, aspectRatio, size, resolution, quality, count: normalizedCount, refMediaList: clone(refMediaList) },
+    options: { generationMode: 'image', model, aspectRatio, size, resolution, quality, output_format, count: normalizedCount, refMediaList: clone(refMediaList) },
     count: normalizedCount,
     providerJobs: window.STANDALONE_MODE && normalizedCount > 1
       ? Array.from({ length: normalizedCount }, (_, index) => ({ index, status: index < 3 ? 'running' : 'queued', output: {}, errorMessage: null }))
@@ -8385,6 +8405,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
       size,
       resolution,
       quality,
+      output_format,
       aspectRatio,
       mode: 'creation',
       model,
@@ -8487,7 +8508,9 @@ async function downloadGeneratedMedia(source, filename, options = {}) {
     if (!blob.size) throw new Error('下载内容为空');
     const objectUrl = URL.createObjectURL(blob);
     try {
-      triggerBrowserDownload(objectUrl, filename);
+      const imageExtensions = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
+      const imageExtension = options.image && imageExtensions[blob.type.split(';')[0].toLowerCase()];
+      triggerBrowserDownload(objectUrl, imageExtension ? filename.replace(/\.[a-z0-9]+$/i, '.' + imageExtension) : filename);
     } finally {
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
     }
@@ -8512,7 +8535,7 @@ async function downloadGeneratedImage(source, task) {
   try {
     const dataImageMatch = String(source || '').match(/^data:image\/([a-zA-Z0-9.+-]+);/i);
     const extension = dataImageMatch ? (dataImageMatch[1].toLowerCase() === 'jpeg' ? 'jpg' : dataImageMatch[1].toLowerCase()) : 'png';
-    await downloadGeneratedMedia(source, `${getGeneratedFileStem(task, 'image')}.${extension}`, { safeUrl: true, allowDataImage: true });
+    await downloadGeneratedMedia(source, `${getGeneratedFileStem(task, 'image')}.${extension}`, { safeUrl: true, allowDataImage: true, image: true });
   } catch (error) {
     showToast(`图片下载失败：${error.message}`, 'error');
   }
@@ -13837,8 +13860,9 @@ async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
     model,
     prompt: prompt || '基于所有参考图片生成一张风格与主体一致的新图片',
     input: {
-      ...(size ? { size } : {}),
-      ...(imageOptions.resolution ? { resolution: imageOptions.resolution } : {}),
+      ...(imageOptions.output_format === 'gif' ? { size: 'auto' } : size ? { size } : {}),
+      ...(imageOptions.resolution && imageOptions.output_format !== 'gif' ? { resolution: imageOptions.resolution } : {}),
+      ...(imageOptions.output_format ? { output_format: imageOptions.output_format } : {}),
       ...(imageOptions.quality ? { quality: imageOptions.quality } : {}),
       ...(imageOptions.aspectRatio ? { aspect_ratio: imageOptions.aspectRatio } : {}),
       images: imageSources || [],
@@ -14813,6 +14837,10 @@ function getCanvasImageSelection(node) {
   node.imageResolutionModel = model;
   node.imageResolution = selection.size || selection.resolution || '';
   node.imageQuality = selection.quality || '';
+  const format = sameModel ? node.imageOutputFormat : '';
+  node.imageOutputFormat = format && getImageFormatOptions('canvas', model).some(option => option.value === format) ? format : '';
+  if (node.imageOutputFormat) selection.output_format = node.imageOutputFormat;
+  if (selection.output_format === 'gif') { delete selection.size; delete selection.resolution; node.imageResolution = ''; }
   if (!sameModel) node.imageQualityAuto = false;
   return selection;
 }
@@ -14821,6 +14849,7 @@ function renderCanvasImageControls(node, isGenerating) {
   const selection = getCanvasImageSelection(node);
   const options = getImageResolutionOptions('canvas', selection.model, selection.aspectRatio);
   const qualities = getImageQualityOptions('canvas', selection.model);
+  const formats = getImageFormatOptions('canvas', selection.model);
   const metadata = getServerModels('canvas', 'image').find(item => item.model === selection.model)?.metadata || {};
   const hint = (field, unknown) => {
     const description = escapeHTML((field === 'quality' && qualities.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : ''));
@@ -14828,8 +14857,9 @@ function renderCanvasImageControls(node, isGenerating) {
   };
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
-    <label>分辨率<select aria-label="图片分辨率" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
+    <label>分辨率<select aria-label="图片分辨率" title="GIF 帧尺寸使用自动" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating || selection.output_format === 'gif' ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
     <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select>${hint('quality', !qualities.length)}</label>
+    <label>格式<select aria-label="图片输出格式" title="GIF 仅支持生成接口，需供应商开通动图权限；帧尺寸自动，帧数与速度使用供应商默认" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'format', this.value)" ${isGenerating ? 'disabled' : ''}><option value="">模型默认 / 自动</option>${formats.map(option => `<option value="${option.value}" ${option.value === node.imageOutputFormat ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
   </div>`;
 }
 
@@ -14845,6 +14875,7 @@ function updateCanvasImageControl(nodeId, field, value) {
     node.imageQuality = value;
     node.imageQualityAuto = value === '';
   }
+  if (field === 'format') node.imageOutputFormat = value;
   getCanvasImageSelection(node);
   saveCanvasState();
   renderCanvasNodesAndLines();

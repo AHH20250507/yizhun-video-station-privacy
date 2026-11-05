@@ -7,7 +7,7 @@ function source(name) { const start = app.search(new RegExp('(?:async )?function
 function context(metadata = {}, mode = 'creation') {
   const c = { state: { serverModels: [{mode, operation: 'image', model: 'model', metadata}], apiConfig: {imageModel:'model'} }, el: {}, document: {getElementById:()=>null} };
   vm.createContext(c);
-  for (const name of ['getServerModels', 'getPreferredServerModel', 'getImageCapabilityDescription', 'getImageResolutionOptions', 'getImageQualityOptions', 'getImageGenerationSelection']) vm.runInContext(source(name), c);
+  for (const name of ['getServerModels', 'getPreferredServerModel', 'getImageCapabilityDescription', 'getImageFormatOptions', 'getImageResolutionOptions', 'getImageQualityOptions', 'getImageGenerationSelection']) vm.runInContext(source(name), c);
   return c;
 }
 test('explicit pixel sizes honor explicit sizes only within the current aspect ratio', () => {

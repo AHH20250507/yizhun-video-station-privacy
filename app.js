@@ -3465,8 +3465,11 @@ function getImageFormatOptions(mode, model) {
   const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
   const officialGif = ['gpt-image-2.6-flare', 'gpt-image-2.6-sunburst'].includes(model);
   const officialRaster = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(model);
-  const values = metadata.outputFormats?.length ? metadata.outputFormats : officialGif ? ['png', 'jpeg', 'webp', 'gif'] : officialRaster ? ['png', 'jpeg', 'webp'] : [];
-  return [...new Set(values)].filter(value => ['png', 'jpeg', 'webp', 'gif'].includes(value)).map(value => ({ value, label: value === 'gif' ? 'GIF 动图' : value.toUpperCase() }));
+  // Explicit manual passthrough for the supplier ID seen in the user's configuration.
+  // This is not an official alias mapping or a claim of supplier GIF support.
+  const manual = model === 'gpt-image-2.6-sunburst-token' && !metadata.outputFormats?.length;
+  const values = metadata.outputFormats?.length ? metadata.outputFormats : officialGif || manual ? ['png', 'jpeg', 'webp', 'gif'] : officialRaster ? ['png', 'jpeg', 'webp'] : [];
+  return [...new Set(values)].filter(value => ['png', 'jpeg', 'webp', 'gif'].includes(value)).map(value => ({ value, label: (value === 'gif' ? 'GIF 动图' : value.toUpperCase()) + (manual ? '（手动指定）' : ''), manual }));
 }
 
 function captureChatImageSettings() {
@@ -3525,7 +3528,7 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       }
       if (note) {
         note.textContent = '!';
-        note.title = field === 'format' ? '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧尺寸使用自动，帧数和速度使用供应商默认。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.title = field === 'format' ? (options.some(option => option.manual) ? '手动指定输出格式，尚未确认供应商支持；不更改原模型名。' : '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。') + 'GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧尺寸使用自动，帧数和速度使用供应商默认。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
         note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }

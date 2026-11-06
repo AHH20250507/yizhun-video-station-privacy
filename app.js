@@ -1334,7 +1334,7 @@ const SessionSystem = (() => {
       imageSize: backendTask.input?.size || previous?.imageSize || '',
       imageResolution: backendTask.input?.resolution || previous?.imageResolution || '',
       count,
-      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || previous?.options?.size || '', resolution: backendTask.input?.resolution || previous?.options?.resolution || '', quality: backendTask.input?.quality || previous?.options?.quality || '', output_format: backendTask.input?.output_format || previous?.options?.output_format || '', count },
+      options: { ...(previous?.options || {}), generationMode: 'image', aspectRatio, size: backendTask.input?.size || previous?.options?.size || '', resolution: backendTask.input?.resolution || previous?.options?.resolution || '', quality: backendTask.input?.quality || previous?.options?.quality || '', output_format: backendTask.input?.output_format || previous?.options?.output_format || '', frame_count: backendTask.input?.frame_count ?? previous?.options?.frame_count, frame_duration_ms: backendTask.input?.frame_duration_ms ?? previous?.options?.frame_duration_ms, count },
       status,
       progress: status === 'completed' ? 100 : (isTerminal ? 100 : Math.min(92, Math.max(Number(previous?.progress || 5), Number(backendTask.progress || backendTask.output?.progress || 0)))),
       reservedCredits: Number(backendTask.reservedCredits || previous?.reservedCredits || 0),
@@ -3461,6 +3461,12 @@ function getImageGenerationSelection(mode, model, aspectRatio, requested = '', r
   return { model, aspectRatio, ...(selected?.size ? { size: selected.size } : {}), ...(selected?.resolution ? { resolution: selected.resolution } : {}), ...(quality ? { quality } : {}) };
 }
 
+function getGifGenerationSettings(aspectRatio = '16:9') {
+  // Conservative client preset, not a claim about the gateway's unpublished pixel budget.
+  const sizes = { '16:9': '512x288', '9:16': '288x512', '1:1': '512x512', '4:3': '512x384' };
+  return { size: sizes[aspectRatio] || sizes['16:9'], frame_count: 9, frame_duration_ms: 200 };
+}
+
 function getImageFormatOptions(mode, model) {
   const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
   const officialGif = ['gpt-image-2.6-flare', 'gpt-image-2.6-sunburst'].includes(model);
@@ -3528,7 +3534,7 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       }
       if (note) {
         note.textContent = '!';
-        note.title = field === 'format' ? (options.some(option => option.manual) ? '手动指定输出格式，尚未确认供应商支持；不更改原模型名。' : '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。') + 'GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧尺寸使用自动，帧数和速度使用供应商默认。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.title = field === 'format' ? (options.some(option => option.manual) ? '手动指定输出格式，尚未确认供应商支持；不更改原模型名。' : '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。') + 'GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧长边 512 像素（4:3 为 512×384），9 帧，每帧 200ms；这是保守客户端预设，非供应商预算保证。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
         note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }
@@ -3544,11 +3550,14 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       else result.resolution = selected.resolution;
     }
   }
-  if (result.output_format === 'gif') { delete result.size; delete result.resolution; }
+  if (result.output_format === 'gif') { Object.assign(result, getGifGenerationSettings(aspectRatio)); delete result.resolution; }
   const resolutionSelect = document.getElementById('chatImageResolutionSelect');
   if (resolutionSelect) {
     resolutionSelect.disabled = result.output_format === 'gif';
-    if (result.output_format === 'gif') resolutionSelect.value = '';
+    if (result.output_format === 'gif') {
+      resolutionSelect.innerHTML = `<option value="">GIF ${result.size} · ${result.frame_count} 帧</option>`;
+      resolutionSelect.value = '';
+    }
   }
   return result;
 }
@@ -8071,7 +8080,7 @@ function createChatImageResultCard(container, taskId, promptText, model, aspectR
       </span>
     </div>
     <div style="font-size: 0.775rem; color: var(--text-muted); margin: 8px 0;">
-      模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 分辨率: ${escapeHTML(imageSelection.size || imageSelection.resolution || '模型默认 / 自动')} | 品质: ${escapeHTML(imageSelection.quality || '模型默认 / 自动')} | 数量: ${count} 张
+      模型: <code>${escapeHTML(model)}</code> | 比例: ${escapeHTML(aspectRatio)} | 分辨率: ${escapeHTML(imageSelection.size || imageSelection.resolution || '模型默认 / 自动')} | 品质: ${escapeHTML(imageSelection.quality || '模型默认 / 自动')} | 数量: ${count} 张${imageSelection.output_format ? ` | 格式: ${escapeHTML(imageSelection.output_format.toUpperCase())}${imageSelection.frame_count ? ` · ${escapeHTML(String(imageSelection.frame_count))} 帧 · ${escapeHTML(String(imageSelection.frame_duration_ms))}ms/帧` : ''}` : ''}
     </div>
     <div class="chat-image-batch-progress" id="chat-image-target-${taskId}"></div>
   `;
@@ -8357,7 +8366,7 @@ async function renderChatImageCardResult(card, task, imageSources = []) {
 }
 
 async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, originSessionId = null, count = 1, imageSelection = syncChatImageResolutionControl(state.apiConfig.imageModel, aspectRatio)) {
-  const { model, size, resolution, quality, output_format } = imageSelection;
+  const { model, size, resolution, quality, output_format, frame_count, frame_duration_ms } = imageSelection;
   const normalizedCount = clampImageCount(count);
   if (!model) {
     showToast('暂无可用图片模型，请联系管理员启用模型', 'error');
@@ -8376,7 +8385,7 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
     imageResolution: resolution,
     status: 'in_progress',
     progress: 10,
-    options: { generationMode: 'image', model, aspectRatio, size, resolution, quality, output_format, count: normalizedCount, refMediaList: clone(refMediaList) },
+    options: { generationMode: 'image', model, aspectRatio, size, resolution, quality, output_format, frame_count, frame_duration_ms, count: normalizedCount, refMediaList: clone(refMediaList) },
     count: normalizedCount,
     providerJobs: window.STANDALONE_MODE && normalizedCount > 1
       ? Array.from({ length: normalizedCount }, (_, index) => ({ index, status: index < 3 ? 'running' : 'queued', output: {}, errorMessage: null }))
@@ -8409,6 +8418,8 @@ async function submitChatImageGeneration(promptText, refMediaList, aspectRatio, 
       resolution,
       quality,
       output_format,
+      frame_count,
+      frame_duration_ms,
       aspectRatio,
       mode: 'creation',
       model,
@@ -13856,6 +13867,7 @@ async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
   const mode = imageOptions.mode || 'creation';
   const model = getPreferredServerModel(mode, 'image', imageOptions.model || state.apiConfig.imageModel);
   const size = imageOptions.size;
+  const gifSettings = imageOptions.output_format === 'gif' ? getGifGenerationSettings(imageOptions.aspectRatio) : null;
   if (!model) throw new Error(`${mode === 'canvas' ? '画布' : '创作'}模式暂无可用图片模型，请联系管理员启用模型`);
   const created = await BackendClient.createGeneration({
     mode,
@@ -13863,7 +13875,7 @@ async function apiGenerateCanvasImage(prompt, imageSources, imageOptions = {}) {
     model,
     prompt: prompt || '基于所有参考图片生成一张风格与主体一致的新图片',
     input: {
-      ...(imageOptions.output_format === 'gif' ? { size: 'auto' } : size ? { size } : {}),
+      ...(gifSettings || (size ? { size } : {})),
       ...(imageOptions.resolution && imageOptions.output_format !== 'gif' ? { resolution: imageOptions.resolution } : {}),
       ...(imageOptions.output_format ? { output_format: imageOptions.output_format } : {}),
       ...(imageOptions.quality ? { quality: imageOptions.quality } : {}),
@@ -14843,7 +14855,7 @@ function getCanvasImageSelection(node) {
   const format = sameModel ? node.imageOutputFormat : '';
   node.imageOutputFormat = format && getImageFormatOptions('canvas', model).some(option => option.value === format) ? format : '';
   if (node.imageOutputFormat) selection.output_format = node.imageOutputFormat;
-  if (selection.output_format === 'gif') { delete selection.size; delete selection.resolution; node.imageResolution = ''; }
+  if (selection.output_format === 'gif') { Object.assign(selection, getGifGenerationSettings(aspectRatio)); delete selection.resolution; node.imageResolution = ''; }
   if (!sameModel) node.imageQualityAuto = false;
   return selection;
 }
@@ -14860,9 +14872,9 @@ function renderCanvasImageControls(node, isGenerating) {
   };
   return `<div class="canvas-image-controls">
     <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
-    <label>分辨率<select aria-label="图片分辨率" title="GIF 帧尺寸使用自动" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating || selection.output_format === 'gif' ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
+    <label>分辨率<select aria-label="图片分辨率" title="GIF 使用 512 像素长边、9 帧的小尺寸预设" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating || selection.output_format === 'gif' ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
     <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select>${hint('quality', !qualities.length)}</label>
-    <label>格式<select aria-label="图片输出格式" title="GIF 仅支持生成接口，需供应商开通动图权限；帧尺寸自动，帧数与速度使用供应商默认" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'format', this.value)" ${isGenerating ? 'disabled' : ''}><option value="">模型默认 / 自动</option>${formats.map(option => `<option value="${option.value}" ${option.value === node.imageOutputFormat ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
+    <label>格式<select aria-label="图片输出格式" title="GIF 仅支持生成接口，需供应商开通动图权限；512 像素长边、9 帧、每帧 200ms，转发兼容以供应商为准" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'format', this.value)" ${isGenerating ? 'disabled' : ''}><option value="">模型默认 / 自动</option>${formats.map(option => `<option value="${option.value}" ${option.value === node.imageOutputFormat ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
   </div>`;
 }
 

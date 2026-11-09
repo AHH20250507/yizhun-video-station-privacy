@@ -1016,7 +1016,7 @@
       if (openai2 || openai25) {
         // Useful exact-ratio choices plus largest valid 16px-aligned size for each UI ratio.
         // Official limits: edges <=3840, area 655360..8294400, aspect <=3:1.
-        result.sizes = ['1024x1024', '2048x2048', '2880x2880', '1536x864', '2048x1152', '3840x2160', '864x1536', '1152x2048', '2160x3840', '1024x768', '2048x1536', '3264x2448'];
+        result.sizes = ['1024x1024', '2048x2048', '2880x2880', '1536x864', '2048x1152', '3840x2160', '864x1536', '1152x2048', '2160x3840', '1024x768', '2048x1536', '3264x2448', '768x1024', '1536x2048', '2448x3264'];
       } else result.resolutions = googleFlash ? ['512px', '1K', '2K', '4K'] : ['1K', '2K', '4K'];
       result.resolutionSource = 'official-spec';
       if (openai2 || openai25) result.resolutionExperimentalAbove = '2560x1440';

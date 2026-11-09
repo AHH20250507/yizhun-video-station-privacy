@@ -3395,7 +3395,8 @@ const CHAT_IMAGE_SIZE_BY_ASPECT = Object.freeze({
   '16:9': '1280x720',
   '9:16': '720x1280',
   '1:1': '1024x1024',
-  '4:3': '1024x768'
+  '4:3': '1024x768',
+  '3:4': '768x1024'
 });
 
 function clampVideoDuration(value, min = 4, max = 30, fallback = 5) {
@@ -3463,7 +3464,7 @@ function getImageGenerationSelection(mode, model, aspectRatio, requested = '', r
 
 function getGifGenerationSettings(aspectRatio = '16:9') {
   // Conservative client preset, not a claim about the gateway's unpublished pixel budget.
-  const sizes = { '16:9': '512x288', '9:16': '288x512', '1:1': '512x512', '4:3': '512x384' };
+  const sizes = { '16:9': '512x288', '9:16': '288x512', '1:1': '512x512', '4:3': '512x384', '3:4': '384x512' };
   return { size: sizes[aspectRatio] || sizes['16:9'], frame_count: 9, frame_duration_ms: 200 };
 }
 
@@ -14871,7 +14872,7 @@ function renderCanvasImageControls(node, isGenerating) {
     return `<button type="button" class="image-capability-note" title="${description}" aria-label="${description}">!</button>`;
   };
   return `<div class="canvas-image-controls">
-    <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
+    <label>比例<select aria-label="图片比例" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'aspectRatio', this.value)" ${isGenerating ? 'disabled' : ''}>${['1:1', '16:9', '9:16', '4:3', '3:4'].map(value => `<option value="${value}" ${value === selection.aspectRatio ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
     <label>分辨率<select aria-label="图片分辨率" title="GIF 使用 512 像素长边、9 帧的小尺寸预设" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'resolution', this.value)" ${isGenerating || selection.output_format === 'gif' ? 'disabled' : ''}><option value="" ${!node.imageResolution ? 'selected' : ''}>模型默认 / 自动</option>${options.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageResolution ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${hint('resolution', !options.length)}</label>
     <label>品质<select aria-label="图片品质" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'quality', this.value)" ${isGenerating ? 'disabled' : ''}><option value="" ${!node.imageQuality ? 'selected' : ''}>模型默认 / 自动</option>${qualities.map(option => `<option value="${escapeHTML(option.value)}" ${option.value === node.imageQuality ? 'selected' : ''}>${escapeHTML(option.value)}</option>`).join('')}</select>${hint('quality', !qualities.length)}</label>
     <label>格式<select aria-label="图片输出格式" title="GIF 仅支持生成接口，需供应商开通动图权限；512 像素长边、9 帧、每帧 200ms，转发兼容以供应商为准" onchange="updateCanvasImageControl('${escapeHTML(node.id)}', 'format', this.value)" ${isGenerating ? 'disabled' : ''}><option value="">模型默认 / 自动</option>${formats.map(option => `<option value="${option.value}" ${option.value === node.imageOutputFormat ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
@@ -14881,7 +14882,7 @@ function renderCanvasImageControls(node, isGenerating) {
 function updateCanvasImageControl(nodeId, field, value) {
   const node = canvasState.nodes.find(item => item.id === nodeId && item.type === 'asset');
   if (!node || ['submitting', 'generating'].includes(node.status)) return;
-  if (field === 'aspectRatio' && ['1:1', '16:9', '9:16', '4:3'].includes(value)) node.imageAspectRatio = value;
+  if (field === 'aspectRatio' && ['1:1', '16:9', '9:16', '4:3', '3:4'].includes(value)) node.imageAspectRatio = value;
   if (field === 'resolution') {
     node.imageResolution = value;
     node.imageResolutionAuto = value === '';

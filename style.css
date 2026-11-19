@@ -7368,6 +7368,7 @@ body.space-panning-active * {
 }
 
 .chat-image-result-grid img.task-image-preview,
+.chat-image-job-card.is-completed .chat-image-job-visual img,
 .multi-angle-result-media img { cursor: zoom-in; }
 .generated-image-preview { width: 96vw; height: 94dvh; max-width: 1600px; max-height: 94dvh; padding: 0; border: 0; border-radius: 14px; background: #10141d; color: #fff; overflow: hidden; }
 .generated-image-preview::backdrop { background: rgba(0, 0, 0, .82); }

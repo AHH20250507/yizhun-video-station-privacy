@@ -8007,6 +8007,7 @@ function getImageJobUiStatus(job, parentStatus = 'in_progress') {
 }
 
 function renderChatImageBatchProgress(task, card = null) {
+  if (task.status === 'canceled') return;
   const targetCard = card || document.getElementById(`task-card-${task.taskId}`);
   const target = targetCard?.querySelector(`#chat-image-target-${task.taskId}`);
   if (!target) return;
@@ -8028,38 +8029,53 @@ function renderChatImageBatchProgress(task, card = null) {
     ? `完成 ${completedCount}/${expectedCount}，异常 ${failedCount}`
     : `已完成 ${completedCount}/${expectedCount}`;
   const badge = targetCard?.querySelector(`#chat-image-badge-${task.taskId}`);
-  const markup = `
-    <div class="chat-image-batch-summary">
-      <span><strong>批量生成进度</strong><small>${summary}</small></span>
-      <b>${overallProgress}%</b>
-    </div>
-    <div class="chat-image-batch-overall" role="progressbar" aria-label="批量图片总体进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${overallProgress}"><i style="width:${overallProgress}%"></i></div>
-    <div class="chat-image-job-grid">
-      ${rows.map((job, index) => {
-        const uiStatus = getImageJobUiStatus(job, task.status);
-        const source = extractImageSourcesFromOutput(job.output || {})[0] || '';
-        const providerTaskLabel = job.providerTaskId ? `任务 ${String(job.providerTaskId).slice(0, 10)}… · ` : '';
-        const detail = uiStatus.key === 'failed' ? escapeHTML(job.errorMessage || '接口返回异常') : `${providerTaskLabel}${rowProgress[index]}%`;
-        return `<div class="chat-image-job-card is-${uiStatus.key}" data-image-job-index="${index}">
-          <div class="chat-image-job-visual">
-            ${source && uiStatus.key === 'completed'
-              ? `<img src="${escapeHTML(source)}" alt="第 ${index + 1} 张生成结果">`
-              : `<span class="chat-image-job-state-icon" aria-hidden="true"></span>`}
-          </div>
-          <div class="chat-image-job-copy">
-            <span><strong>第 ${index + 1} 张</strong><em>${uiStatus.label}</em></span>
-            <small title="${detail}">${detail}</small>
-          </div>
-          <div class="chat-image-job-progress"><i style="width:${rowProgress[index]}%"></i></div>
-        </div>`;
-      }).join('')}
-    </div>
-  `;
-  if (target.__progressMarkup === markup) return;
-  target.__progressMarkup = markup;
+  const rowMarkup = rows.map((job, index) => {
+    const uiStatus = getImageJobUiStatus(job, task.status);
+    const source = uiStatus.key === 'completed'
+      ? safeMediaUrl(extractImageSourcesFromOutput(job.output || {})[0], { allowDataImage: true })
+      : '';
+    const providerTaskLabel = job.providerTaskId ? `任务 ${String(job.providerTaskId).slice(0, 10)}… · ` : '';
+    const detail = escapeHTML(uiStatus.key === 'failed' ? (job.errorMessage || '接口返回异常') : `${providerTaskLabel}${rowProgress[index]}%`);
+    return `<div class="chat-image-job-card is-${uiStatus.key}" data-image-job-index="${index}">
+      <div class="chat-image-job-visual">
+        ${source
+          ? `<img src="${escapeHTML(source)}" alt="第 ${index + 1} 张生成结果" title="双击放大预览">`
+          : `<span class="chat-image-job-state-icon" aria-hidden="true"></span>`}
+      </div>
+      <div class="chat-image-job-copy">
+        <span><strong>第 ${index + 1} 张</strong><em>${uiStatus.label}</em></span>
+        <small title="${detail}">${detail}</small>
+      </div>
+      <div class="chat-image-job-progress"><i style="width:${rowProgress[index]}%"></i></div>
+    </div>`;
+  });
   if (badge && badge.textContent !== `生成中 · ${summary}`) badge.textContent = `生成中 · ${summary}`;
   if (target.className !== 'chat-image-batch-progress') target.className = 'chat-image-batch-progress';
-  target.innerHTML = markup;
+  let grid = target.querySelector('.chat-image-job-grid');
+  const previous = grid?.__batchProgress;
+  if (!previous || grid.children.length !== expectedCount) {
+    target.innerHTML = `
+      <div class="chat-image-batch-summary">
+        <span><strong>批量生成进度</strong><small>${summary}</small></span>
+        <b>${overallProgress}%</b>
+      </div>
+      <div class="chat-image-batch-overall" role="progressbar" aria-label="批量图片总体进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${overallProgress}"><i style="width:${overallProgress}%"></i></div>
+      <div class="chat-image-job-grid">${rowMarkup.join('')}</div>`;
+    grid = target.querySelector('.chat-image-job-grid');
+  } else {
+    if (previous.summary !== summary) target.querySelector('.chat-image-batch-summary small').textContent = summary;
+    if (previous.overallProgress !== overallProgress) {
+      target.querySelector('.chat-image-batch-summary b').textContent = `${overallProgress}%`;
+      const meter = target.querySelector('.chat-image-batch-overall');
+      meter.setAttribute('aria-valuenow', overallProgress);
+      meter.firstElementChild.style.width = `${overallProgress}%`;
+    }
+    // Keep loaded thumbnails mounted so siblings' progress can't interrupt a double click.
+    rowMarkup.forEach((markup, index) => {
+      if (previous.rowMarkup[index] !== markup) grid.children[index].outerHTML = markup;
+    });
+  }
+  grid.__batchProgress = { summary, overallProgress, rowMarkup };
 }
 
 function cleanChatImageResponse(card) {
@@ -8295,8 +8311,8 @@ function openGeneratedImagePreview(source, title = '生成图片') {
 
 function initGeneratedImagePreview() {
   document.addEventListener('dblclick', event => {
-    const image = event.target.closest('.chat-image-result-grid img.task-image-preview, .multi-angle-result-media img, .canvas-pure-image img');
-    if (!image) return;
+    const image = event.target.closest('.chat-image-result-grid img.task-image-preview, .chat-image-job-card.is-completed .chat-image-job-visual img, .multi-angle-result-media img, .canvas-pure-image img');
+    if (!image?.naturalWidth) return;
     event.preventDefault();
     event.stopPropagation();
     openGeneratedImagePreview(image.currentSrc || image.getAttribute('src'), image.alt);

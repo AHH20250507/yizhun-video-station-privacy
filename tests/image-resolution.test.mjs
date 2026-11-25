@@ -22,9 +22,9 @@ test('unknown capability labels are selectable but not claimed as highest; missi
   assert.equal(c.getImageGenerationSelection('creation', 'model', '1:1').resolution, undefined);
   assert.equal(c.getImageGenerationSelection('creation', 'model', '1:1', 'ultra').resolution, 'ultra');
   assert.equal(context().getImageGenerationSelection('creation', 'model', '16:9').size, undefined);
-  assert.equal(context({sizes:['1K','4K','2K']}).getImageGenerationSelection('creation', 'model', '16:9').resolution, undefined);
+  assert.equal(context({sizes:['1K','4K','2K']}).getImageGenerationSelection('creation', 'model', '16:9').resolution, '4K');
 });
-test('creation model switch defaults automatic but rerender and mode toggles preserve a manual lower tier', () => {
+test('creation model switch defaults to its highest tier and rerender preserves a manual lower tier', () => {
   const c = context({resolutions:['1K','4K']});
   c.state.serverModels.push({mode:'creation', operation:'image', model:'other', metadata:{resolutions:['2K','8K']}});
   const select = {value:'',dataset:{},innerHTML:''};
@@ -32,12 +32,21 @@ test('creation model switch defaults automatic but rerender and mode toggles pre
   c.escapeHTML = String;
   vm.runInContext(source('syncChatImageResolutionControl'), c);
   c.syncChatImageResolutionControl('model', '1:1');
-  assert.equal(select.value, '');
+  assert.equal(select.value, '4K');
   select.value = '1K';
+  select.onchange();
   c.syncChatImageResolutionControl('model', '1:1');
   assert.equal(select.value, '1K');
   c.syncChatImageResolutionControl('other', '1:1');
-  assert.equal(select.value, '');
+  assert.equal(select.value, '8K');
+});
+test('creation chooses the highest declared pixel size compatible with the current ratio', () => {
+  const c = context({sizes:['8192x8192','1920x1080','3840x2160','3264x2448','768x1024','2448x3264']});
+  vm.runInContext(source('syncChatImageResolutionControl'), c);
+  assert.equal(c.syncChatImageResolutionControl('model', '16:9').size, '3840x2160');
+  assert.equal(c.syncChatImageResolutionControl('model', '3:4').size, '2448x3264');
+  assert.equal(c.syncChatImageResolutionControl('model', '4:3').size, '3264x2448');
+  assert.equal(c.syncChatImageResolutionControl('model', '9:16').size, undefined);
 });
 test('image request sends captured tier and aspect without fabricated pixel sizes', async () => {
   const c = context({resolutions:['1K','4K']}, 'canvas');
@@ -99,7 +108,7 @@ test('restored cards and exact regeneration display original resolution, never c
   assert.match(source('jumpToTaskInChat'), /createChatImageResultCard\([^\n]+historyTask\.options/);
   assert.match(source('regenerateGenerationTask'), /createChatImageResultCard\([^\n]+request\.input\)/);
 });
-test('capabilities arriving after initial empty catalog remain automatic while explicit auto remains auto', () => {
+test('late capabilities fill the highest default but do not override explicit auto', () => {
   const c=context();
   const select={value:'',dataset:{},innerHTML:''};
   c.document.getElementById=id=>id==='chatImageResolutionSelect'?select:null;
@@ -108,7 +117,7 @@ test('capabilities arriving after initial empty catalog remain automatic while e
   c.syncChatImageResolutionControl('model','1:1');
   c.state.serverModels[0].metadata={resolutions:['1K','4K']};
   c.syncChatImageResolutionControl('model','1:1');
-  assert.equal(select.value,'');
+  assert.equal(select.value,'4K');
   select.value='';
   select.onchange();
   assert.equal(c.syncChatImageResolutionControl('model','1:1').resolution,undefined);
@@ -149,24 +158,24 @@ test('image quality uses only declared semantic tiers and preserves original sup
   const c=context({resolutions:['1K','4K'],qualities:['low','STANDARD','HD','medium']});
   vm.runInContext(source('getImageQualityOptions'),c);
   const highest=c.getImageGenerationSelection('creation','model','16:9');
-  assert.equal(highest.quality,undefined);
-  assert.equal(highest.resolution,undefined);
+  assert.equal(highest.quality,'HD');
+  assert.equal(highest.resolution,'4K');
   const custom=c.getImageGenerationSelection('creation','model','16:9','1K','STANDARD');
   assert.equal(custom.quality,'STANDARD');
   assert.equal(custom.resolution,'1K');
   assert.equal(context({qualities:['ultra','cinematic']}).getImageGenerationSelection('creation','model','1:1').quality,undefined);
   assert.equal(context().getImageGenerationSelection('creation','model','1:1').quality,undefined);
 });
-test('creation quality select defaults automatic and manual quality survives resolution edits and rerender', () => {
+test('creation quality select defaults highest and manual quality survives resolution edits and rerender', () => {
   const c=context({resolutions:['1K','4K'],qualities:['low','high']});
   const resolution={value:'',dataset:{},innerHTML:''}, quality={value:'',dataset:{},innerHTML:''};
   c.document.getElementById=id=>({chatImageResolutionSelect:resolution,chatImageQualitySelect:quality})[id];
   c.escapeHTML=String;
   vm.runInContext(source('syncChatImageResolutionControl'),c);
-  assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,undefined);
-  assert.equal(quality.value,'');
-  quality.value='low';
-  resolution.value='1K';
+  assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,'high');
+  assert.equal(quality.value,'high');
+  quality.value='low'; quality.onchange();
+  resolution.value='1K'; resolution.onchange();
   assert.equal(c.syncChatImageResolutionControl('model','1:1').quality,'low');
   assert.equal(resolution.value,'1K');
   quality.value='';quality.onchange();
@@ -201,13 +210,13 @@ test('quality travels through real request and captured card output', async () =
   assert.match(fs.readFileSync(new URL('../index.html',import.meta.url),'utf8'),/id="chatImageQualitySelect"/);
   assert.match(source('renderCanvasImageControls'),/图片品质/);
 });
-test('creation resolution and quality roundtrip in page-memory settings',()=>{const c=context({resolutions:['1K','4K'],qualities:['low','high']});const nodes={chatImageResolutionSelect:{value:'1K',dataset:{model:'model',explicitAuto:'false'}},chatImageQualitySelect:{value:'low',dataset:{model:'model',explicitAuto:'false'}}};c.document.getElementById=id=>nodes[id];c.escapeHTML=String;for(const n of ['captureChatImageSettings','restoreChatImageSettings','syncChatImageResolutionControl'])vm.runInContext(source(n),c);const saved=c.captureChatImageSettings();nodes.chatImageResolutionSelect.value='4K';nodes.chatImageQualitySelect.value='high';c.restoreChatImageSettings('model','1:1',saved);assert.equal(nodes.chatImageResolutionSelect.value,'1K');assert.equal(nodes.chatImageQualitySelect.value,'low');});
+test('creation resolution and quality roundtrip in page-memory settings',()=>{const c=context({resolutions:['1K','4K'],qualities:['low','high']});const nodes={chatImageResolutionSelect:{value:'1K',dataset:{model:'model',manualValue:'1K',explicitAuto:'false'}},chatImageQualitySelect:{value:'low',dataset:{model:'model',manualValue:'low',explicitAuto:'false'}}};c.document.getElementById=id=>nodes[id];c.escapeHTML=String;for(const n of ['captureChatImageSettings','restoreChatImageSettings','syncChatImageResolutionControl'])vm.runInContext(source(n),c);const saved=c.captureChatImageSettings();nodes.chatImageResolutionSelect.value='4K';nodes.chatImageQualitySelect.value='high';c.restoreChatImageSettings('model','1:1',saved);assert.equal(nodes.chatImageResolutionSelect.value,'1K');assert.equal(nodes.chatImageQualitySelect.value,'low');});
 test('declared xhigh and max qualities rank above high without assuming undeclared values',()=>{const c=context({qualities:['high','max','xhigh','auto']});assert.equal(c.getImageGenerationSelection('creation','model','1:1','','max').quality,'max');assert.equal(context({qualities:['high','xhigh']}).getImageGenerationSelection('creation','model','1:1','','xhigh').quality,'xhigh');});
 test('official provenance is labeled distinctly from supplier capability and no-quality controls',()=>{const c=context();vm.runInContext(source('getImageCapabilityDescription'),c);assert.match(c.getImageCapabilityDescription({resolutionSource:'official-spec'},'resolution',false),/官方规格/);assert.match(c.getImageCapabilityDescription({qualitySource:'official-no-quality'},'quality',true),/不提供独立品质/);assert.match(c.getImageCapabilityDescription({},'quality',true),/能力未知/);assert.match(c.getImageCapabilityDescription({},'quality',false),/供应商/);});
-test('declared resolution tiers remain ordered but default automatic and preserve provider value', () => {
+test('declared resolution tiers order numerically and preserve provider value', () => {
   const c = context({resolutions:['2K', '10K', '4K', '1K']});
   const selected = c.getImageGenerationSelection('creation', 'model', '16:9');
-  assert.equal(selected.resolution, undefined);
+  assert.equal(selected.resolution, '10K');
   assert.equal(selected.aspectRatio, '16:9');
   assert.equal(selected.size, undefined);
   assert.equal(c.getImageGenerationSelection('creation', 'model', '16:9', '2K').resolution, '2K');

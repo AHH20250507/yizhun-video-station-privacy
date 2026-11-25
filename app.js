@@ -3437,28 +3437,36 @@ function getImageResolutionOptions(mode, model, aspectRatio) {
       if (!width || !height || Math.abs(width / height - aspectWidth / aspectHeight) > 0.01) return [];
       return [{ value, label: value, size: value, rank: width * height }];
     }
-    const tier = value.match(/^(\d+(?:\.\d+)?)k$/i);
-    return [{ value, label: value, resolution: value, rank: tier ? Number(tier[1]) ** 2 * 1_000_000 : null }];
+    const tier = value.trim().match(/^(\d+(?:\.\d+)?)\s*(k|px)$/i);
+    const edge = tier ? Number(tier[1]) * (tier[2].toLowerCase() === 'k' ? 1000 : 1) : 0;
+    return [{ value, label: value, resolution: value, rank: edge > 0 ? edge ** 2 : null }];
   }).sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
 }
 
 function getImageQualityOptions(mode, model) {
   const metadata = getServerModels(mode, 'image').find(item => item.model === model)?.metadata || {};
   const ranks = { low: 1, standard: 2, medium: 2, high: 3, hd: 3, xhigh: 4, max: 5 };
-  const preferHigh = /(?:^|[-_\s])(?:gemini|nano[-_\s]*banana)(?:$|[-_\s])/i.test(String(model));
+  const preferHigh = mode === 'canvas' && /(?:^|[-_\s])(?:gemini|nano[-_\s]*banana)(?:$|[-_\s])/i.test(String(model));
   const values = (Array.isArray(metadata.qualities) ? metadata.qualities : []).filter(value => typeof value === 'string' && value.trim() && value.length <= 64);
   const suppliedHigh = values.some(value => value.trim().toLowerCase() === 'high');
   if (preferHigh && !suppliedHigh) values.push('high');
   return [...new Set(values)]
-    .map(value => ({ value, rank: ranks[value.trim().toLowerCase()] ?? null, default: preferHigh && value.trim().toLowerCase() === 'high', userDefault: preferHigh && !suppliedHigh && value === 'high' }))
+    .map(value => {
+      const key = value.trim().toLowerCase();
+      return { value, rank: Object.hasOwn(ranks, key) ? ranks[key] : null, default: preferHigh && key === 'high', userDefault: preferHigh && !suppliedHigh && value === 'high' };
+    })
     .sort((a, b) => (b.rank ?? -1) - (a.rank ?? -1));
 }
 
-function getImageGenerationSelection(mode, model, aspectRatio, requested = '', requestedQuality) {
+function getImageGenerationSelection(mode, model, aspectRatio, requested, requestedQuality) {
   const options = getImageResolutionOptions(mode, model, aspectRatio);
-  const selected = options.find(option => option.value === requested);
+  const selected = requested === undefined && mode === 'creation'
+    ? options.find(option => Number.isFinite(option.rank) && option.rank > 0)
+    : options.find(option => option.value === requested);
   const qualities = getImageQualityOptions(mode, model);
-  const quality = (requestedQuality === undefined ? qualities.find(option => option.default) : qualities.find(option => option.value === requestedQuality))?.value;
+  const quality = (requestedQuality === undefined
+    ? qualities.find(option => mode === 'creation' ? Number.isFinite(option.rank) : option.default)
+    : qualities.find(option => option.value === requestedQuality))?.value;
   return { model, aspectRatio, ...(selected?.size ? { size: selected.size } : {}), ...(selected?.resolution ? { resolution: selected.resolution } : {}), ...(quality ? { quality } : {}) };
 }
 
@@ -3483,20 +3491,22 @@ function captureChatImageSettings() {
   const settings = {};
   for (const field of ['resolution', 'quality', 'format']) {
     const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
-    if (select) settings[field] = { value: select.value, explicitAuto: select.dataset.explicitAuto === 'true' };
+    if (select?.dataset.manualValue !== undefined) {
+      const value = select.dataset.manualValue;
+      settings[field] = { value, explicitAuto: value === '' };
+    }
   }
   return settings;
 }
 
 function restoreChatImageSettings(model, aspectRatio, settings = {}) {
-  // Build this model's options before assigning a saved value to a native select.
-  syncChatImageResolutionControl(model, aspectRatio);
   for (const field of ['resolution', 'quality', 'format']) {
     const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
     if (!select) continue;
-    select.dataset.model = settings[field] ? model : '';
-    select.dataset.explicitAuto = settings[field]?.explicitAuto ? 'true' : 'false';
-    select.value = settings[field]?.value || '';
+    select.dataset.model = model;
+    const saved = settings[field];
+    if (saved?.value || saved?.explicitAuto) select.dataset.manualValue = saved.value || '';
+    else delete select.dataset.manualValue;
   }
   return syncChatImageResolutionControl(model, aspectRatio);
 }
@@ -3515,12 +3525,12 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
     const select = document.getElementById(field === 'resolution' ? 'chatImageResolutionSelect' : field === 'quality' ? 'chatImageQualitySelect' : 'chatImageFormatSelect');
     if (field === 'format' && !select) continue;
     const sameModel = select?.dataset.model === model;
-    const requested = sameModel ? select.value : undefined;
+    const requested = sameModel ? select?.dataset.manualValue : undefined;
     const options = field === 'resolution' ? getImageResolutionOptions('creation', model, aspectRatio) : field === 'quality' ? getImageQualityOptions('creation', model) : getImageFormatOptions('creation', model);
-    const explicitAuto = sameModel && requested === '' && select.dataset.explicitAuto === 'true';
-    const selected = explicitAuto ? undefined : (options.find(option => option.value === requested) || (!sameModel && field === 'quality' ? options.find(option => option.default) : undefined));
+    const selected = requested === '' ? undefined : (options.find(option => option.value === requested)
+      || (field !== 'format' ? options.find(option => Number.isFinite(option.rank) && option.rank > 0) : undefined));
     if (select) {
-      if (!sameModel) select.dataset.explicitAuto = 'false';
+      if (!sameModel) delete select.dataset.manualValue;
       select.innerHTML = '<option value="">模型默认 / 自动</option>' + options.map(option => `<option value="${escapeHTML(option.value)}">${escapeHTML(option.label || option.value)}</option>`).join('');
       select.dataset.model = model;
       select.value = selected?.value || '';
@@ -3535,12 +3545,12 @@ function syncChatImageResolutionControl(model, aspectRatio = el.chatImageAspectS
       }
       if (note) {
         note.textContent = '!';
-        note.title = field === 'format' ? (options.some(option => option.manual) ? '手动指定输出格式，尚未确认供应商支持；不更改原模型名。' : '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。') + 'GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧长边 512 像素（4:3 为 512×384），9 帧，每帧 200ms；这是保守客户端预设，非供应商预算保证。' : (field === 'quality' && options.some(option => option.userDefault) ? '按你的偏好默认 high，非官方独立品质能力声明；转发兼容以供应商为准。' : getImageCapabilityDescription(metadata, field, unknown)) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
+        note.title = field === 'format' ? (options.some(option => option.manual) ? '手动指定输出格式，尚未确认供应商支持；不更改原模型名。' : '格式来自供应商参数或精确官方型号规格，转发兼容以供应商为准。') + 'GIF 需要动图权限，仅支持生成接口，不支持编辑接口；帧长边 512 像素（4:3 为 512×384），9 帧，每帧 200ms；这是保守客户端预设，非供应商预算保证。' : getImageCapabilityDescription(metadata, field, unknown) + (metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] ? '\n' + metadata[field === 'resolution' ? 'resolutionSourceUrl' : 'qualitySourceUrl'] : '');
         note.setAttribute('aria-label', note.title);
         note.hidden = false;
       }
       select.onchange = () => {
-        select.dataset.explicitAuto = select.value === '' ? 'true' : 'false';
+        select.dataset.manualValue = select.value;
         if (field === 'format') syncChatImageResolutionControl(model, aspectRatio);
       };
     }
